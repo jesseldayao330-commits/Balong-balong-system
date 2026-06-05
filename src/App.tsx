@@ -15,6 +15,9 @@ import { PharmacyDispenser } from './components/PharmacyDispenser';
 import { ClearanceReferrals } from './components/ClearanceReferrals';
 import { DOHReports } from './components/DOHReports';
 import { LoginScreen } from './components/LoginScreen';
+import { MasterRecords } from './components/MasterRecords';
+import { AdminPanel } from './components/AdminPanel';
+import { HealthPolicies } from './components/HealthPolicies';
 
 // Load static simulation databases
 import { 
@@ -32,7 +35,7 @@ import {
   MOCK_DAILY_LOG 
 } from './data/mockData';
 
-import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw } from 'lucide-react';
+import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database } from 'lucide-react';
 
 export default function App() {
   // Authentication Workstation Session Lockout Guard State
@@ -49,13 +52,14 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('TL'); // Filipino/Tagalog is default!
   const [activeRole, setActiveRole] = useState<Role>(() => {
     const saved = localStorage.getItem('bhc_active_role');
-    if (saved === 'BHW' || saved === 'MIDWIFE' || saved === 'NURSE' || saved === 'PHARMACIST' || saved === 'MHO' || saved === 'ADMIN') {
+    if (saved === 'DOCTOR_BHW' || saved === 'ADMIN' || saved === 'LGU_DOH') {
       return saved as Role;
     }
-    return 'BHW';
+    return 'DOCTOR_BHW';
   });
   const [lastSynced, setLastSynced] = useState<string>('Just Now');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [patientsTabMode, setPatientsTabMode] = useState<'records' | 'profile'>('records');
 
   // Core Data Collections States linked to localStorage fallback
   const [patients, setPatients] = useState<Patient[]>(() => {
@@ -257,36 +261,29 @@ export default function App() {
       { id: 'pharmacy', label: 'E-Pharmacy', icon: Pill },
       { id: 'clearance', label: 'Referral & Certs', icon: FileText },
       { id: 'map', label: 'Surveillance Map', icon: Map },
+      { id: 'admin_panel', label: 'Admin Panel', icon: ShieldAlert },
       { id: 'reports', label: 'FHSIS Reports & Logs', icon: ShieldAlert },
+      { id: 'policies', label: 'Health Policies', icon: ClipboardList },
     ];
 
     switch (role) {
-      case 'BHW':
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'map'].includes(t.id));
-      case 'MIDWIFE':
-        return allTabs.filter((t) => ['overview', 'clinical', 'programs', 'clearance', 'map'].includes(t.id));
-      case 'NURSE':
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'clearance', 'reports'].includes(t.id));
-      case 'PHARMACIST':
-        return allTabs.filter((t) => ['overview', 'pharmacy', 'reports'].includes(t.id));
-      case 'MHO':
-        return allTabs.filter((t) => ['overview', 'clinical', 'clearance', 'map', 'reports'].includes(t.id));
+      case 'DOCTOR_BHW':
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map'].includes(t.id));
       case 'ADMIN':
-        return allTabs; // Barangay Captain Admin sees all diagnostics
+        return allTabs.filter((t) => ['overview', 'admin_panel'].includes(t.id));
+      case 'LGU_DOH':
+        return allTabs.filter((t) => ['overview', 'reports', 'policies'].includes(t.id));
       default:
-        return allTabs;
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical'].includes(t.id));
     }
   };
 
   // Map active staff name for registries tracking
   const getStaffNameByRole = (role: Role): string => {
     switch (role) {
-      case 'BHW': return 'Rosalie Abella (BHW)';
-      case 'MIDWIFE': return 'Ma. Fe Alcantara, RM (Kumadrona)';
-      case 'NURSE': return 'Sarah Genciana, RN (Naras)';
-      case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
-      case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
-      case 'ADMIN': return 'Hon. Reynaldo Dela Cruz (Kapitan)';
+      case 'DOCTOR_BHW': return 'Rosalie Abella (BHW) / Dr. Arthur Sotto, MD';
+      case 'ADMIN': return 'Hon. Reynaldo Dela Cruz (Kapitan / Admin)';
+      case 'LGU_DOH': return 'DOH Region IX Representative (LGU / DOH)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -380,14 +377,67 @@ export default function App() {
             )}
 
             {activeTab === 'patients' && (
-              <PatientRegistration
-                patients={patients}
-                households={households}
-                onAddPatient={(newPat) => setPatients([...patients, newPat])}
-                onUpdatePatient={handleUpdatePatient}
-                onDeletePatient={handleDeletePatient}
-                language={language}
-              />
+              <div className="space-y-4" id="patient-register-wrapper">
+                {/* Visual sub-routing header */}
+                <div className="bg-white border border-slate-200 p-3 rounded-2xl flex items-center justify-between shadow-3xs gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-indigo-600 rounded-full block"></span>
+                    <h3 className="text-xs font-black uppercase text-slate-700 tracking-wide font-sans">Patient Register Workstation</h3>
+                  </div>
+                  <div className="flex bg-slate-100 p-1 rounded-lg gap-1 border border-slate-200/40">
+                    <button
+                      onClick={() => setPatientsTabMode('records')}
+                      className={`px-3 py-1 text-xs font-extrabold rounded-md cursor-pointer transition-all ${
+                        patientsTabMode === 'records' 
+                          ? 'bg-white shadow-3xs text-indigo-750 font-black' 
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      📁 Electronic Registries
+                    </button>
+                    <button
+                      onClick={() => setPatientsTabMode('profile')}
+                      className={`px-3 py-1 text-xs font-extrabold rounded-md cursor-pointer transition-all ${
+                        patientsTabMode === 'profile' 
+                          ? 'bg-white shadow-3xs text-indigo-750 font-black' 
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      👤 Enroll New Patient
+                    </button>
+                  </div>
+                </div>
+
+                {patientsTabMode === 'records' ? (
+                  <MasterRecords
+                    patients={patients}
+                    households={households}
+                    consultations={consultations}
+                    vaccinations={vaccinations}
+                    prenatals={prenatals}
+                    vitals={vitals}
+                    inventory={inventory}
+                    dailyLogs={dailyLogs}
+                    language={language}
+                    onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
+                    onUpdateHousehold={(updatedHH) => setHouseholds((prev) => prev.map((h) => h.id === updatedHH.id ? updatedHH : h))}
+                    onDeleteHousehold={(id) => setHouseholds((prev) => prev.filter((h) => h.id !== id))}
+                  />
+                ) : (
+                  <PatientRegistration
+                    patients={patients}
+                    households={households}
+                    onAddPatient={(newPat) => {
+                      setPatients([...patients, newPat]);
+                      setPatientsTabMode('records'); // auto toggle back to preview registry
+                    }}
+                    onUpdatePatient={handleUpdatePatient}
+                    onDeletePatient={handleDeletePatient}
+                    onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
+                    language={language}
+                  />
+                )}
+              </div>
             )}
 
             {activeTab === 'clinical' && (
@@ -452,6 +502,14 @@ export default function App() {
                 onDeleteCertificate={handleDeleteCertificate}
                 language={language}
               />
+            )}
+
+            {activeTab === 'admin_panel' && (
+              <AdminPanel />
+            )}
+
+            {activeTab === 'policies' && (
+              <HealthPolicies />
             )}
 
             {activeTab === 'reports' && (

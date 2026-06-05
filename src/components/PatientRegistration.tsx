@@ -14,6 +14,7 @@ interface PatientRegistrationProps {
   onAddPatient: (patient: Patient) => void;
   onUpdatePatient: (patient: Patient) => void;
   onDeletePatient: (id: string) => void;
+  onAddHousehold?: (hh: Household) => void;
   language: Language;
 }
 
@@ -23,6 +24,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
   onAddPatient,
   onUpdatePatient,
   onDeletePatient,
+  onAddHousehold,
   language,
 }) => {
   const text = LOCALIZED_TEXTS[language];
@@ -48,6 +50,50 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
   const [allergies, setAllergies] = useState('');
   const [activePrograms, setActivePrograms] = useState<DOHProgram[]>([]);
   const [householdId, setHouseholdId] = useState(households[0]?.id || '');
+
+  // Inline Household Creation States
+  const [isAddingHH, setIsAddingHH] = useState(false);
+  const [newHHId, setNewHHId] = useState('');
+  const [newHHHead, setNewHHHead] = useState('');
+  const [newHHPurok, setNewHHPurok] = useState<Purok>('Purok 1');
+  const [newHHWater, setNewHHWater] = useState<'Level I (Point Source)' | 'Level II (Communal Faucet)' | 'Level III (Waterworks System)' | 'Unsanitary/Unprotected'>('Level III (Waterworks System)');
+  const [newHHSanitary, setNewHHSanitary] = useState(true);
+  const [newHHSolid, setNewHHSolid] = useState<'Segregated' | 'Disposed/Burned' | 'Open Dumping'>('Segregated');
+  const [newHHIndigent, setNewHHIndigent] = useState(false);
+
+  const handleCreateHouseholdInline = () => {
+    if (!newHHId.trim() || !newHHHead.trim()) {
+      alert('Tiyaking napunan ang Household Number/ID at pangalan ng Ulo ng Pamilya (Please enter a valid Household Number and Head Name).');
+      return;
+    }
+
+    const hhExists = households.some((h) => h.id.toLowerCase() === newHHId.trim().toLowerCase());
+    if (hhExists) {
+      alert(`Ang Sambahayan ID/Num "${newHHId}" ay mayroon na. Gumamit ng iba o piliin ito sa dropdown list.`);
+      return;
+    }
+
+    const newHH: Household = {
+      id: newHHId.trim(),
+      householdHead: newHHHead.trim(),
+      purok: newHHPurok,
+      numberOfMembers: 1,
+      waterSource: newHHWater,
+      sanitaryToilet: newHHSanitary,
+      solidWasteManagement: newHHSolid,
+      indigentStatus: newHHIndigent,
+    };
+
+    if (onAddHousehold) {
+      onAddHousehold(newHH);
+    }
+    setHouseholdId(newHH.id);
+    setIsAddingHH(false);
+    // Reset states
+    setNewHHId('');
+    setNewHHHead('');
+    alert(`Matagumpay na nairerehistro ang Bagong Sambahayan: ${newHH.householdHead} (${newHH.id})`);
+  };
 
   // Edit Initiator
   const startEditing = () => {
@@ -358,21 +404,119 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-600 uppercase mb-1.5 flex items-center gap-1">
-                    <Link size={12} className="text-emerald-600" />
-                    Sambahayan (Household Census Link)
-                  </label>
-                  <select
-                    className="w-full border border-slate-200 p-2.5 bg-white rounded-lg text-sm focus:outline-hidden"
-                    value={householdId}
-                    onChange={(e) => setHouseholdId(e.target.value)}
-                  >
-                    {households.map((hh) => (
-                      <option key={hh.id} value={hh.id}>
-                        {hh.householdHead} ({hh.id} • {hh.purok})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-black text-slate-600 uppercase flex items-center gap-1">
+                      <Link size={12} className="text-emerald-600" />
+                      Sambahayan (Household Census Link)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingHH(!isAddingHH);
+                        if (!isAddingHH) {
+                          setNewHHPurok(purok);
+                        }
+                      }}
+                      className="text-emerald-600 hover:text-emerald-700 text-[11px] font-bold flex items-center gap-0.5 cursor-pointer pointer-events-auto"
+                    >
+                      {isAddingHH ? '✕ Kanselahin' : '➕ Bagong Sambahayan'}
+                    </button>
+                  </div>
+
+                  {isAddingHH ? (
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-200/60 rounded-lg space-y-3 shadow-2xs">
+                      <div className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider">
+                        Pagrehistro ng Bagong Sambahayan (New Household)
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Household No. / ID *</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 0343"
+                            className="w-full bg-white border border-slate-200 p-2 rounded-md font-mono text-xs focus:outline-hidden"
+                            value={newHHId}
+                            onChange={(e) => setNewHHId(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Ulo ng Pamilya (Head Name) *</label>
+                          <input
+                            type="text"
+                            placeholder="Dela Cruz, Juan"
+                            className="w-full bg-white border border-slate-200 p-2 rounded-md text-xs focus:outline-hidden"
+                            value={newHHHead}
+                            onChange={(e) => setNewHHHead(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Purok Cluster</label>
+                          <select
+                            className="w-full bg-white border border-slate-200 p-1.5 rounded-md text-xs focus:outline-hidden font-mono"
+                            value={newHHPurok}
+                            onChange={(e) => setNewHHPurok(e.target.value as Purok)}
+                          >
+                            {['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Purok 6', 'Purok 7'].map((p) => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5 font-mono">Indigent/Poor?</label>
+                          <div className="flex gap-2.5 mt-1.5">
+                            <label className="flex items-center gap-1 font-medium text-slate-700">
+                              <input
+                                type="radio"
+                                checked={newHHIndigent}
+                                onChange={() => setNewHHIndigent(true)}
+                              />
+                              Oo (Yes)
+                            </label>
+                            <label className="flex items-center gap-1 font-medium text-slate-705">
+                              <input
+                                type="radio"
+                                checked={!newHHIndigent}
+                                onChange={() => setNewHHIndigent(false)}
+                              />
+                              Hindi
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1.5 pt-1">
+                        <span className="text-[10px] text-slate-400 font-medium">Auto-certified to sanitary toilet.</span>
+                        <button
+                          type="button"
+                          onClick={handleCreateHouseholdInline}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded-md text-xs cursor-pointer transition-colors"
+                        >
+                          I-save Sambahayan
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      className="w-full border border-slate-200 p-2.5 bg-white rounded-lg text-sm focus:outline-hidden"
+                      value={householdId}
+                      onChange={(e) => setHouseholdId(e.target.value)}
+                    >
+                      <option value="">-- Piliin ang Sambahayan (Select Household) --</option>
+                      {[...households]
+                        .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }))
+                        .map((hh) => (
+                          <option key={hh.id} value={hh.id}>
+                            {hh.id} ({hh.purok})
+                          </option>
+                        ))}
+                    </select>
+                  )}
                 </div>
 
                 <div>

@@ -37,12 +37,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   
   // Six roles are permitted to utilize the workstation
   const roles: { key: Role; label: string; bg: string; text: string }[] = [
-    { key: 'BHW', label: text.bhw, bg: 'bg-emerald-50 dark:bg-emerald-950/20 shadow-xs', text: 'text-emerald-700' },
-    { key: 'MIDWIFE', label: text.midwife, bg: 'bg-teal-50 dark:bg-teal-950/20 shadow-xs', text: 'text-teal-700' },
-    { key: 'NURSE', label: text.nurse, bg: 'bg-blue-50 dark:bg-blue-950/20 shadow-xs', text: 'text-blue-700' },
-    { key: 'PHARMACIST', label: text.pharmacist, bg: 'bg-indigo-50 dark:bg-indigo-950/20 shadow-xs', text: 'text-indigo-700' },
-    { key: 'MHO', label: text.mho, bg: 'bg-rose-50 dark:bg-rose-950/20 shadow-xs', text: 'text-rose-700' },
-    { key: 'ADMIN', label: text.admin, bg: 'bg-purple-50 dark:bg-purple-950/20 shadow-xs', text: 'text-purple-700' },
+    { key: 'DOCTOR_BHW', label: language === 'EN' ? 'Doctor / BHW' : 'Doktor / BHW', bg: 'bg-emerald-50 dark:bg-emerald-950/20 shadow-xs', text: 'text-emerald-700' },
+    { key: 'ADMIN', label: language === 'EN' ? 'Admin / Captain' : 'Admin / Kapitan', bg: 'bg-purple-50 dark:bg-purple-950/20 shadow-xs', text: 'text-purple-700' },
+    { key: 'LGU_DOH', label: 'LGU / DOH', bg: 'bg-blue-50 dark:bg-blue-950/20 shadow-xs', text: 'text-blue-700' },
   ];
 
   return (

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Role = 'BHW' | 'MIDWIFE' | 'MHO' | 'ADMIN' | 'NURSE' | 'PHARMACIST';
+export type Role = 'DOCTOR_BHW' | 'ADMIN' | 'LGU_DOH';
 
 export type Language = 'EN' | 'TL' | 'BY'; // English, Tagalog, Bisaya
 

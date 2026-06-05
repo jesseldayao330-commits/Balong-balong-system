@@ -139,7 +139,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({ patients, househ
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between">
             <div className="border-b border-slate-100 pb-3 mb-3">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2 h-4 bg-emerald-500 rounded-xs mr-0.5 block"></span>
+                <span className="w-2.5 h-4.5 bg-emerald-500 rounded-xs mr-0.5 block"></span>
                 {text.environmentalHygiene}
               </h4>
               <p className="text-[10px] text-slate-400 mt-0.5">Critical DOH standards for cleanliness</p>
@@ -147,7 +147,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({ patients, househ
 
             <div className="my-3 flex items-center justify-center relative">
               {/* Custom big circle dial representer */}
-              <div className="w-24 h-24 rounded-full border-[7px] border-slate-100 flex flex-col items-center justify-center border-t-emerald-600">
+              <div className="w-24 h-24 rounded-full border-[7px] border-slate-105 flex flex-col items-center justify-center border-t-emerald-600">
                 <span className="text-xl font-black text-slate-800">{sanitaryPercentage}%</span>
                 <span className="text-[8px] text-slate-400 font-bold uppercase">Sanitary toilet</span>
               </div>
@@ -161,7 +161,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({ patients, househ
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between">
             <div className="border-b border-slate-100 pb-3 mb-3">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2 h-4 bg-blue-500 rounded-xs mr-0.5 block"></span>
+                <span className="w-2.5 h-4.5 bg-blue-500 rounded-xs mr-0.5 block"></span>
                 Malasakit Eligibility Check
               </h4>
               <p className="text-[10px] text-slate-400 mt-0.5">Target health subsidies guidelines</p>
@@ -184,6 +184,77 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({ patients, househ
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* DOH Broacasted Policies Bulletin Feed */}
+      <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-4" id="doh-policies-bulletin">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-emerald-600 rounded-full block"></span>
+            <h3 className="text-sm font-black uppercase text-slate-700 tracking-wider">Aktibong Kautusan at Kampanya ng DOH (Active DOH Policy Directives)</h3>
+          </div>
+          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full uppercase tracking-widest font-mono">Real-time Broadcast</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(() => {
+            try {
+              const saved = localStorage.getItem('bhc_policies');
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                const active = parsed.filter((p: any) => p.status === 'Active');
+                if (active.length > 0) return active.map((p: any) => (
+                  <div key={p.id} className="bg-white border border-slate-200/85 p-4 rounded-xl shadow-3xs space-y-2.5 hover:shadow-2xs transition-shadow">
+                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-450 border-b border-slate-50 pb-2">
+                      <span className="font-bold">{p.date} • {p.sender}</span>
+                      <span className="bg-amber-50 text-amber-800 border border-amber-100 px-1.5 py-0.5 rounded font-bold uppercase">{p.focusPurok}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-black text-slate-800 uppercase tracking-tighter">{p.programName}</h4>
+                      <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">{p.directiveDetails}</p>
+                    </div>
+                    <div className="text-[10px] text-indigo-700 font-extrabold font-mono bg-indigo-50/50 p-1 px-2 rounded w-fit border border-indigo-100/30">
+                      Target Demography: {p.focusPopulation}
+                    </div>
+                  </div>
+                ));
+              }
+            } catch (e) {}
+
+            // Static fallback
+            return (
+              <>
+                <div className="bg-white border border-slate-200/85 p-4 rounded-xl shadow-3xs space-y-2.5">
+                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-450 border-b border-slate-50 pb-2">
+                    <span className="font-bold">2026-06-04 • DOH Provincial Representative</span>
+                    <span className="bg-amber-50 text-amber-800 border border-amber-100 px-1.5 py-0.5 rounded font-bold uppercase">Purok 4</span>
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-tighter">Operation Timbang Plus (Aesthetic Nutritional Enhancement)</h4>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">Immediate nutritional monitoring and supplement provisioning following malnutrition spikes discovered in the OPT surveillance survey.</p>
+                  </div>
+                  <div className="text-[10px] text-indigo-700 font-extrabold font-mono bg-indigo-50/50 p-1 px-2 rounded w-fit border border-indigo-100/30">
+                    Target Demography: Infants & Toddlers aged 0-59 months
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200/85 p-4 rounded-xl shadow-3xs space-y-2.5">
+                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-450 border-b border-slate-50 pb-2">
+                    <span className="font-bold">2026-06-02 • Municipal Health Office Director</span>
+                    <span className="bg-amber-50 text-amber-800 border border-amber-100 px-1.5 py-0.5 rounded font-bold uppercase">All Puroks</span>
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-tighter">Expanded Infant Immunization Campaign (EPI-30)</h4>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">Intensified tracking of unvaccinated cases with standard Pentavalent and Oral Polio Vaccine (OPV) booster checks.</p>
+                  </div>
+                  <div className="text-[10px] text-indigo-700 font-extrabold font-mono bg-indigo-50/50 p-1 px-2 rounded w-fit border border-indigo-100/30">
+                    Target Demography: Infants under 12 months
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   language,
   onChangeLanguage,
 }) => {
-  const [selectedRole, setSelectedRole] = useState<Role>('BHW');
+  const [selectedRole, setSelectedRole] = useState<Role>('DOCTOR_BHW');
   const [pin, setPin] = useState<string>('');
   const [showPin, setShowPin] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>('');
@@ -32,14 +32,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Select Workstation Active Role',
       passPrompt: 'Enter 4-Digit Security Passcode',
       btnLogin: 'Unlock Workstation Registry',
-      hint: 'Verification presets: BHW (1111) • Nurse (2222) • Admin (1234) • Midwife (3333) • Pharmacist (4444) • MHO (5555)',
+      hint: 'Verification presets: Doctor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
-      bhwLabel: 'Barangay Health Worker (BHW)',
-      nurseLabel: 'Public Health Nurse (RN)',
-      adminLabel: 'Barangay Captain / Admin',
-      midwifeLabel: 'Barangay Midwife (RM)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO)',
+      doctorBhwLabel: 'Doctor / Barangay Health Worker (BHW)',
+      adminLabel: 'Admin / Barangay Captain',
+      lguDohLabel: 'LGU / DOH Officer',
     },
     TL: {
       title: 'Sistema ng Impormasyong Pangkalusugan ng Barangay',
@@ -47,14 +44,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Piliin ang Aktibong Gampanin',
       passPrompt: 'Ipasok ang 4-Digit Security Passcode',
       btnLogin: 'Buksan ang Registry ng Workstation',
-      hint: 'Maaaring gamitin: BHW (1111) • Nurse (2222) • Admin (1234) • Midwife (3333) • Pharmacist (4444) • MHO (5555)',
+      hint: 'Maaaring gamitin: Doktor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
-      bhwLabel: 'Barangay Health Worker (BHW)',
-      nurseLabel: 'Pampublikong Nars (RN)',
-      adminLabel: 'Kapitan ng Barangay / Admin',
-      midwifeLabel: 'Barangay Midwife (RM)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO)',
+      doctorBhwLabel: 'Doktor / Barangay Health Worker (BHW)',
+      adminLabel: 'Admin / Kapitan ng Barangay',
+      lguDohLabel: 'Opisyal ng LGU / DOH',
     },
     BY: {
       title: 'Sistema sa Impormasyong Panglawas sa Barangay',
@@ -62,14 +56,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Pilia ang Aktibong Papel sa Workstation',
       passPrompt: 'Ibutang ang 4-Digit Security Passcode',
       btnLogin: 'Ablihan ang Registry sa Workstation',
-      hint: 'Mahimo gamiton: BHW (1111) • Nurse (2222) • Admin (1234) • Midwife (3333) • Pharmacist (4444) • MHO (5555)',
+      hint: 'Mahimo gamiton: Doktor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
-      bhwLabel: 'Barangay Health Worker (BHW)',
-      nurseLabel: 'Pampublikong Nars (RN)',
-      adminLabel: 'Kapitan sa Barangay / Admin',
-      midwifeLabel: 'Barangay Midwife (RM)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO)',
+      doctorBhwLabel: 'Doktor / Barangay Health Worker (BHW)',
+      adminLabel: 'Admin / Kapitan sa Barangay',
+      lguDohLabel: 'Opisyal sa LGU / DOH',
     }
   };
 
@@ -77,12 +68,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   // Restrict to multiple original roles
   const rolesAllowed = [
-    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Triage, health map & census tracking', color: 'border-emerald-250 hover:bg-emerald-50/50 text-emerald-800' },
-    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care, family planning & EPI', color: 'border-teal-250 hover:bg-teal-50/50 text-teal-850' },
-    { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'FHSIS Reports, vaccinations & prescriptions', color: 'border-blue-250 hover:bg-blue-50/50 text-blue-800' },
-    { key: 'PHARMACIST' as Role, label: currentDict.pharmacistLabel, desc: 'Inventory, medication dispensing & log bookkeeping', color: 'border-indigo-250 hover:bg-indigo-50/50 text-indigo-850' },
-    { key: 'MHO' as Role, label: currentDict.mhoLabel, desc: 'Municipal physician reviews, clearances & diagnostic overrides', color: 'border-rose-250 hover:bg-rose-50/50 text-rose-850' },
-    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'Full administration, clearance database & overrides', color: 'border-purple-250 hover:bg-purple-50/50 text-purple-800' },
+    { key: 'DOCTOR_BHW' as Role, label: currentDict.doctorBhwLabel, desc: 'Mag-encode ng patient info, diagnosis, prescription, at kumuha ng medical history', color: 'border-emerald-250 hover:bg-emerald-50/50 text-emerald-800' },
+    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'Mag-manage ng user accounts, system configuration, at makita ang audit logs', color: 'border-purple-250 hover:bg-purple-50/50 text-purple-800' },
+    { key: 'LGU_DOH' as Role, label: currentDict.lguDohLabel, desc: 'Magpadala ng mga patakaran (health policies) at makakuha ng ulat (statistical health reports)', color: 'border-blue-250 hover:bg-blue-50/50 text-blue-800' },
   ];
 
   const handleKeyPress = (num: string) => {
@@ -108,12 +96,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     // PIN check based on selected role
     let isValid = false;
-    if (selectedRole === 'BHW' && pin === '1111') isValid = true;
-    else if (selectedRole === 'NURSE' && pin === '2222') isValid = true;
+    if (selectedRole === 'DOCTOR_BHW' && pin === '1111') isValid = true;
     else if (selectedRole === 'ADMIN' && pin === '1234') isValid = true;
-    else if (selectedRole === 'MIDWIFE' && pin === '3333') isValid = true;
-    else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
-    else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
+    else if (selectedRole === 'LGU_DOH' && pin === '8888') isValid = true;
     
     // Also support fallback universal unlocking for a smooth local check
     if (pin === '0000' || pin === '9999') isValid = true;
