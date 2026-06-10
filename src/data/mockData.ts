@@ -7,7 +7,7 @@ import { Household, Patient, VitalSigns, Consultation, MedicineInventory, Medici
 
 export const LOCALIZED_TEXTS: Record<Language, Record<string, string>> = {
   EN: {
-    title: 'Barangay Health Center Record System',
+    title: 'Development of a Health Records Management System',
     subheading: 'Primary Healthcare Delivery Portal • RA 10173 Compliant',
     online: 'Online (Connected to Municipal EHR)',
     offline: 'Offline Mode (Local Storage Synced)',
@@ -561,7 +561,7 @@ export const MOCK_FAMILYPLANNING: FamilyPlanningRecord[] = [
     methodAccepted: 'Oral Contraceptives',
     methodType: 'Current User',
     sideEffectsExpressed: 'None reported',
-    remarks: 'Prefers standard low-dose combination pills. Regular user. Visited BHC for quarterly packaging pickup.',
+    remarks: 'Prefers standard low-dose combination pills. Regular user. Visited DHRMS for quarterly packaging pickup.',
     nextServiceDate: '2026-08-20'
   }
 ];
@@ -571,7 +571,7 @@ export const MOCK_REFERRALS: Referral[] = [
     id: 'REF-2026-001',
     patientId: 'PAT-2026-0004', // Consuelo Aquino
     date: '2026-05-28',
-    referringFacility: 'Barangay Balong-balong BHC, Pitogo, ZST',
+    referringFacility: 'Barangay Balong-balong DHRMS, Pitogo, ZST',
     referredToFacility: 'Mayor Ramon B. Lopez Memorial District Hospital',
     reasonForReferral: 'Uncontrolled Severely elevated Blood Pressure (155/95 mmHg) coupled with blood glucose spikes of 220 mg/dL in senior patient with occipital pain.',
     clinicalSummary: 'Patient arrived with headache & lightheadedness. Triaged by Nurse with hypertensive crisis levels. Emergency dose lossartan administered, referral drafted for specialty cardiologist and diabetic clinic.',

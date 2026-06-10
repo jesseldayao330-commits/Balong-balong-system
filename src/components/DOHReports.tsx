@@ -218,7 +218,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           {/* Dashboard Header Bar */}
           <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-black tracking-widest text-emerald-700 uppercase font-mono">BHC BARANGAY HEALTH STATISTICS</span>
+              <span className="text-[10px] font-black tracking-widest text-emerald-700 uppercase font-mono">DHRMS BARANGAY HEALTH STATISTICS</span>
               <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-tight">E-Statistical Register & Active Charts (Ulat para sa Lahat)</h3>
               <p className="text-xs text-slate-500 font-medium">Buod ng mga aktwal na datos mula sa Census, Konsulta, DOH Program, at Botika.</p>
             </div>

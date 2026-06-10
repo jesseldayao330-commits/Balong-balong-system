@@ -35,7 +35,7 @@ import {
   MOCK_DAILY_LOG 
 } from './data/mockData';
 
-import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database, Lock, Key, X, Eye, EyeOff } from 'lucide-react';
+import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database, Lock, Key, X, Eye, EyeOff, Settings, BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   // Authentication Workstation Session Lockout Guard State
@@ -351,9 +351,9 @@ export default function App() {
       { id: 'pharmacy', label: 'E-Pharmacy', icon: Pill },
       { id: 'clearance', label: 'Referral & Certs', icon: FileText },
       { id: 'map', label: 'Surveillance Map', icon: Map },
-      { id: 'admin_panel', label: 'Admin Panel', icon: ShieldAlert },
-      { id: 'reports', label: 'FHSIS Reports & Logs', icon: ShieldAlert },
-      { id: 'policies', label: 'Health Policies', icon: ClipboardList },
+      { id: 'admin_panel', label: 'Admin Panel', icon: Settings },
+      { id: 'reports', label: 'FHSIS Reports & Logs', icon: BarChart3 },
+      { id: 'policies', label: 'Health Policies', icon: ShieldCheck },
     ];
 
     switch (role) {

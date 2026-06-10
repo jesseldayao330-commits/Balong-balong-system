@@ -103,7 +103,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold tracking-tight text-slate-800 flex items-center gap-1.5 flex-wrap">
-              <span className="bg-emerald-600 text-white rounded px-2 py-0.5 text-xl font-extrabold shadow-sm">BHC</span>
+              <span className="bg-emerald-600 text-white rounded px-2 py-0.5 text-xl font-extrabold shadow-sm">DHRMS</span>
               {text.title}
             </span>
           </div>

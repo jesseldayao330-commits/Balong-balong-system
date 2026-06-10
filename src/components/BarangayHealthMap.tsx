@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Patient, Household, Purok } from '../types';
-import { MapPin, Users, Flame, ShieldAlert, CheckCircle, Droplet, AlertTriangle } from 'lucide-react';
+import { MapPin, Users, Flame, ShieldAlert, CheckCircle, Droplet, AlertTriangle, Image as ImageIcon, Map as MapIcon, ShoppingBag } from 'lucide-react';
 
 interface BarangayHealthMapProps {
   patients: Patient[];
@@ -14,6 +14,7 @@ interface BarangayHealthMapProps {
 
 export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, households }) => {
   const [selectedPurok, setSelectedPurok] = useState<Purok>('Purok 1');
+  const [mapMode, setMapMode] = useState<'purok' | 'satellite'>('satellite');
 
   // Compute stats for the chosen Purok
   const purokHouseholds = households.filter((h) => h.purok === selectedPurok);
@@ -42,67 +43,185 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
     { key: 'Purok 7', d: 'M 150,220 L 250,240 L 220,320 L 110,310 Z', color: 'fill-orange-100/80 hover:fill-orange-200/90 stroke-orange-600', labelX: 180, labelY: 280 }
   ];
 
+  // Satellite pin positions (normalized as percentage left/top placement)
+  const satellitePins: { key: Purok; left: string; top: string; color: string }[] = [
+    { key: 'Purok 1', left: '32%', top: '15%', color: 'bg-emerald-500' },
+    { key: 'Purok 2', left: '60%', top: '22%', color: 'bg-sky-500' },
+    { key: 'Purok 3', left: '80%', top: '28%', color: 'bg-indigo-500' },
+    { key: 'Purok 4', left: '22%', top: '50%', color: 'bg-amber-500' },
+    { key: 'Purok 5', left: '50%', top: '54%', color: 'bg-rose-500' }, // Outbreak Hotspot
+    { key: 'Purok 6', left: '82%', top: '52%', color: 'bg-teal-500' },
+    { key: 'Purok 7', left: '42%', top: '80%', color: 'bg-orange-500' }
+  ];
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" id="surveillance-map-panel">
-      <div className="flex items-center gap-2 mb-4">
-        <MapPin className="text-emerald-600" size={20} />
-        <div>
-          <h2 className="text-lg font-bold text-slate-800">Barangay Balong-balong - Health Map</h2>
-          <p className="text-xs text-slate-500">Pitogo, Zamboanga del Sur • Purok-level disease surveillance & household sanitation mapping</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="text-emerald-700" size={20} />
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">Barangay Balong-balong - Health Map</h2>
+            <p className="text-xs text-slate-500">Pitogo, Zamboanga del Sur • Purok-level disease surveillance & household sanitation mapping</p>
+          </div>
+        </div>
+
+        {/* Dynamic map viewport selector with premium visuals */}
+        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 self-start sm:self-auto shadow-inner" id="map-mode-toggle">
+          <button
+            type="button"
+            onClick={() => setMapMode('satellite')}
+            className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+              mapMode === 'satellite'
+                ? 'bg-white shadow-xs text-slate-900 border-slate-200'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <ImageIcon size={13} />
+            <span>Real Satellite Map</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapMode('purok')}
+            className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+              mapMode === 'purok'
+                ? 'bg-white shadow-xs text-slate-900 border-slate-200'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <MapIcon size={13} />
+            <span>Interactive Puroks</span>
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* SVG Map Section */}
-        <div className="col-span-1 lg:col-span-7 flex flex-col items-center border border-slate-100 rounded-lg p-3 bg-slate-50 justify-center">
-          <span className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Click to Investigate Purok Clusters</span>
+        {/* SVG/Image Map Section */}
+        <div className="col-span-1 lg:col-span-7 flex flex-col items-center border border-slate-200/60 rounded-2xl p-4 bg-slate-50 justify-center">
           
-          <svg viewBox="0 0 460 350" className="w-full max-w-[430px] drop-shadow-md">
-            {purokSpecs.map((p) => (
-              <g 
-                key={p.key} 
-                className="cursor-pointer transition-all" 
-                onClick={() => setSelectedPurok(p.key)}
-              >
-                <path
-                  d={p.d}
-                  className={`${p.color} stroke-2 transition-colors duration-150 ${
-                    selectedPurok === p.key ? 'fill-opacity-100 stroke-[3px] filter drop-shadow-lg scale-[1.01]' : 'fill-opacity-65'
-                  }`}
-                />
+          {mapMode === 'satellite' ? (
+            /* REAL SATELLITE MAP RENDER LAYOUT WITH Pin Overlays & Labels */
+            <div className="relative w-full max-w-[550px] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md aspect-[460/350]">
+              <img 
+                src="/src/assets/images/balong_balong_map_1781075564140.png" 
+                alt="Barangay Balong-balong satellite map with red outline" 
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover select-none"
+              />
+
+              {/* Geographical Landmarks overlays */}
+              <div className="absolute top-[34%] left-[10%] bg-slate-900/85 text-white text-[9px] font-black px-2 py-1 rounded-md border border-slate-700 pointer-events-none shadow-xs flex items-center gap-1 select-none whitespace-nowrap">
+                <ShoppingBag size={9} className="text-amber-400" />
+                <span>Balong balong Public Market</span>
+              </div>
+              <div className="absolute top-[48%] left-[54%] bg-slate-900/80 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-sm tracking-widest pointer-events-none uppercase select-none whitespace-nowrap">
+                BALONG-BALONG
+              </div>
+
+              {/* Dynamic Interactive Pin overlays linked to selected Purok */}
+              {satellitePins.map((pin) => {
+                const isSelected = selectedPurok === pin.key;
+                const isHotspot = pin.key === 'Purok 5';
+                const isWarning = pin.key === 'Purok 7';
                 
-                {/* Labels indicating numbers of residents */}
-                <text
-                  x={p.labelX}
-                  y={p.labelY}
-                  textAnchor="middle"
-                  className={`font-semibold text-[11px] pointer-events-none select-none transition-colors ${
-                    selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
-                  }`}
-                >
-                  {p.key}
-                </text>
-                
-                {/* Hotspot Alerts for active issues */}
-                {p.key === 'Purok 5' && (
-                  <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-rose-600 animate-ping" />
-                )}
-                {p.key === 'Purok 7' && (
-                  <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-amber-600" />
-                )}
-              </g>
-            ))}
-          </svg>
+                return (
+                  <button
+                    key={pin.key}
+                    type="button"
+                    onClick={() => setSelectedPurok(pin.key)}
+                    style={{ left: pin.left, top: pin.top }}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center z-10"
+                    title={`Click to analyze ${pin.key}`}
+                  >
+                    {/* Ring alerts for warnings or outbreak */}
+                    {isHotspot && (
+                      <span className="absolute flex h-6 w-6">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-6 w-6 bg-rose-500/20"></span>
+                      </span>
+                    )}
+
+                    {isWarning && (
+                      <span className="absolute flex h-6 w-6">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-6 w-6 bg-orange-500/20"></span>
+                      </span>
+                    )}
+
+                    <div className={`p-1.5 rounded-full shadow-md border ${
+                      isSelected 
+                        ? 'bg-slate-950 border-white text-white scale-125 z-20' 
+                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                    } transition-all`}>
+                      <MapPin size={isSelected ? 14 : 11} className={isSelected ? 'text-white' : 'text-emerald-600'} />
+                    </div>
+                    
+                    <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs ${
+                      isSelected 
+                        ? 'bg-slate-950 text-white border border-slate-800' 
+                        : 'bg-white/90 text-slate-800 border border-slate-200'
+                    } whitespace-nowrap`}>
+                      {pin.key}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* VECTOR SVG CLUSTER LAYOUT MAP */
+            <div className="w-full flex flex-col items-center">
+              <span className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Click to Investigate Purok Clusters</span>
+              <svg viewBox="0 0 460 350" className="w-full max-w-[550px] drop-shadow-md">
+                {purokSpecs.map((p) => (
+                  <g 
+                    key={p.key} 
+                    className="cursor-pointer transition-all" 
+                    onClick={() => setSelectedPurok(p.key)}
+                  >
+                    <path
+                      d={p.d}
+                      className={`${p.color} stroke-2 transition-colors duration-150 ${
+                        selectedPurok === p.key ? 'fill-opacity-100 stroke-[3px] filter drop-shadow-lg scale-[1.01]' : 'fill-opacity-65'
+                      }`}
+                    />
+                    
+                    {/* Labels indicating numbers of residents */}
+                    <text
+                      x={p.labelX}
+                      y={p.labelY}
+                      textAnchor="middle"
+                      className={`font-semibold text-[11px] pointer-events-none select-none transition-colors ${
+                        selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
+                      }`}
+                    >
+                      {p.key}
+                    </text>
+                    
+                    {/* Hotspot Alerts for active issues */}
+                    {p.key === 'Purok 5' && (
+                      <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-rose-600 animate-ping" />
+                    )}
+                    {p.key === 'Purok 7' && (
+                      <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-amber-600" />
+                    )}
+                  </g>
+                ))}
+              </svg>
+            </div>
+          )}
           
           {/* Map Legends */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-[10px] text-slate-500 font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-5 text-[10px] text-slate-500 font-medium">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 bg-rose-200 stroke-rose-600 border border-rose-400 rounded-xs" />
-              <span>High Risk (Active Outbreak / Unsanitary Toilets)</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse border border-rose-600"></span>
+              <span>High Risk (Purok 5 - Outbreak Cluster)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 bg-emerald-200 stroke-emerald-600 border border-emerald-400 rounded-xs" />
-              <span>Low Risk (DOH Immunization Met / Sanitary Water)</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-400 border border-orange-500"></span>
+              <span>Medium Risk (Purok 7 - Vax Outreach)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-600"></span>
+              <span>Regular Surveillance Monitoring</span>
             </div>
           </div>
         </div>

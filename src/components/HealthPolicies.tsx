@@ -95,7 +95,7 @@ export const HealthPolicies: React.FC = () => {
     setFocusPurok('All Puroks');
     setFocusPopulation('All Residents');
     setDirectiveDetails('');
-    alert('Matagumpay na naipadala at naisapubliko ang bagong polisiya! (New health policy successfully broadcasted to BHC Dashboard).');
+    alert('Matagumpay na naipadala at naisapubliko ang bagong polisiya! (New health policy successfully broadcasted to DHRMS Dashboard).');
   };
 
   const archivePolicy = (id: string) => {
@@ -236,7 +236,7 @@ export const HealthPolicies: React.FC = () => {
                       className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 cursor-pointer"
                     >
                       <Send size={12} />
-                      I-broadcast sa BHC
+                      I-broadcast sa DHRMS
                     </button>
                   </div>
                 </form>

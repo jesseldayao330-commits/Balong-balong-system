@@ -1,5 +1,5 @@
 {
-  "name": "Barangay Health Records",
+  "name": "Health Records Management System",
   "description": "Philippines Barangay Health Center Records Management System (HRMS) designed for Barangay Health Workers (BHWs) and midwives with offline-first support.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
