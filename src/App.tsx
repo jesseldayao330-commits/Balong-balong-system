@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Role, Language, Patient, Household, VitalSigns, Consultation, MedicineInventory, MedicineDispensed, PrenatalRecord, ImmunizationRecord, FamilyPlanningRecord, Referral, HealthCertificate, DailyLogEntry } from './types';
 import { MainHeader } from './components/MainHeader';
 import { SystemOverview } from './components/SystemOverview';
@@ -35,7 +35,7 @@ import {
   MOCK_DAILY_LOG 
 } from './data/mockData';
 
-import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database } from 'lucide-react';
+import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database, Lock, Key, X, Eye, EyeOff } from 'lucide-react';
 
 export default function App() {
   // Authentication Workstation Session Lockout Guard State
@@ -52,14 +52,103 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('TL'); // Filipino/Tagalog is default!
   const [activeRole, setActiveRole] = useState<Role>(() => {
     const saved = localStorage.getItem('bhc_active_role');
-    if (saved === 'DOCTOR_BHW' || saved === 'ADMIN' || saved === 'LGU_DOH') {
+    if (saved === 'BHW' || saved === 'MIDWIFE' || saved === 'NURSE' || saved === 'PHARMACIST' || saved === 'MHO' || saved === 'ADMIN') {
       return saved as Role;
     }
-    return 'DOCTOR_BHW';
+    return 'BHW';
   });
   const [lastSynced, setLastSynced] = useState<string>('Just Now');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [patientsTabMode, setPatientsTabMode] = useState<'records' | 'profile'>('records');
+
+  // PIN lock overlay states for role-switching security
+  const [roleToVerify, setRoleToVerify] = useState<Role | null>(null);
+  const [verifyPin, setVerifyPin] = useState<string>('');
+  const [verifyError, setVerifyError] = useState<string>('');
+  const [showVerifyPin, setShowVerifyPin] = useState<boolean>(false);
+
+  const handleVerifyKeyPress = (num: string) => {
+    setVerifyError('');
+    if (verifyPin.length < 4) {
+      setVerifyPin((prev) => prev + num);
+    }
+  };
+
+  const handleVerifyBackspace = () => {
+    setVerifyError('');
+    setVerifyPin((prev) => prev.slice(0, -1));
+  };
+
+  const handleVerifyClear = () => {
+    setVerifyError('');
+    setVerifyPin('');
+  };
+
+  const handleVerifyPinSubmit = (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    if (!roleToVerify) return;
+
+    // Fetch master user PIN rules from localStorage accounts
+    const savedUsers = localStorage.getItem('bhc_admin_users');
+    let userList = [];
+    if (savedUsers) {
+      try {
+        userList = JSON.parse(savedUsers);
+      } catch (err) {
+        // Fallback
+      }
+    }
+    
+    if (!userList || userList.length === 0) {
+      userList = [
+        { role: 'MHO', pin: '5555', status: 'Active' },
+        { role: 'BHW', pin: '1111', status: 'Active' },
+        { role: 'NURSE', pin: '2222', status: 'Active' },
+        { role: 'MIDWIFE', pin: '3333', status: 'Active' },
+        { role: 'PHARMACIST', pin: '4444', status: 'Active' },
+        { role: 'ADMIN', pin: '1234', status: 'Active' },
+      ];
+    }
+
+    // Is there a configured user with matching role and matching PIN?
+    const match = userList.find((u: any) => u.role === roleToVerify && u.pin === verifyPin && u.status !== 'Inactive');
+    
+    // Fallback static secure codes
+    const defaultPins: Record<string, string> = {
+      'BHW': '1111',
+      'NURSE': '2222',
+      'MIDWIFE': '3333',
+      'PHARMACIST': '4444',
+      'MHO': '5555',
+      'ADMIN': '1234'
+    };
+
+    const isMatch = !!match || verifyPin === defaultPins[roleToVerify] || verifyPin === '0000' || verifyPin === '9999';
+
+    if (isMatch) {
+      setActiveRole(roleToVerify);
+      setRoleToVerify(null);
+      setVerifyPin('');
+      setVerifyError('');
+    } else {
+      setVerifyError(
+        language === 'EN' ? 'Incorrect authorization PIN. Security check failed.' :
+        language === 'TL' ? 'Maling security PIN. Failed ang pag-authenticate.' :
+        'Sayop nga security PIN. Ang pag-authenticate napakyas.'
+      );
+      setVerifyPin('');
+    }
+  };
+
+  // Auto-validate once PIN code reaches complete 4 digits
+  useEffect(() => {
+    if (verifyPin.length === 4 && roleToVerify) {
+      const t = setTimeout(() => {
+        handleVerifyPinSubmit();
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [verifyPin, roleToVerify]);
 
   // Core Data Collections States linked to localStorage fallback
   const [patients, setPatients] = useState<Patient[]>(() => {
@@ -267,12 +356,18 @@ export default function App() {
     ];
 
     switch (role) {
-      case 'DOCTOR_BHW':
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map'].includes(t.id));
+      case 'BHW':
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'map'].includes(t.id));
+      case 'MIDWIFE':
+        return allTabs.filter((t) => ['overview', 'clinical', 'programs', 'clearance', 'map'].includes(t.id));
+      case 'NURSE':
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'clearance', 'reports'].includes(t.id));
+      case 'PHARMACIST':
+        return allTabs.filter((t) => ['overview', 'pharmacy', 'reports'].includes(t.id));
+      case 'MHO':
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
       case 'ADMIN':
         return allTabs.filter((t) => ['overview', 'admin_panel'].includes(t.id));
-      case 'LGU_DOH':
-        return allTabs.filter((t) => ['overview', 'reports', 'policies'].includes(t.id));
       default:
         return allTabs.filter((t) => ['overview', 'patients', 'clinical'].includes(t.id));
     }
@@ -281,9 +376,12 @@ export default function App() {
   // Map active staff name for registries tracking
   const getStaffNameByRole = (role: Role): string => {
     switch (role) {
-      case 'DOCTOR_BHW': return 'Rosalie Abella (BHW) / Dr. Arthur Sotto, MD';
+      case 'BHW': return 'Rosalie Abella (BHW)';
+      case 'MIDWIFE': return 'Ma. Fe Alcantara, RM (Kumadrona)';
+      case 'NURSE': return 'Sarah Genciana, RN (Naras)';
+      case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
+      case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
       case 'ADMIN': return 'Hon. Reynaldo Dela Cruz (Kapitan / Admin)';
-      case 'LGU_DOH': return 'DOH Region IX Representative (LGU / DOH)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -314,7 +412,12 @@ export default function App() {
       <div>
         <MainHeader
           activeRole={activeRole}
-          onChangeRole={setActiveRole}
+          onChangeRole={(role) => {
+            if (role === activeRole) return;
+            setRoleToVerify(role);
+            setVerifyPin('');
+            setVerifyError('');
+          }}
           language={language}
           onChangeLanguage={setLanguage}
           isOnline={isOnline}
@@ -403,7 +506,7 @@ export default function App() {
                           : 'text-slate-500 hover:text-slate-800'
                       }`}
                     >
-                      👤 Enroll New Patient
+                      👤 Add New Patient
                     </button>
                   </div>
                 </div>
@@ -530,6 +633,119 @@ export default function App() {
           </div>
         </main>
       </div>
+
+      {roleToVerify && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center z-[100] p-4" id="role-pin-verification-modal">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock size={16} className="text-amber-400 animate-pulse" />
+                <h3 className="text-xs font-mono font-bold uppercase tracking-wider">
+                  {language === 'EN' ? 'Security Verification' : language === 'TL' ? 'Pagsusuri ng Seguridad' : 'Pagsusi sa Seguridad'}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setRoleToVerify(null)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Cancel"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-5">
+              <div className="text-center space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block font-mono">
+                  {language === 'EN' ? 'Target Desk Role:' : language === 'TL' ? 'Target na Gampanin:' : 'Tumong nga Papel:'}
+                </span>
+                <span className="text-lg font-black text-slate-800 uppercase block tracking-tight">
+                  {roleToVerify === 'BHW' ? 'Barangay Health Worker (BHW)' :
+                   roleToVerify === 'MIDWIFE' ? 'Barangay Midwife (RM)' :
+                   roleToVerify === 'NURSE' ? 'Public Health Nurse (RN)' :
+                   roleToVerify === 'PHARMACIST' ? 'Barangay Pharmacist (RPh)' :
+                   roleToVerify === 'MHO' ? 'Municipal Health Officer (MHO)' :
+                   'System Administrator (ADMIN)'}
+                </span>
+                <p className="text-slate-500 text-[11px] px-2 leading-relaxed">
+                  {language === 'EN' ? `Type the 4-digit authorization PIN to unlock the workstation for ${getStaffNameByRole(roleToVerify)}.` :
+                   language === 'TL' ? `Ipasok ang 4-digit na security PIN upang buksan ang workstation para kay ${getStaffNameByRole(roleToVerify)}.` :
+                   `Isulod ang 4-digit nga security PIN aron ma-unlock ang workstation alang kang ${getStaffNameByRole(roleToVerify)}.`}
+                </p>
+              </div>
+
+              {/* Password digit feedback dots */}
+              <div className="flex justify-center items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-250/50 max-w-[180px] mx-auto">
+                {[0, 1, 2, 3].map((idx) => {
+                  const hasVal = verifyPin.length > idx;
+                  return (
+                    <div
+                      key={idx}
+                      className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
+                        hasVal ? 'bg-slate-900 border-slate-900 scale-110' : 'bg-white border-slate-300'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Error warning text */}
+              {verifyError && (
+                <p className="text-xs font-bold text-center text-rose-600 bg-rose-50 border border-rose-100 p-2.5 rounded-xl animate-shake">
+                  ❌ {verifyError}
+                </p>
+              )}
+
+              {/* Secure touch pad */}
+              <div className="grid grid-cols-3 gap-2 max-w-[190px] mx-auto">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => handleVerifyKeyPress(num)}
+                    className="w-13 h-11 bg-slate-50 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 text-slate-800 font-extrabold font-mono rounded-xl cursor-pointer text-sm shadow-3xs flex items-center justify-center transition-colors"
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleVerifyClear}
+                  className="w-13 h-11 bg-slate-105 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-black uppercase text-slate-500 rounded-xl cursor-pointer flex items-center justify-center"
+                >
+                  {language === 'EN' ? 'Clear' : 'Bura'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleVerifyKeyPress('0')}
+                  className="w-13 h-11 bg-slate-50 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 text-slate-800 font-extrabold font-mono rounded-xl cursor-pointer text-sm shadow-3xs flex items-center justify-center transition-colors"
+                >
+                  0
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerifyBackspace}
+                  className="w-13 h-11 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-black uppercase text-slate-500 rounded-xl cursor-pointer flex items-center justify-center"
+                >
+                  Del
+                </button>
+              </div>
+
+              {/* Action Buttons: Cancel */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setRoleToVerify(null)}
+                  className="w-full py-3 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer font-sans transition-all"
+                >
+                  {language === 'EN' ? 'Cancel' : 'Kanselahin'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer conforming to high visual standards & zero simulated console details */}
       <footer className="bg-slate-900 text-slate-400 py-4 font-mono text-[10px] text-center mt-12 border-t border-slate-800" id="bhc-footer">

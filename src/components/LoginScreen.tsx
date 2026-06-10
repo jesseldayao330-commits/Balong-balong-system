@@ -18,7 +18,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   language,
   onChangeLanguage,
 }) => {
-  const [selectedRole, setSelectedRole] = useState<Role>('DOCTOR_BHW');
+  const [selectedRole, setSelectedRole] = useState<Role>('BHW');
   const [pin, setPin] = useState<string>('');
   const [showPin, setShowPin] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>('');
@@ -32,11 +32,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Select Workstation Active Role',
       passPrompt: 'Enter 4-Digit Security Passcode',
       btnLogin: 'Unlock Workstation Registry',
-      hint: 'Verification presets: Doctor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
+      hint: 'PINs: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
-      doctorBhwLabel: 'Doctor / Barangay Health Worker (BHW)',
+      bhwLabel: 'Barangay Health Worker (BHW)',
+      midwifeLabel: 'Barangay Midwife (RM)',
+      nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doctor',
       adminLabel: 'Admin / Barangay Captain',
-      lguDohLabel: 'LGU / DOH Officer',
     },
     TL: {
       title: 'Sistema ng Impormasyong Pangkalusugan ng Barangay',
@@ -44,11 +47,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Piliin ang Aktibong Gampanin',
       passPrompt: 'Ipasok ang 4-Digit Security Passcode',
       btnLogin: 'Buksan ang Registry ng Workstation',
-      hint: 'Maaaring gamitin: Doktor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
+      hint: 'Mga PIN: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
-      doctorBhwLabel: 'Doktor / Barangay Health Worker (BHW)',
+      bhwLabel: 'Barangay Health Worker (BHW)',
+      midwifeLabel: 'Barangay Midwife (RM)',
+      nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
       adminLabel: 'Admin / Kapitan ng Barangay',
-      lguDohLabel: 'Opisyal ng LGU / DOH',
     },
     BY: {
       title: 'Sistema sa Impormasyong Panglawas sa Barangay',
@@ -56,11 +62,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Pilia ang Aktibong Papel sa Workstation',
       passPrompt: 'Ibutang ang 4-Digit Security Passcode',
       btnLogin: 'Ablihan ang Registry sa Workstation',
-      hint: 'Mahimo gamiton: Doktor / BHW (1111) • Admin (1234) • LGU / DOH (8888)',
+      hint: 'Mga PIN: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
-      doctorBhwLabel: 'Doktor / Barangay Health Worker (BHW)',
+      bhwLabel: 'Barangay Health Worker (BHW)',
+      midwifeLabel: 'Barangay Midwife (RM)',
+      nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
       adminLabel: 'Admin / Kapitan sa Barangay',
-      lguDohLabel: 'Opisyal sa LGU / DOH',
     }
   };
 
@@ -68,9 +77,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   // Restrict to multiple original roles
   const rolesAllowed = [
-    { key: 'DOCTOR_BHW' as Role, label: currentDict.doctorBhwLabel, desc: 'Mag-encode ng patient info, diagnosis, prescription, at kumuha ng medical history', color: 'border-emerald-250 hover:bg-emerald-50/50 text-emerald-800' },
-    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'Mag-manage ng user accounts, system configuration, at makita ang audit logs', color: 'border-purple-250 hover:bg-purple-50/50 text-purple-800' },
-    { key: 'LGU_DOH' as Role, label: currentDict.lguDohLabel, desc: 'Magpadala ng mga patakaran (health policies) at makakuha ng ulat (statistical health reports)', color: 'border-blue-250 hover:bg-blue-50/50 text-blue-800' },
+    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Patient demographics, census & environmental hygiene and health surveys', color: 'border-emerald-200 text-emerald-800' },
+    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care, child health / immunizations, and family planning', color: 'border-teal-200 text-teal-800' },
+    { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'Immunizations, deworming tracking, clinical triage, & national FHSIS reports', color: 'border-blue-200 text-blue-800' },
+    { key: 'PHARMACIST' as Role, label: currentDict.pharmacistLabel, desc: 'Local medicinal index inventory bookkeeping and dispensing logs', color: 'border-amber-200 text-amber-800' },
+    { key: 'MHO' as Role, label: currentDict.mhoLabel, desc: 'Full patient consultation, diagnostic overrides & ICD-10 medical prescriptions', color: 'border-rose-200 text-rose-800' },
+    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'Local clinical workstation config, user accounts list, and diagnostic audit trail', color: 'border-purple-200 text-purple-800' },
   ];
 
   const handleKeyPress = (num: string) => {
@@ -96,9 +108,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     // PIN check based on selected role
     let isValid = false;
-    if (selectedRole === 'DOCTOR_BHW' && pin === '1111') isValid = true;
+    if (selectedRole === 'BHW' && pin === '1111') isValid = true;
+    else if (selectedRole === 'NURSE' && pin === '2222') isValid = true;
+    else if (selectedRole === 'MIDWIFE' && pin === '3333') isValid = true;
+    else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
+    else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
     else if (selectedRole === 'ADMIN' && pin === '1234') isValid = true;
-    else if (selectedRole === 'LGU_DOH' && pin === '8888') isValid = true;
     
     // Also support fallback universal unlocking for a smooth local check
     if (pin === '0000' || pin === '9999') isValid = true;
@@ -358,11 +373,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   </button>
 
                   {/* Presets Demo Guide Strip */}
-                  <div className="p-3 bg-indigo-50/40 border border-dashed border-indigo-200 rounded-2xl text-[10px] text-center text-slate-500 mt-4 font-mono font-bold leading-relaxed">
-                    <span className="text-indigo-900 block mb-0.5 uppercase tracking-wide font-extrabold flex items-center justify-center gap-1 text-[11px]">
-                      🔐 Demo Workstation Credentials:
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] text-center text-slate-500 mt-4 font-mono font-bold leading-relaxed">
+                    <span className="text-slate-700 block mb-0.5 uppercase tracking-wide font-extrabold flex items-center justify-center gap-1 text-[10px]">
+                      🛡️ Confidential Access Warning:
                     </span>
-                    {currentDict.hint}
+                    {language === 'EN' ? 'Passcodes are confidential. Access attempts are audited. Contact your local administrator to reset or retrieve your individual authorization PIN.' :
+                     language === 'TL' ? 'Ang mga passcode ay kumpidensyal. Ang mga pagsubok sa pag-access ay nakatala sa audit list. Makipag-ugnayan sa administrator para i-reset o alamin ang iyong PIN.' :
+                     'Ang mga passcode kompidensyal. Ang mga pagsulay sa pag-access narekord sa audit list. Pakigkita sa administrator aron i-reset o masayran ang imong PIN.'}
                   </div>
 
                 </div>

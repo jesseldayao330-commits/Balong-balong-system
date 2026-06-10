@@ -50,6 +50,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
   const [allergies, setAllergies] = useState('');
   const [activePrograms, setActivePrograms] = useState<DOHProgram[]>([]);
   const [householdId, setHouseholdId] = useState(households[0]?.id || '');
+  const [photo, setPhoto] = useState<string>('');
 
   // Inline Household Creation States
   const [isAddingHH, setIsAddingHH] = useState(false);
@@ -114,6 +115,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
     setAllergies(selectedPatient.allergies || '');
     setActivePrograms(selectedPatient.activePrograms);
     setHouseholdId(selectedPatient.householdId);
+    setPhoto(selectedPatient.photo || '');
     setIsEditing(true);
     setIsRegistering(false);
   };
@@ -155,6 +157,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         bloodType,
         allergies,
         activePrograms,
+        photo,
       };
       onUpdatePatient(updatedPat);
       setSelectedPatient(updatedPat);
@@ -181,6 +184,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         allergies,
         activePrograms,
         createdAt: new Date().toISOString().split('T')[0],
+        photo,
       };
 
       onAddPatient(newPat);
@@ -196,6 +200,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
     setBirthDate('');
     setPhoneNumber('');
     setPhilHealthId('');
+    setPhoto('');
   };
 
   const handleProgramCheck = (prog: DOHProgram) => {
@@ -203,6 +208,29 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
       setActivePrograms(activePrograms.filter((p) => p !== prog));
     } else {
       setActivePrograms([...activePrograms, prog]);
+    }
+  };
+
+  const handlePhotoUpload = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Tanging mga larawan lamang ang pinahihintulutan (Only images are allowed).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhoto(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handlePhotoUpload(e.dataTransfer.files[0]);
     }
   };
 
@@ -291,6 +319,78 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 <h3 className="text-lg font-bold text-slate-800">
                   {isEditing ? `I-edit ang Impormasyon ng Pasyente / Patient: ${selectedPatient?.id}` : 'Form ng Bagong Pasyente (New Patient Entry Form)'}
                 </h3>
+              </div>
+
+              {/* Profile Photo Uploader Section */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6" id="patient-photo-uploaded-section">
+                <div 
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  className={`w-28 h-28 shrink-0 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all ${
+                    photo ? 'border-emerald-500 bg-emerald-50/10' : 'border-slate-300 bg-white hover:border-slate-400'
+                  }`}
+                >
+                  {photo ? (
+                    <>
+                      <img src={photo} alt="Patient preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <button
+                        type="button"
+                        onClick={() => setPhoto('')}
+                        className="absolute bottom-1 right-1 bg-rose-600 text-white px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-md hover:bg-rose-700 cursor-pointer"
+                        title="Remove photo"
+                      >
+                        Bura
+                      </button>
+                    </>
+                  ) : (
+                    <label className="cursor-pointer flex flex-col items-center text-center p-2 h-full justify-center w-full">
+                      <span className="text-slate-400 text-xs font-bold font-mono uppercase block mb-1">Photo</span>
+                      <span className="text-[9px] text-slate-400 font-medium block">Drag & Drop or Click</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handlePhotoUpload(e.target.files[0]);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-2 text-center md:text-left">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block font-mono">
+                    Larawan ng Pasyente (Resident Photograph)
+                  </span>
+                  <p className="text-slate-500 text-[11px] leading-relaxed max-w-md font-medium">
+                    Ibahagi o pumili ng larawan ng residente para sa kanilang health file. Maaaring mag-drag ng larawan dito, mag-browse mula sa iyong device, o pumili mula sa mga preset na silhouette sa ibaba.
+                  </p>
+                  
+                  {/* Preset quick avatars */}
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 pt-1">
+                    <span className="text-[9px] font-bold text-slate-400 mr-1 uppercase font-mono">Presets:</span>
+                    {[
+                      { l: 'M1', bg: 'bg-indigo-600', i: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80' },
+                      { l: 'F1', bg: 'bg-pink-600', i: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80' },
+                      { l: 'M2', bg: 'bg-blue-600', i: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80' },
+                      { l: 'F2', bg: 'bg-purple-600', i: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80' },
+                      { l: 'Child', bg: 'bg-teal-650', i: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
+                      { l: 'Senior', bg: 'bg-emerald-650', i: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80' }
+                    ].map((pre) => (
+                      <button
+                        key={pre.l}
+                        type="button"
+                        onClick={() => setPhoto(pre.i)}
+                        className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 hover:scale-105 active:scale-95 cursor-pointer transition-all flex items-center justify-center"
+                        title={`Piliin ang ${pre.l}`}
+                      >
+                        <img src={pre.i} alt={pre.l} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Patient Basic Profile Grid */}
@@ -653,14 +753,30 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
             /* DETAILED VIEWING SCREEN */
             <div className="space-y-6" id="patient-details-view">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-100 pb-4 gap-4">
-                <div>
-                  <h3 className="text-xl font-extrabold text-slate-800">
-                    {selectedPatient.lastName}, {selectedPatient.firstName} {selectedPatient.middleName}
-                    {selectedPatient.suffix ? ` ${selectedPatient.suffix}` : ''}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">
-                    Patient Census ID: <strong className="text-slate-800">{selectedPatient.id}</strong> • Nakarehistro noong: {selectedPatient.createdAt}
-                  </p>
+                <div className="flex items-center gap-4">
+                  {selectedPatient.photo ? (
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 shadow-3xs bg-white shrink-0 flex items-center justify-center">
+                      <img 
+                        src={selectedPatient.photo} 
+                        alt={`${selectedPatient.firstName}'s photo`} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-200 border-dashed bg-slate-100 flex flex-col items-center justify-center text-slate-400 shrink-0">
+                      <span className="text-[9px] font-bold uppercase tracking-wider font-mono">No Photo</span>
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-800">
+                      {selectedPatient.lastName}, {selectedPatient.firstName} {selectedPatient.middleName}
+                      {selectedPatient.suffix ? ` ${selectedPatient.suffix}` : ''}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5">
+                      Patient Census ID: <strong className="text-slate-800">{selectedPatient.id}</strong> • Nakarehistro noong: {selectedPatient.createdAt}
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-2">

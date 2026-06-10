@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Role = 'DOCTOR_BHW' | 'ADMIN' | 'LGU_DOH';
+export type Role = 'BHW' | 'MIDWIFE' | 'NURSE' | 'PHARMACIST' | 'MHO' | 'ADMIN';
 
 export type Language = 'EN' | 'TL' | 'BY'; // English, Tagalog, Bisaya
 
@@ -39,6 +39,7 @@ export interface Patient {
   allergies?: string;
   activePrograms: DOHProgram[];
   createdAt: string;
+  photo?: string; // Base64 image data-URI or reference
 }
 
 export type DOHProgram = 

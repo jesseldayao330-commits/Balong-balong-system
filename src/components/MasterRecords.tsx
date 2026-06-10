@@ -35,7 +35,9 @@ import {
   Home,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  Eye,
+  X
 } from 'lucide-react';
 
 interface MasterRecordsProps {
@@ -71,6 +73,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
   
   // Filtering states
   const [purokFilter, setPurokFilter] = useState<string>('All');
@@ -723,12 +726,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3">Purok & Contact</th>
                   <th className="p-3">Philhealth & Indigency</th>
                   <th className="p-3">Sustansyang Programa</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredResidents.length === 0 ? (
                   <tr>
-                    <td colspan="6" className="p-5 text-center text-slate-400 italic">Walang nahanap na tugmang resident records.</td>
+                    <td colspan="7" className="p-5 text-center text-slate-400 italic">Walang nahanap na tugmang resident records.</td>
                   </tr>
                 ) : (
                   filteredResidents.map(p => (
@@ -778,6 +782,17 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             ))}
                           </div>
                         )}
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPatientToView(p)}
+                          className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-lg cursor-pointer border border-indigo-200/50 flex items-center justify-center gap-1 mx-auto transition-colors hover:shadow-xs"
+                          title="Tingnan ang Impormasyon ng Residente"
+                        >
+                          <Eye size={12} className="text-indigo-650" />
+                          <span>View</span>
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -1432,6 +1447,395 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         )}
 
       </div>
+
+      {selectedPatientToView && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-[110] p-4 font-sans" id="patient-profile-detail-modal">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
+                  <Users size={16} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-350">
+                    {language === 'EN' ? 'Resident Health Folder' : language === 'TL' ? 'Kalusugang Talaan ng Residente' : 'Talaang Panglawas sa Residente'}
+                  </h3>
+                  <p className="text-sm font-black text-white tracking-tight">
+                    {selectedPatientToView.lastName}, {selectedPatientToView.firstName} {selectedPatientToView.middleName}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedPatientToView(null)}
+                className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-full transition-colors cursor-pointer"
+                title={language === 'EN' ? 'Close' : 'Isara'}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800">
+              
+              {/* Demographics Row (Bento Style) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                {/* Visual Card Column */}
+                <div className="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    {/* Patient photograph */}
+                    {selectedPatientToView.photo ? (
+                      <div className="w-full h-32 rounded-xl overflow-hidden border border-slate-200 shadow-3xs mb-4 bg-white shrink-0">
+                        <img 
+                          src={selectedPatientToView.photo} 
+                          alt={`${selectedPatientToView.firstName}'s photo`} 
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-32 rounded-xl overflow-hidden border border-indigo-200 border-dashed bg-slate-100/50 flex flex-col items-center justify-center text-slate-400 mb-4 shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider font-mono">No Photograph</span>
+                        <span className="text-[9px] text-slate-400 font-medium font-mono">(Walang Larawan)</span>
+                      </div>
+                    )}
+
+                    <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-widest font-mono">Reference Code</span>
+                    <h4 className="text-xl font-extrabold text-indigo-950 font-mono tracking-tight mt-1">{selectedPatientToView.id}</h4>
+                    
+                    <div className="mt-4 space-y-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-mono">Registered On:</span>
+                        <strong className="text-slate-700">{new Date(selectedPatientToView.createdAt).toLocaleDateString()}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-mono">Household ID:</span>
+                        <strong className="text-indigo-900 font-mono">{selectedPatientToView.householdId}</strong>
+                        {(() => {
+                          const linkedHousehold = households.find(h => h.id === selectedPatientToView.householdId);
+                          return linkedHousehold ? (
+                            <span className="text-[10px] text-slate-500 block mt-0.5">Head: {linkedHousehold.householdHead}</span>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-indigo-100/50 mt-4">
+                    <span className="px-2 py-1 bg-indigo-100/60 rounded-lg text-indigo-800 font-black text-[10px] uppercase tracking-wider block text-center">
+                      {selectedPatientToView.purok} Resident
+                    </span>
+                  </div>
+                </div>
+
+                {/* Primary demographics column */}
+                <div className="sm:col-span-2 space-y-4">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider font-mono border-b border-slate-150 pb-1">
+                    {language === 'EN' ? 'Personal & Demographics Detail' : 'Pangkalahatang Datos at Demograpiya'}
+                  </h4>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Kasarian (Gender)</span>
+                      <strong className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase inline-block mt-0.5 ${selectedPatientToView.gender === 'Female' ? 'bg-pink-100 text-pink-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {selectedPatientToView.gender === 'Female' ? 'Babae (Female)' : 'Lalake (Male)'}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Civil Status</span>
+                      <strong className="text-slate-800 block mt-0.5">{selectedPatientToView.civilStatus}</strong>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Petsa ng Kapanganakan (Birthdate)</span>
+                      <strong className="text-slate-800 block mt-0.5">{selectedPatientToView.birthDate}</strong>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Kasalukuyang Edad (Current Age)</span>
+                      <strong className="text-slate-800 block mt-0.5">
+                        {(() => {
+                          const birth = new Date(selectedPatientToView.birthDate);
+                          const today = new Date();
+                          let calculatedAge = today.getFullYear() - birth.getFullYear();
+                          const monthDiff = today.getMonth() - birth.getMonth();
+                          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                            calculatedAge--;
+                          }
+                          return `${calculatedAge} taon gulang`;
+                        })()}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Numero ng Telepono</span>
+                      <strong className="text-slate-800 block mt-0.5 font-mono">{selectedPatientToView.phoneNumber || 'N/A'}</strong>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 text-[10px] uppercase block font-mono">Blood Type</span>
+                      <strong className="px-2 py-0.5 bg-rose-50 border border-rose-100 text-rose-800 rounded font-mono text-[10px] inline-block mt-0.5">
+                        {selectedPatientToView.bloodType || 'Undetermined'}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Health Coverage and DOH Programs Block */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-150">
+                <div className="space-y-3">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider font-mono border-b border-slate-150 pb-1">
+                    {language === 'EN' ? 'National Health Insurance (PhilHealth)' : 'Impormasyon sa Seguro ng Kalusugan'}
+                  </h4>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block font-mono">PhilHealth ID Number</span>
+                      <strong className="text-slate-800 text-[13px] font-mono tracking-wider">{selectedPatientToView.philHealthId || 'WALANG IPINAHAYAG (NONE)'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block font-mono">PhilHealth Category</span>
+                      <strong className="text-indigo-900 block font-bold">{selectedPatientToView.philHealthCategory || 'Direct Contributor'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block font-mono">Indigency Registry Status</span>
+                      {selectedPatientToView.isIndigent ? (
+                        <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded text-[10px] font-black uppercase mt-0.5 inline-block">
+                          Indigent Beneficiary
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">Regular Non-Indigent</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider font-mono border-b border-slate-150 pb-1">
+                    {language === 'EN' ? 'Allergies & DOH Program Enrolment' : 'Mga Alerdye at Kasalukuyang Programa ng DOH'}
+                  </h4>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-3">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block font-mono text-rose-700">⚠️ Allergies / Allergen Threats</span>
+                      <p className="text-slate-700 font-extrabold mt-0.5">{selectedPatientToView.allergies || 'No known drug or environmental allergies.'}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block font-mono">Enrolled Active Programs</span>
+                      {selectedPatientToView.activePrograms.length === 0 ? (
+                        <em className="text-slate-400 block mt-1">Not enrolled in any DOH National Program.</em>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {selectedPatientToView.activePrograms.map(prog => (
+                            <span key={prog} className="px-2 py-0.5 bg-indigo-50 border border-indigo-150 text-indigo-700 font-black text-[9px] rounded-lg tracking-wider">
+                              {prog}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Health Records Tab (History of visits) */}
+              <div className="pt-4 border-t border-slate-150 space-y-4">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider font-mono border-b border-slate-150 pb-1">
+                  🩺 Barangay Health Center Consultation Ledger & Lab Vitals
+                </h4>
+
+                <div className="space-y-4">
+                  {/* VITALS SECTION FOR PATIENT */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono mb-1.5">🩺 Pinakahuling Vital Signs</span>
+                    {vitals.filter(v => v.patientId === selectedPatientToView.id).length === 0 ? (
+                      <p className="text-xs italic text-slate-400 bg-slate-50 border border-slate-100 p-2.5 rounded-xl">Walang nakatalang kunang vitals sa residente na ito.</p>
+                    ) : (
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                        <table className="w-full text-left border-collapse text-[11px]">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase font-mono">
+                              <th className="p-2.5">Date</th>
+                              <th className="p-2.5">BP (mmHg)</th>
+                              <th className="p-2.5">Temp (°C)</th>
+                              <th className="p-2.5">Heart / Resp Rate</th>
+                              <th className="p-2.5">Weight / Height</th>
+                              <th className="p-2.5">BMI Category</th>
+                              <th className="p-2.5">Sugar</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-mono">
+                            {vitals.filter(v => v.patientId === selectedPatientToView.id).map(v => (
+                              <tr key={v.id} className="hover:bg-slate-50/40">
+                                <td className="p-2.5 text-slate-600 font-bold">{v.date}</td>
+                                <td className="p-2.5 font-bold text-slate-800">{v.systolic}/{v.diastolic}</td>
+                                <td className="p-2.5">{v.temperature} °C</td>
+                                <td className="p-2.5">{v.heartRate} bpm / {v.respiratoryRate} rpm</td>
+                                <td className="p-2.5">{v.weightKg} kg / {v.heightCm} cm</td>
+                                <td className="p-2.5">
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                                    v.bmiCategory === 'Normal' ? 'bg-emerald-50 text-emerald-800' :
+                                    v.bmiCategory === 'Underweight' ? 'bg-amber-50 text-amber-700' :
+                                    'bg-rose-50 text-rose-800'
+                                  }`}>
+                                    {v.bmiCategory}
+                                  </span>
+                                </td>
+                                <td className="p-2.5">{v.bloodSugar ? `${v.bloodSugar} mg/dL` : 'N/A'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CLINICAL CONSULTATION HISTORIES */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono mb-1.5">📋 Consultation History</span>
+                    {consultations.filter(c => c.patientId === selectedPatientToView.id).length === 0 ? (
+                      <p className="text-xs italic text-slate-400 bg-slate-50 border border-slate-100 p-2.5 rounded-xl">Walang nakatalang clinical consultations sa residente na ito.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {consultations.filter(c => c.patientId === selectedPatientToView.id).map(c => (
+                          <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-2">
+                            <div className="flex justify-between items-center bg-slate-200/50 p-2 rounded-lg font-mono">
+                              <div>
+                                <span className="font-extrabold text-slate-700">ID: {c.id}</span>
+                                <span className="text-slate-400 mx-2">•</span>
+                                <span className="text-slate-600">{c.date}</span>
+                              </div>
+                              <span className="text-indigo-800 font-extrabold uppercase text-[10px]">
+                                Attending: {c.attendingStaff}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 leading-relaxed mt-1 text-[11px]">
+                              <div>
+                                <strong className="text-slate-600 block text-[9px] uppercase font-mono">Chief Complaint:</strong>
+                                <p className="text-slate-800 font-medium">{c.chiefComplaint}</p>
+                              </div>
+                              <div>
+                                <strong className="text-slate-600 block text-[9px] uppercase font-mono">Diagnosis / Assessments Aligned:</strong>
+                                <div className="flex flex-wrap gap-1 mt-0.5">
+                                  {c.assessmentDiagnoses.map(dia => (
+                                    <span key={dia} className="px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-rose-800 text-[9px] font-black uppercase rounded">
+                                      {dia}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 leading-relaxed border-t border-slate-200/50 pt-2 text-[11px]">
+                              <div>
+                                <strong className="text-slate-500 block text-[9px] uppercase font-mono">Medical Subjective/Objective Detail:</strong>
+                                <p className="text-slate-600">S: "{c.subjective}" | O: {c.objective}</p>
+                              </div>
+                              <div>
+                                <strong className="text-slate-500 block text-[9px] uppercase font-mono">Plan & Treatment Prescribed:</strong>
+                                <p className="text-emerald-800 font-bold">{c.planTreatment || 'Pending formulation'}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* IMMUNIZATION SECTION (If kids EPI is active) */}
+                  {vaccinations.filter(v => v.patientId === selectedPatientToView.id).length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono mb-1.5">👶 EPI Child Immunization Logs (Bakuna)</span>
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white text-[11px]">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase font-mono">
+                              <th className="p-2.5">Date Given</th>
+                              <th className="p-2.5">Vaccine</th>
+                              <th className="p-2.5">Dose</th>
+                              <th className="p-2.5">Given By</th>
+                              <th className="p-2.5">Remarks</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-mono">
+                            {vaccinations.filter(v => v.patientId === selectedPatientToView.id).map(v => (
+                              <tr key={v.id}>
+                                <td className="p-2.5 text-slate-600 font-bold">{v.dateGiven}</td>
+                                <td className="p-2.5 font-bold text-indigo-700">{v.vaccineName}</td>
+                                <td className="p-2.5 uppercase">{v.doseNumber}</td>
+                                <td className="p-2.5">{v.givenBy}</td>
+                                <td className="p-2.5 text-slate-500 italic">{v.remarks || 'No remarks'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PRENATAL SECTION (If pregnant mother MCH is active) */}
+                  {prenatals.filter(p => p.patientId === selectedPatientToView.id).length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono mb-1.5">🤰 Prenatal Maternal Health Cards</span>
+                      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white text-[11px]">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase font-mono">
+                              <th className="p-2.5">LMP</th>
+                              <th className="p-2.5">EDC / Due Date</th>
+                              <th className="p-2.5">G / P Stats</th>
+                              <th className="p-2.5">Gest. Age</th>
+                              <th className="p-2.5">Fundal Ht. / Heart Tone</th>
+                              <th className="p-2.5">Risk Classification</th>
+                              <th className="p-2.5">Next Appointment</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-mono">
+                            {prenatals.filter(p => p.patientId === selectedPatientToView.id).map(p => (
+                              <tr key={p.id}>
+                                <td className="p-2.5">{p.lmp}</td>
+                                <td className="p-2.5 text-indigo-800 font-bold">{p.edc}</td>
+                                <td className="p-2.5">G{p.gravida} P{p.para}</td>
+                                <td className="p-2.5">{p.gestationalAgeWeeks} weeks</td>
+                                <td className="p-2.5">{p.fundalHeightCm || 'N/A'} cm / {p.fetalHeartToneBpm || 'N/A'} bpm</td>
+                                <td className="p-2.5 font-bold">
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                    p.riskClassification === 'High Risk' ? 'bg-red-100 text-red-800 animate-pulse' :
+                                    p.riskClassification === 'Medium Risk' ? 'bg-amber-100 text-amber-800' :
+                                    'bg-emerald-100 text-emerald-800'
+                                  }`}>
+                                    {p.riskClassification}
+                                  </span>
+                                </td>
+                                <td className="p-2.5 text-slate-800 font-bold">{p.nextPrenatalVisit}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedPatientToView(null)}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer transition-all"
+              >
+                {language === 'EN' ? 'Close folder' : language === 'TL' ? 'Isara ang folder' : 'Isira ang folder'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

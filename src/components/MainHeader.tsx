@@ -37,9 +37,12 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   
   // Six roles are permitted to utilize the workstation
   const roles: { key: Role; label: string; bg: string; text: string }[] = [
-    { key: 'DOCTOR_BHW', label: language === 'EN' ? 'Doctor / BHW' : 'Doktor / BHW', bg: 'bg-emerald-50 dark:bg-emerald-950/20 shadow-xs', text: 'text-emerald-700' },
+    { key: 'BHW', label: language === 'EN' ? 'BHW' : 'BHW', bg: 'bg-emerald-50 dark:bg-emerald-950/20 shadow-xs', text: 'text-emerald-700' },
+    { key: 'MIDWIFE', label: language === 'EN' ? 'Midwife (RM)' : 'Midwife (RM)', bg: 'bg-teal-50 dark:bg-teal-950/20 shadow-xs', text: 'text-teal-700' },
+    { key: 'NURSE', label: language === 'EN' ? 'Nurse (RN)' : 'Nars (RN)', bg: 'bg-blue-50 dark:bg-blue-950/20 shadow-xs', text: 'text-blue-705' },
+    { key: 'PHARMACIST', label: language === 'EN' ? 'Pharmacist' : 'Farmasista', bg: 'bg-amber-50 dark:bg-amber-950/20 shadow-xs', text: 'text-amber-707' },
+    { key: 'MHO', label: language === 'EN' ? 'MHO / Doctor' : 'MHO / Doktor', bg: 'bg-rose-50 dark:bg-rose-950/20 shadow-xs', text: 'text-rose-700' },
     { key: 'ADMIN', label: language === 'EN' ? 'Admin / Captain' : 'Admin / Kapitan', bg: 'bg-purple-50 dark:bg-purple-950/20 shadow-xs', text: 'text-purple-700' },
-    { key: 'LGU_DOH', label: 'LGU / DOH', bg: 'bg-blue-50 dark:bg-blue-950/20 shadow-xs', text: 'text-blue-700' },
   ];
 
   return (
@@ -151,30 +154,52 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
         </div>
       </div>
 
-      {/* User Roles Selection strip (Tailored Large Buttons for Touch and Mouse) */}
-      <div className="bg-slate-50 border-t border-slate-150 px-4 py-2.5" id="bhc-roles-strip">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 shrink-0">
-            <User size={15} className="text-slate-500" />
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{text.activeRole}</span>
+      {/* Authorized Active Session Banner (Security Locked) */}
+      <div className="bg-slate-50/50 border-t border-slate-200 px-4 py-3" id="bhc-session-lock-strip">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 bg-slate-900 text-white rounded-lg flex items-center justify-center border border-slate-850">
+              <Lock size={13} className="text-amber-450 text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest font-mono">
+                  {language === 'EN' ? 'SECURE ACTIVE WORKSTATION SESSION' : 'LIGTAS NA AKTIBONG SESSION NG WORKSTATION'}
+                </span>
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              </div>
+              <div className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                <span>
+                  {activeRole === 'BHW' ? 'Rosalie Abella' :
+                   activeRole === 'MIDWIFE' ? 'Ma. Fe Alcantara, RM' :
+                   activeRole === 'NURSE' ? 'Sarah Genciana, RN' :
+                   activeRole === 'PHARMACIST' ? 'Lorna Cruz, RPh' :
+                   activeRole === 'MHO' ? 'Dr. Arthur Sotto, MD' :
+                   'Hon. Reynaldo Dela Cruz'}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${
+                  activeRole === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                  activeRole === 'MHO' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                  activeRole === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border-teal-200' :
+                  activeRole === 'NURSE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                  activeRole === 'PHARMACIST' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                  'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
+                  {activeRole === 'BHW' ? 'BHW' :
+                   activeRole === 'MIDWIFE' ? 'Midwife (RM)' :
+                   activeRole === 'NURSE' ? 'Public Health Nurse (RN)' :
+                   activeRole === 'PHARMACIST' ? 'Pharmacist (RPh)' :
+                   activeRole === 'MHO' ? 'MHO / Doctor' :
+                   'Administrator'}
+                </span>
+              </div>
+            </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2" id="role-selector-buttons">
-            {roles.map((role) => (
-              <button
-                key={role.key}
-                onClick={() => onChangeRole(role.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-all flex items-center gap-1.5 ${
-                  activeRole === role.key
-                    ? `${role.bg} ${role.text} border-current ring-1 ring-offset-1 ring-current scale-[1.02] font-semibold`
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-800'
-                }`}
-                id={`role-btn-${role.key}`}
-              >
-                <div className={`w-2 h-2 rounded-full ${activeRole === role.key ? 'bg-current animate-pulse' : 'bg-slate-300'}`} />
-                {role.label}
-              </button>
-            ))}
+          <div className="text-[10px] text-slate-500 max-w-sm font-semibold leading-normal bg-slate-100 p-2 rounded-xl border border-slate-200 md:text-right">
+            ⚠️ {language === 'EN' 
+              ? 'Authorized personnel only. Other accounts are invisible inside this session. To switch roles, click Logout first.' 
+              : 'Mga awtorisadong tauhan lamang. Hindi nakikita ang ibang account sa session na ito. Upang magpalit ng account, mag-Logout muna.'}
           </div>
         </div>
       </div>

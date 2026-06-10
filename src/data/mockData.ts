@@ -197,6 +197,7 @@ export const MOCK_PATIENTS: Patient[] = [
     allergies: 'Penicillin',
     activePrograms: ['TB_DOTS', 'SENIOR_CITIZEN'],
     createdAt: '2026-01-10',
+    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80',
   },
   {
     id: 'PAT-2026-0002',
@@ -216,6 +217,7 @@ export const MOCK_PATIENTS: Patient[] = [
     allergies: '',
     activePrograms: ['MCH'],
     createdAt: '2026-02-14',
+    photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
   },
   {
     id: 'PAT-2026-0003',
@@ -235,6 +237,7 @@ export const MOCK_PATIENTS: Patient[] = [
     allergies: '',
     activePrograms: ['EPI', 'OPT_PLUS'],
     createdAt: '2025-11-05',
+    photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
   },
   {
     id: 'PAT-2026-0004',
@@ -254,6 +257,7 @@ export const MOCK_PATIENTS: Patient[] = [
     allergies: 'Aspirin',
     activePrograms: ['SENIOR_CITIZEN', 'DISEASE_SURVEILLANCE'],
     createdAt: '2026-01-05',
+    photo: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80',
   },
   {
     id: 'PAT-2026-0005',
@@ -273,6 +277,7 @@ export const MOCK_PATIENTS: Patient[] = [
     allergies: 'Dust, Seafood',
     activePrograms: ['FAMILY_PLANNING'],
     createdAt: '2026-03-20',
+    photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
   }
 ];
 

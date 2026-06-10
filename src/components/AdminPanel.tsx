@@ -31,10 +31,12 @@ export const AdminPanel: React.FC = () => {
     const saved = localStorage.getItem('bhc_admin_users');
     if (saved) return JSON.parse(saved);
     return [
-      { id: '1', name: 'Dr. Arthur Sotto, MD', role: 'DOCTOR_BHW', username: 'arthur_sotto', pin: '1111', status: 'Active' },
-      { id: '2', name: 'Rosalie Abella', role: 'DOCTOR_BHW', username: 'rosalie_bhw', pin: '1111', status: 'Active' },
-      { id: '3', name: 'Hon. Reynaldo Dela Cruz', role: 'ADMIN', username: 'reynaldo_admin', pin: '1234', status: 'Active' },
-      { id: '4', name: 'DOH Officer Region IX', role: 'LGU_DOH', username: 'doh_officer', pin: '8888', status: 'Active' },
+      { id: '1', name: 'Dr. Arthur Sotto, MD', role: 'MHO', username: 'arthur_sotto', pin: '5555', status: 'Active' },
+      { id: '2', name: 'Rosalie Abella', role: 'BHW', username: 'rosalie_bhw', pin: '1111', status: 'Active' },
+      { id: '3', name: 'Sarah Genciana, RN', role: 'NURSE', username: 'sarah_nars', pin: '2222', status: 'Active' },
+      { id: '4', name: 'Ma. Fe Alcantara, RM', role: 'MIDWIFE', username: 'ma_midwife', pin: '3333', status: 'Active' },
+      { id: '5', name: 'Lorna Cruz, RPh', role: 'PHARMACIST', username: 'lorna_pharmacist', pin: '4444', status: 'Active' },
+      { id: '6', name: 'Hon. Reynaldo Dela Cruz', role: 'ADMIN', username: 'reynaldo_admin', pin: '1234', status: 'Active' },
     ];
   });
 
@@ -88,7 +90,7 @@ export const AdminPanel: React.FC = () => {
   // Account creation state
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [newUserName, setNewUserName] = useState('');
-  const [newUserRole, setNewUserRole] = useState<Role>('DOCTOR_BHW');
+  const [newUserRole, setNewUserRole] = useState<Role>('BHW');
   const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserPin, setNewUserPin] = useState('');
 
@@ -232,9 +234,12 @@ export const AdminPanel: React.FC = () => {
                         value={newUserRole}
                         onChange={(e) => setNewUserRole(e.target.value as Role)}
                       >
-                        <option value="DOCTOR_BHW">Doctor / Barangay Health Worker (BHW)</option>
+                        <option value="BHW">Barangay Health Worker (BHW)</option>
+                        <option value="MIDWIFE">Barangay Midwife (RM)</option>
+                        <option value="NURSE">Public Health Nurse (RN)</option>
+                        <option value="PHARMACIST">Barangay Pharmacist (RPh)</option>
+                        <option value="MHO">Municipal Health Officer (MHO) / Doctor</option>
                         <option value="ADMIN">Admin / Barangay Captain</option>
-                        <option value="LGU_DOH">LGU / DOH Representative</option>
                       </select>
                     </div>
                     <div>
@@ -291,10 +296,13 @@ export const AdminPanel: React.FC = () => {
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             u.role === 'ADMIN' ? 'bg-purple-50 text-purple-700 border border-purple-100' :
-                            u.role === 'LGU_DOH' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                            u.role === 'MHO' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
+                            u.role === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border border-teal-100' :
+                            u.role === 'NURSE' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                            u.role === 'PHARMACIST' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
                             'bg-emerald-50 text-emerald-700 border border-emerald-100'
                           }`}>
-                            {u.role === 'ADMIN' ? 'Admin' : u.role === 'LGU_DOH' ? 'LGU/DOH' : 'Doctor/BHW'}
+                            {u.role}
                           </span>
                         </td>
                         <td className="p-3 font-mono text-slate-500">{u.username}</td>
