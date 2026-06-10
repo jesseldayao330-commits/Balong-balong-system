@@ -60,6 +60,7 @@ export default function App() {
   const [lastSynced, setLastSynced] = useState<string>('Just Now');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [patientsTabMode, setPatientsTabMode] = useState<'records' | 'profile'>('records');
+  const [selectedPatientIdForEdit, setSelectedPatientIdForEdit] = useState<string | undefined>(undefined);
 
   // PIN lock overlay states for role-switching security
   const [roleToVerify, setRoleToVerify] = useState<Role | null>(null);
@@ -499,7 +500,10 @@ export default function App() {
                       📁 Electronic Registries
                     </button>
                     <button
-                      onClick={() => setPatientsTabMode('profile')}
+                      onClick={() => {
+                        setSelectedPatientIdForEdit(undefined);
+                        setPatientsTabMode('profile');
+                      }}
                       className={`px-3 py-1 text-xs font-extrabold rounded-md cursor-pointer transition-all ${
                         patientsTabMode === 'profile' 
                           ? 'bg-white shadow-3xs text-indigo-750 font-black' 
@@ -525,6 +529,11 @@ export default function App() {
                     onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
                     onUpdateHousehold={(updatedHH) => setHouseholds((prev) => prev.map((h) => h.id === updatedHH.id ? updatedHH : h))}
                     onDeleteHousehold={(id) => setHouseholds((prev) => prev.filter((h) => h.id !== id))}
+                    onEditPatient={(p) => {
+                      setSelectedPatientIdForEdit(p.id);
+                      setPatientsTabMode('profile');
+                    }}
+                    onDeletePatient={handleDeletePatient}
                   />
                 ) : (
                   <PatientRegistration
@@ -534,10 +543,19 @@ export default function App() {
                       setPatients([...patients, newPat]);
                       setPatientsTabMode('records'); // auto toggle back to preview registry
                     }}
-                    onUpdatePatient={handleUpdatePatient}
-                    onDeletePatient={handleDeletePatient}
+                    onUpdatePatient={(p) => {
+                      handleUpdatePatient(p);
+                      setSelectedPatientIdForEdit(undefined);
+                      setPatientsTabMode('records');
+                    }}
+                    onDeletePatient={(id) => {
+                      handleDeletePatient(id);
+                      setSelectedPatientIdForEdit(undefined);
+                      setPatientsTabMode('records');
+                    }}
                     onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
                     language={language}
+                    initialPatientId={selectedPatientIdForEdit}
                   />
                 )}
               </div>
@@ -628,6 +646,12 @@ export default function App() {
                 onUpdateDailyLog={handleUpdateDailyLog}
                 onDeleteDailyLog={handleDeleteDailyLog}
                 language={language}
+                households={households}
+                consultations={consultations}
+                inventory={inventory}
+                referrals={referrals}
+                certificates={certificates}
+                dispensed={dispensed}
               />
             )}
           </div>

@@ -53,6 +53,8 @@ interface MasterRecordsProps {
   onAddHousehold?: (hh: Household) => void;
   onUpdateHousehold?: (hh: Household) => void;
   onDeleteHousehold?: (id: string) => void;
+  onEditPatient?: (p: Patient) => void;
+  onDeletePatient?: (id: string) => void;
 }
 
 type RecordTab = 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
@@ -70,9 +72,15 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   onAddHousehold,
   onUpdateHousehold,
   onDeleteHousehold,
+  onEditPatient,
+  onDeletePatient,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Checking active user role to prevent admins from editing/deleting residents
+  const userActiveRole = localStorage.getItem('bhc_active_role') || 'BHW';
+  const isAdmin = userActiveRole === 'ADMIN';
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
   
   // Filtering states
@@ -783,16 +791,48 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                           </div>
                         )}
                       </td>
-                      <td className="p-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPatientToView(p)}
-                          className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-lg cursor-pointer border border-indigo-200/50 flex items-center justify-center gap-1 mx-auto transition-colors hover:shadow-xs"
-                          title="Tingnan ang Impormasyon ng Residente"
-                        >
-                          <Eye size={12} className="text-indigo-650" />
-                          <span>View</span>
-                        </button>
+                      <td className="p-3">
+                        <div className="flex items-center justify-center gap-1.5 font-sans">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPatientToView(p)}
+                            className="px-2 py-1 bg-indigo-55 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center justify-center gap-1 transition-colors hover:shadow-2xs"
+                            title="Tingnan ang Impormasyon ng Residente"
+                          >
+                            <Eye size={12} className="text-indigo-650" />
+                            <span>View</span>
+                          </button>
+                          
+                          {!isAdmin && onEditPatient && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onEditPatient(p);
+                              }}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center justify-center gap-1 transition-colors hover:shadow-2xs"
+                              title="I-edit ang Pasyente"
+                            >
+                              <Edit size={12} className="text-amber-655" />
+                              <span>Edit</span>
+                            </button>
+                          )}
+
+                          {!isAdmin && onDeletePatient && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong tanggalin si ${p.lastName}, ${p.firstName}?`)) {
+                                  onDeletePatient(p.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-705 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center justify-center gap-1 transition-colors hover:shadow-2xs"
+                              title="Tanggalin ang Pasyente"
+                            >
+                              <Trash2 size={12} className="text-rose-650" />
+                              <span>Delete</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -1823,7 +1863,37 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
 
             {/* Sticky Action Footer */}
-            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-end shrink-0">
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex flex-wrap justify-between items-center shrink-0 gap-3">
+              <div className="flex gap-2">
+                {!isAdmin && onEditPatient && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onEditPatient(selectedPatientToView);
+                      setSelectedPatientToView(null);
+                    }}
+                    className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-3xs"
+                  >
+                    <Edit size={13} />
+                    <span>{language === 'EN' ? 'Edit Resident Details' : 'I-edit ang Detalye'}</span>
+                  </button>
+                )}
+                {!isAdmin && onDeletePatient && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong tanggalin si ${selectedPatientToView.lastName}, ${selectedPatientToView.firstName}?`)) {
+                        onDeletePatient(selectedPatientToView.id);
+                        setSelectedPatientToView(null);
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-1.5 shadow-3xs"
+                  >
+                    <Trash2 size={13} />
+                    <span>{language === 'EN' ? 'Delete Resident' : 'Burahin Residente'}</span>
+                  </button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => setSelectedPatientToView(null)}
