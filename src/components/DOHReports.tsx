@@ -123,40 +123,56 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
   });
 
   // Extra calculations for overall reports
-  const totalResidents = patients.length;
-  const totalHouseholdsCount = households.length > 0 ? households.length : Array.from(new Set(patients.map(p => p.householdId))).length;
-  const maleResidents = patients.filter(p => p.gender === 'Male').length;
-  const femaleResidents = patients.filter(p => p.gender === 'Female').length;
-  const indigentCount = patients.filter(p => p.isIndigent).length;
-  const philhealthCount = patients.filter(p => p.philHealthId && p.philHealthId !== '').length;
+  const totalResidents = patients ? patients.length : 0;
+  const totalHouseholdsCount = households && households.length > 0 ? households.length : Array.from(new Set((patients || []).map(p => p.householdId || ''))).length;
+  const maleResidents = (patients || []).filter(p => p.gender === 'Male').length;
+  const femaleResidents = (patients || []).filter(p => p.gender === 'Female').length;
+  const indigentCount = (patients || []).filter(p => p.isIndigent).length;
+  const philhealthCount = (patients || []).filter(p => p.philHealthId && p.philHealthId !== '').length;
   const philhealthPct = Math.round((philhealthCount / (totalResidents || 1)) * 100);
 
   // Consultations count and breakdown
-  const totalConsultations = consultations.length;
-  const uniqueDiagnosedInCns = consultations.length;
-  const highBpAlerts = consultations.filter(c => c.diagnosisAndTreatment.toLowerCase().includes('bp') || c.diagnosisAndTreatment.toLowerCase().includes('hyper') || c.diagnosisAndTreatment.toLowerCase().includes('tension') || c.diagnosisAndTreatment.toLowerCase().includes('high')).length;
-  const coughFeverAlerts = consultations.filter(c => c.diagnosisAndTreatment.toLowerCase().includes('ubo') || c.diagnosisAndTreatment.toLowerCase().includes('fever') || c.diagnosisAndTreatment.toLowerCase().includes('sipon') || c.diagnosisAndTreatment.toLowerCase().includes('lagnat') || c.diagnosisAndTreatment.toLowerCase().includes('cough')).length;
+  const totalConsultations = consultations ? consultations.length : 0;
+  const uniqueDiagnosedInCns = totalConsultations;
+  
+  const highBpAlerts = (consultations || []).filter(c => {
+    const textStr = (
+      (c.assessmentDiagnoses || []).join(' ') + ' ' + 
+      (c.planTreatment || '') + ' ' + 
+      (c.chiefComplaint || '')
+    ).toLowerCase();
+    return textStr.includes('bp') || textStr.includes('hyper') || textStr.includes('tension') || textStr.includes('high') || textStr.includes('presyon');
+  }).length;
+
+  const coughFeverAlerts = (consultations || []).filter(c => {
+    const textStr = (
+      (c.assessmentDiagnoses || []).join(' ') + ' ' + 
+      (c.planTreatment || '') + ' ' + 
+      (c.chiefComplaint || '')
+    ).toLowerCase();
+    return textStr.includes('ubo') || textStr.includes('fever') || textStr.includes('sipon') || textStr.includes('lagnat') || textStr.includes('cough');
+  }).length;
 
   // Program enrollments
-  const tbDotsCount = patients.filter(p => p.activePrograms.includes('TB_DOTS')).length;
-  const seniorCitizenCount = patients.filter(p => p.activePrograms.includes('SENIOR_CITIZEN')).length;
-  const maternalCareCount = patients.filter(p => p.activePrograms.includes('MCH')).length;
-  const epiChildrenCount = patients.filter(p => p.activePrograms.includes('EPI')).length;
-  const familyPlanningCount = patients.filter(p => p.activePrograms.includes('FAMILY_PLANNING')).length;
+  const tbDotsCount = (patients || []).filter(p => p.activePrograms && p.activePrograms.includes('TB_DOTS')).length;
+  const seniorCitizenCount = (patients || []).filter(p => p.activePrograms && p.activePrograms.includes('SENIOR_CIT_INS' as any) || p.activePrograms && p.activePrograms.includes('SENIOR_CITIZEN')).length;
+  const maternalCareCount = (patients || []).filter(p => p.activePrograms && p.activePrograms.includes('MCH')).length;
+  const epiChildrenCount = (patients || []).filter(p => p.activePrograms && p.activePrograms.includes('EPI')).length;
+  const familyPlanningCount = (patients || []).filter(p => p.activePrograms && p.activePrograms.includes('FAMILY_PLANNING')).length;
 
   // Pharmacy inventory and alerts
-  const totalMeds = inventory.length;
-  const lowStockMeds = inventory.filter(p => p.stockLevel <= p.reorderLevel).length;
-  const totalDispensedUnits = dispensed.reduce((sum, item) => sum + item.quantityDispensed, 0);
+  const totalMeds = inventory ? inventory.length : 0;
+  const lowStockMeds = (inventory || []).filter(p => p.stockLevel <= p.reorderLevel).length;
+  const totalDispensedUnits = (dispensed || []).reduce((sum, item) => sum + (item.quantityDispensed || 0), 0);
 
   // Referrals and Clearance certificates
-  const totalReferrals = referrals.length;
-  const totalCertificates = certificates.length;
+  const totalReferrals = referrals ? referrals.length : 0;
+  const totalCertificates = certificates ? certificates.length : 0;
   
   // Daily Visitor statistics
-  const visitsToday = dailyLogs.length;
-  const waitingVisits = dailyLogs.filter(l => l.status === 'Waiting').length;
-  const completedVisits = dailyLogs.filter(l => l.status === 'Completed').length;
+  const visitsToday = dailyLogs ? dailyLogs.length : 0;
+  const waitingVisits = (dailyLogs || []).filter(l => l.status === 'Waiting').length;
+  const completedVisits = (dailyLogs || []).filter(l => l.status === 'Completed').length;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" id="doh-fhsis-logs-panel">
