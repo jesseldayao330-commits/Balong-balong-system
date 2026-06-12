@@ -296,7 +296,7 @@ export const MOCK_VITALS: VitalSigns[] = [
     bmi: 23.5,
     bmiCategory: 'Normal',
     bloodSugar: 110,
-    loggedBy: 'Rosalie Abella (BHW)'
+    loggedBy: 'Julefe Magwate (BHW)'
   },
   {
     id: 'VIT-2026-002',
@@ -311,7 +311,7 @@ export const MOCK_VITALS: VitalSigns[] = [
     heightCm: 68,
     bmi: 15.6,
     bmiCategory: 'Underweight',
-    loggedBy: 'Rosalie Abella (BHW)'
+    loggedBy: 'Julefe Magwate (BHW)'
   },
   {
     id: 'VIT-2026-003',
@@ -375,7 +375,7 @@ export const MOCK_CONSULTATIONS: Consultation[] = [
     planTreatment: 'Sponge bath guidance. Prescribed Paracetamol drops 100mg/mL, 0.8mL every 4 hrs for fever. Instruct mother to watch out for dengue warning signs (bleeding, bleeding gums, severe refusal of food, lethargy) and return or go to municipal emergency.',
     referredToHospital: false,
     mhoValidated: true,
-    attendingStaff: 'Sarah Genciana, RN (Nars)'
+    attendingStaff: 'Yvonne Galang, RN (Nars)'
   },
   {
     id: 'CON-2026-003',
@@ -390,7 +390,7 @@ export const MOCK_CONSULTATIONS: Consultation[] = [
     planTreatment: 'Emergency Losartan 50mg tab given. Instructed on low-salt, low-carb diabetic diet. Refer to Municipal Health Center next Tuesday for physician-led comprehensive metabolic management panel.',
     referredToHospital: true,
     mhoValidated: false,
-    attendingStaff: 'Ma. Fe Alcantara, RM (Arlusa Midwife)'
+    attendingStaff: 'Arlene Cagas Dayama, RM (Arlusa Midwife)'
   }
 ];
 
@@ -526,7 +526,7 @@ export const MOCK_IMMUNIZATION: ImmunizationRecord[] = [
     vaccineName: 'BCG',
     doseNumber: 1,
     dateGiven: '2025-11-05',
-    givenBy: 'Ma. Fe Alcantara, RM',
+    givenBy: 'Arlene Cagas Dayama, RM',
     remarks: 'Delivered at birth'
   },
   {
@@ -536,7 +536,7 @@ export const MOCK_IMMUNIZATION: ImmunizationRecord[] = [
     vaccineName: 'Pentavalent 1',
     doseNumber: 1,
     dateGiven: '2025-12-15',
-    givenBy: 'Ma. Fe Alcantara, RM',
+    givenBy: 'Arlene Cagas Dayama, RM',
     remarks: 'Healthy'
   },
   {
@@ -546,7 +546,7 @@ export const MOCK_IMMUNIZATION: ImmunizationRecord[] = [
     vaccineName: 'OPV 1',
     doseNumber: 1,
     dateGiven: '2025-12-15',
-    givenBy: 'Ma. Fe Alcantara, RM',
+    givenBy: 'Arlene Cagas Dayama, RM',
     remarks: 'Polio vaccine drop'
   }
 ];
@@ -578,7 +578,7 @@ export const MOCK_REFERRALS: Referral[] = [
     urgency: 'Urgent',
     transportArranged: 'Ambulance',
     status: 'Pending',
-    bhwMidwifeInCharge: 'Ma. Fe Alcantara, RM'
+    bhwMidwifeInCharge: 'Arlene Cagas Dayama, RM'
   }
 ];
 

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Patient, PrenatalRecord, ImmunizationRecord, FamilyPlanningRecord, Language, DOHProgram } from '../types';
+import { Patient, PrenatalRecord, ImmunizationRecord, FamilyPlanningRecord, Language, DOHProgram, Role } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { Baby, Heart, ShieldAlert, Plus, Layers, UserCheck, Trash2, Edit3 } from 'lucide-react';
 
@@ -23,6 +23,7 @@ interface MaternalFPImmunizationProps {
   onUpdateFamilyPlanning: (f: FamilyPlanningRecord) => void;
   onDeleteFamilyPlanning: (id: string) => void;
   language: Language;
+  activeRole?: Role;
 }
 
 export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
@@ -40,9 +41,13 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
   onUpdateFamilyPlanning,
   onDeleteFamilyPlanning,
   language,
+  activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
-  const [activeSection, setActiveSection] = useState<'prenatal' | 'epi' | 'fp'>('prenatal');
+  const [activeSection, setActiveSection] = useState<'prenatal' | 'epi' | 'fp'>(() => {
+    if (activeRole === 'NURSE') return 'epi';
+    return 'prenatal';
+  });
   const [targetPatId, setTargetPatId] = useState(patients[0]?.id || '');
 
   // Edit status trackers
@@ -216,7 +221,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         vaccineName,
         doseNumber,
         dateGiven: existing?.dateGiven || new Date().toISOString().split('T')[0],
-        givenBy: existing?.givenBy || 'Ma. Fe Alcantara, RM',
+        givenBy: existing?.givenBy || 'Arlene Cagas Dayama, RM',
         remarks: epiRemarks || 'Standard vaccine dose completed.',
       };
       onUpdateVaccination(updatedVac);
@@ -230,7 +235,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         vaccineName,
         doseNumber,
         dateGiven: new Date().toISOString().split('T')[0],
-        givenBy: 'Ma. Fe Alcantara, RM',
+        givenBy: 'Arlene Cagas Dayama, RM',
         remarks: epiRemarks || 'Standard vaccine dose completed.',
       };
       onAddVaccination(newVac);
@@ -348,8 +353,16 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
       {/* RENDER ACTIVE PROGRAM SECTIONS */}
       {activeSection === 'prenatal' && (
         <div className="space-y-4 pt-3" id="prenatal-tab-content">
+          {activeRole === 'NURSE' && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-amber-800 font-bold block font-sans">🤰 Gampanin sa Workstation (Workstation Notice):</strong>
+              <span>Ang Maternal Prenatal Care ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM) dahil espesyalista siya sa buntis at prenatal. Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSavePrenatal} className="space-y-4">
-            <h3 className="text-xs font-black text-teal-800 uppercase tracking-wider">New Prenatal Encounter (MCH)</h3>
+            <fieldset disabled={activeRole === 'NURSE'} className="space-y-4">
+              <h3 className="text-xs font-black text-teal-800 uppercase tracking-wider">New Prenatal Encounter (MCH)</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
               <div>
@@ -457,24 +470,27 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               />
             </div>
 
-            <div className="flex justify-end gap-3">
-              {editingPrenatalId && (
-                <button
-                  type="button"
-                  onClick={cancelEditingPrenatal}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
-                >
-                  I-cancel
-                </button>
+              {activeRole !== 'NURSE' && (
+                <div className="flex justify-end gap-3">
+                  {editingPrenatalId && (
+                    <button
+                      type="button"
+                      onClick={cancelEditingPrenatal}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
+                    >
+                      I-cancel
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                    id="prenatal-submit-button"
+                  >
+                    {editingPrenatalId ? 'I-update ang Prenatal Visit' : 'I-tala ang Prenatal Visit'}
+                  </button>
+                </div>
               )}
-              <button
-                type="submit"
-                className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                id="prenatal-submit-button"
-              >
-                {editingPrenatalId ? 'I-update ang Prenatal Visit' : 'I-tala ang Prenatal Visit'}
-              </button>
-            </div>
+            </fieldset>
           </form>
 
           {/* Previous prenatals lists */}
@@ -496,22 +512,26 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                       }`}>
                         {pr.riskClassification}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => startEditingPrenatal(pr)}
-                        className="p-1 hover:text-emerald-700 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
-                        title="Edit entry"
-                      >
-                        <Edit3 size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePrenatalClick(pr.id)}
-                        className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
-                        title="Delete entry"
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                      {activeRole !== 'NURSE' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => startEditingPrenatal(pr)}
+                            className="p-1 hover:text-emerald-700 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
+                            title="Edit entry"
+                          >
+                            <Edit3 size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePrenatalClick(pr.id)}
+                            className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
+                            title="Delete entry"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -523,8 +543,16 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
 
       {activeSection === 'epi' && (
         <div className="space-y-4 pt-3 text-xs" id="epi-tab-content">
+          {activeRole === 'MIDWIFE' && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-amber-800 font-bold block font-sans">👶 Gampanin sa Workstation (Workstation Notice):</strong>
+              <span>Ang serye ng Pagbabakuna (EPI Vaccine) ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM). Maaari mo lamang basahin (read-only) ang records ng bakuna rito.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSaveEpi} className="space-y-4">
-            <h3 className="text-xs font-black text-emerald-800 uppercase tracking-wider">Expand Infant Vaccination Records (EPI Program)</h3>
+            <fieldset disabled={activeRole === 'MIDWIFE'} className="space-y-4">
+              <h3 className="text-xs font-black text-emerald-800 uppercase tracking-wider">Expand Infant Vaccination Records (EPI Program)</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
@@ -575,24 +603,27 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               />
             </div>
 
-            <div className="flex justify-end gap-3">
-              {editingVaccineId && (
-                <button
-                  type="button"
-                  onClick={cancelEditingVaccine}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
-                >
-                  I-cancel
-                </button>
+              {activeRole !== 'MIDWIFE' && (
+                <div className="flex justify-end gap-3">
+                  {editingVaccineId && (
+                    <button
+                      type="button"
+                      onClick={cancelEditingVaccine}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
+                    >
+                      I-cancel
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                    id="epi-submit-button"
+                  >
+                    {editingVaccineId ? 'I-update ang Bakuna (Update Dose)' : 'Itala ang Bakuna (Record Dose)'}
+                  </button>
+                </div>
               )}
-              <button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                id="epi-submit-button"
-              >
-                {editingVaccineId ? 'I-update ang Bakuna (Update Dose)' : 'Itala ang Bakuna (Record Dose)'}
-              </button>
-            </div>
+            </fieldset>
           </form>
 
           {/* Vaccine schedule checklists */}
@@ -637,24 +668,26 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                       <strong className="text-slate-800">Vaccine: {v.vaccineName} (Dose #{v.doseNumber}) • Date: {v.dateGiven}</strong>
                       <p className="text-slate-500 mt-0.5 font-mono text-[11px]">{v.remarks || 'No remarks recorded.'}</p>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <button
-                        type="button"
-                        onClick={() => startEditingVaccine(v)}
-                        className="p-1 hover:text-emerald-700 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                        title="Edit entry"
-                      >
-                        <Edit3 size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteVaccineClick(v.id)}
-                        className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                        title="Delete entry"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
+                    {activeRole !== 'MIDWIFE' && (
+                      <div className="flex items-center gap-1.5 text-slate-400">
+                        <button
+                          type="button"
+                          onClick={() => startEditingVaccine(v)}
+                          className="p-1 hover:text-emerald-700 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                          title="Edit entry"
+                        >
+                          <Edit3 size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVaccineClick(v.id)}
+                          className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                          title="Delete entry"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -665,8 +698,16 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
 
       {activeSection === 'fp' && (
         <div className="space-y-4 pt-3 text-xs" id="fp-tab-content">
+          {activeRole === 'NURSE' && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-amber-800 font-bold block font-sans">🤰 Gampanin sa Workstation (Workstation Notice):</strong>
+              <span>Ang Family Planning program ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM). Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSaveFP} className="space-y-4">
-            <h3 className="text-xs font-black text-purple-800 uppercase tracking-wider">Family Planning Registry Intake</h3>
+            <fieldset disabled={activeRole === 'NURSE'} className="space-y-4">
+              <h3 className="text-xs font-black text-purple-800 uppercase tracking-wider">Family Planning Registry Intake</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
@@ -732,24 +773,27 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               </select>
             </div>
 
-            <div className="flex justify-end gap-3">
-              {editingFpId && (
-                <button
-                  type="button"
-                  onClick={cancelEditingFp}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
-                >
-                  I-cancel
-                </button>
+              {activeRole !== 'NURSE' && (
+                <div className="flex justify-end gap-3">
+                  {editingFpId && (
+                    <button
+                      type="button"
+                      onClick={cancelEditingFp}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer"
+                    >
+                      I-cancel
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="bg-purple-650 hover:bg-purple-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                    id="fp-submit-button"
+                  >
+                    {editingFpId ? 'I-update ang Family Planning Record' : 'I-tala ang Family Planning Record'}
+                  </button>
+                </div>
               )}
-              <button
-                type="submit"
-                className="bg-purple-650 hover:bg-purple-700 text-white font-bold py-2 px-5 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                id="fp-submit-button"
-              >
-                {editingFpId ? 'I-update ang Family Planning Record' : 'I-tala ang Family Planning Record'}
-              </button>
-            </div>
+            </fieldset>
           </form>
 
           {/* Past Family Planning records lists */}
@@ -765,24 +809,26 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                         Living Children: {fp.numberOfLivingChildren} • Desired Family Size: {fp.desiredFamilySize} • Next Service: {fp.nextServiceDate || 'N/A'}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <button
-                        type="button"
-                        onClick={() => startEditingFp(fp)}
-                        className="p-1 hover:text-emerald-700 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                        title="Edit profile"
-                      >
-                        <Edit3 size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteFpClick(fp.id)}
-                        className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                        title="Delete profile"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
+                    {activeRole !== 'NURSE' && (
+                      <div className="flex items-center gap-1.5 text-slate-400">
+                        <button
+                          type="button"
+                          onClick={() => startEditingFp(fp)}
+                          className="p-1 hover:text-emerald-700 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                          title="Edit profile"
+                        >
+                          <Edit3 size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFpClick(fp.id)}
+                          className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                          title="Delete profile"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -78,14 +78,20 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Checking active user role to prevent admins from editing/deleting residents
+  // Checking active user role to prevent unauthorized roles from editing/deleting residents
   const userActiveRole = localStorage.getItem('bhc_active_role') || 'BHW';
+  const isBhw = userActiveRole === 'BHW';
+  const isMidwifeOrNurse = userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE';
   const isAdmin = userActiveRole === 'ADMIN';
+
+  const canEdit = isAdmin || isMidwifeOrNurse || userActiveRole === 'MHO' || userActiveRole === 'PHARMACIST';
+  const canDelete = isAdmin;
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
   
   // Filtering states
   const [purokFilter, setPurokFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<string>('All');
+  const [healthStatusFilter, setHealthStatusFilter] = useState<string>('All');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('All');
   const [riskFilter, setRiskFilter] = useState<string>('All');
   const [stockLevelFilter, setStockLevelFilter] = useState<string>('All'); // All, Low, Normal
@@ -354,15 +360,46 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   // Filtering Logic
   const filteredResidents = patients.filter(p => {
     const query = searchQuery.toLowerCase();
+    
+    // Check if any of the patient's consultations have diagnosis matching query
+    const patientDiagList = consultations
+      .filter(c => c.patientId === p.id)
+      .flatMap(c => c.assessmentDiagnoses || []);
+    const hasDiagMatch = patientDiagList.some(diag => diag.toLowerCase().includes(query));
+
+    // Check if any of the patient's vitals have BMI category matching query
+    const patientVitals = vitals.filter(v => v.patientId === p.id);
+    const hasBmiMatch = patientVitals.some(v => v.bmiCategory.toLowerCase().includes(query));
+
+    // Determine active health programs list
+    const programStrings = p.activePrograms || [];
+
     const matchesSearch = 
       p.id.toLowerCase().includes(query) ||
       p.lastName.toLowerCase().includes(query) ||
       p.firstName.toLowerCase().includes(query) ||
-      (p.philHealthId && p.philHealthId.toLowerCase().includes(query));
+      p.middleName.toLowerCase().includes(query) ||
+      p.householdId.toLowerCase().includes(query) ||
+      programStrings.some(prog => prog.toLowerCase().includes(query)) ||
+      hasDiagMatch ||
+      hasBmiMatch ||
+      (p.philHealthId && p.philHealthId.toLowerCase().includes(query)) ||
+      (p.philHealthCategory && p.philHealthCategory.toLowerCase().includes(query)) ||
+      (p.isIndigent && 'indigent'.includes(query));
     
     if (!matchesSearch) return false;
     if (purokFilter !== 'All' && p.purok !== purokFilter) return false;
     if (genderFilter !== 'All' && p.gender !== genderFilter) return false;
+    
+    // Program / Assistance Status Filter Dropdown
+    if (healthStatusFilter !== 'All') {
+      if (healthStatusFilter === 'Indigent') {
+        if (!p.isIndigent) return false;
+      } else {
+        if (!p.activePrograms.includes(healthStatusFilter as any)) return false;
+      }
+    }
+    
     return true;
   });
 
@@ -615,7 +652,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             type="text"
             className="w-full bg-white border border-slate-200 pl-8 pr-4 py-2.5 rounded-lg focus:outline-hidden text-xs font-medium placeholder:text-slate-400 text-slate-800"
             placeholder={
-              activeSubTab === 'residents' ? 'Magsulat ng pangalan, ID, o PhilHealth...' :
+              activeSubTab === 'residents' ? 'Maghanap sa Pangalan, Sambahayan (Household) ID, o Health Status (MCH, EPI, Tb, obeso)...' :
               activeSubTab === 'households' ? 'Maghanap ng pangalan ng Ulo ng Pamilya, Sambahayan ID/No...' :
               activeSubTab === 'consultations' ? 'Maghanap ng Chief complaint o diagnosis...' :
               activeSubTab === 'immunizations' ? 'Maghanap ng bakuna, drayb, o sanggol...' :
@@ -653,18 +690,39 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
           {/* Gender Filter for Residents */}
           {activeSubTab === 'residents' && (
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-slate-450 uppercase font-mono">Gender:</span>
-              <select
-                className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-700 font-bold"
-                value={genderFilter}
-                onChange={(e) => setGenderFilter(e.target.value)}
-              >
-                <option value="All">All Genders</option>
-                <option value="Male">Lalake (Male)</option>
-                <option value="Female">Babae (Female)</option>
-              </select>
-            </div>
+            <>
+              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+                <span className="text-[10px] text-slate-450 uppercase font-mono">Gender:</span>
+                <select
+                  className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-700 font-bold"
+                  value={genderFilter}
+                  onChange={(e) => setGenderFilter(e.target.value)}
+                >
+                  <option value="All">All Genders</option>
+                  <option value="Male">Lalake (Male)</option>
+                  <option value="Female">Babae (Female)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-slate-450 uppercase font-mono">Health status / Program:</span>
+                <select
+                  className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-700 font-bold"
+                  value={healthStatusFilter}
+                  onChange={(e) => setHealthStatusFilter(e.target.value)}
+                >
+                  <option value="All">All Health Statuses</option>
+                  <option value="EPI">Vaccine Program (EPI)</option>
+                  <option value="MCH">Maternal Health (MCH)</option>
+                  <option value="TB_DOTS">Tuberculosis (TB DOTS)</option>
+                  <option value="OPT_PLUS">Nutrition (OPT+)</option>
+                  <option value="SENIOR_CITIZEN">Senior Citizen program</option>
+                  <option value="DISEASE_SURVEILLANCE">Disease Surveillance</option>
+                  <option value="FAMILY_PLANNING">Family Planning</option>
+                  <option value="Indigent">Indigent Aid Assistance</option>
+                </select>
+              </div>
+            </>
           )}
 
           {/* Risk Filter for Medical Prenatals */}
@@ -803,7 +861,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             <span>View</span>
                           </button>
                           
-                          {!isAdmin && onEditPatient && (
+                          {canEdit && onEditPatient && (
                             <button
                               type="button"
                               onClick={() => {
@@ -817,7 +875,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             </button>
                           )}
 
-                          {!isAdmin && onDeletePatient && (
+                          {canDelete && onDeletePatient && (
                             <button
                               type="button"
                               onClick={() => {
@@ -1865,7 +1923,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             {/* Sticky Action Footer */}
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex flex-wrap justify-between items-center shrink-0 gap-3">
               <div className="flex gap-2">
-                {!isAdmin && onEditPatient && (
+                {canEdit && onEditPatient && (
                   <button
                     type="button"
                     onClick={() => {
@@ -1878,7 +1936,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                     <span>{language === 'EN' ? 'Edit Resident Details' : 'I-edit ang Detalye'}</span>
                   </button>
                 )}
-                {!isAdmin && onDeletePatient && (
+                {canDelete && onDeletePatient && (
                   <button
                     type="button"
                     onClick={() => {

@@ -38,6 +38,17 @@ import {
 import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAlert, Wifi, RefreshCw, Database, Lock, Key, X, Eye, EyeOff, Settings, BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function App() {
+  // Dynamic Configuration Settings for Health Center
+  const [centerName, setCenterName] = useState<string>(() => {
+    return localStorage.getItem('bhc_config_center_name') || 'Barangay Balong-balong Health Center';
+  });
+  const [centerAddress, setCenterAddress] = useState<string>(() => {
+    return localStorage.getItem('bhc_config_center_address') || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur';
+  });
+  const [centerLogo, setCenterLogo] = useState<string>(() => {
+    return localStorage.getItem('bhc_config_center_logo') || 'heart'; // 'heart' | 'shield' | 'activity' | 'cross'
+  });
+
   // Authentication Workstation Session Lockout Guard State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     const saved = localStorage.getItem('bhc_logged_in');
@@ -229,84 +240,129 @@ export default function App() {
     localStorage.setItem('bhc_dailylogs', JSON.stringify(dailyLogs));
     localStorage.setItem('bhc_logged_in', isLoggedIn ? 'true' : 'false');
     localStorage.setItem('bhc_active_role', activeRole);
-  }, [isOnline, patients, households, vitals, consultations, inventory, dispensed, prenatals, vaccinations, familyPlannings, referrals, certificates, dailyLogs, isLoggedIn, activeRole]);
+    localStorage.setItem('bhc_config_center_name', centerName);
+    localStorage.setItem('bhc_config_center_address', centerAddress);
+    localStorage.setItem('bhc_config_center_logo', centerLogo);
+  }, [isOnline, patients, households, vitals, consultations, inventory, dispensed, prenatals, vaccinations, familyPlannings, referrals, certificates, dailyLogs, isLoggedIn, activeRole, centerName, centerAddress, centerLogo]);
 
   // Active workspace navigation
   const [activeTab, setActiveTab] = useState<string>('overview');
 
+  // Session Auditing Track helper in Compliance with DOH policy guidelines of BHC
+  const addAuditLog = (action: string, details: string, severity: 'Info' | 'Warning' | 'Critical' = 'Info') => {
+    const saved = localStorage.getItem('bhc_audit_logs');
+    let logs = [];
+    if (saved) {
+      try { logs = JSON.parse(saved); } catch (e) {}
+    }
+    const staffName = getStaffNameByRole(activeRole);
+    const newLog = {
+      id: `AUD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user: staffName,
+      action,
+      details,
+      severity
+    };
+    logs = [newLog, ...logs];
+    localStorage.setItem('bhc_audit_logs', JSON.stringify(logs));
+  };
+
   // Unified State Editing & Deleting Handlers for clinical & local persistence
   const handleUpdatePatient = (updated: Patient) => {
     setPatients((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+    addAuditLog('PATIENT_RECORD_UPDATED', `In-edit ang profile ni ${updated.lastName}, ${updated.firstName} (${updated.id})`, 'Warning');
   };
   const handleDeletePatient = (id: string) => {
+    const p = patients.find(pat => pat.id === id);
     setPatients((prev) => prev.filter((p) => p.id !== id));
+    addAuditLog('PATIENT_RECORD_DELETED', `Tinanggal ang residente na si ${p ? `${p.lastName}, ${p.firstName}` : ''} (${id})`, 'Critical');
   };
 
   const handleUpdateVitalSign = (updated: VitalSigns) => {
     setVitals((prev) => prev.map((v) => v.id === updated.id ? updated : v));
+    addAuditLog('VITALS_RECORD_UPDATED', `In-edit ang vital signs record para sa patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteVitalSign = (id: string) => {
     setVitals((prev) => prev.filter((v) => v.id !== id));
+    addAuditLog('VITALS_RECORD_DELETED', `Tinanggal ang vital signs record (${id})`, 'Critical');
   };
 
   const handleUpdateConsultation = (updated: Consultation) => {
     setConsultations((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+    addAuditLog('CONSULTATION_RECORD_UPDATED', `In-edit ang clinical consultation assessment ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteConsultation = (id: string) => {
     setConsultations((prev) => prev.filter((c) => c.id !== id));
+    addAuditLog('CONSULTATION_RECORD_DELETED', `Tinanggal ang consultation record (${id})`, 'Critical');
   };
 
   const handleUpdatePrenatal = (updated: PrenatalRecord) => {
     setPrenatals((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+    addAuditLog('PRENATAL_RECORD_UPDATED', `In-edit ang prenatal checkout profile ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeletePrenatal = (id: string) => {
     setPrenatals((prev) => prev.filter((p) => p.id !== id));
+    addAuditLog('PRENATAL_RECORD_DELETED', `Tinanggal ang prenatal checkout record (${id})`, 'Critical');
   };
 
   const handleUpdateVaccination = (updated: ImmunizationRecord) => {
     setVaccinations((prev) => prev.map((v) => v.id === updated.id ? updated : v));
+    addAuditLog('VACCINATION_RECORD_UPDATED', `In-edit ang vaccination record ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteVaccination = (id: string) => {
     setVaccinations((prev) => prev.filter((v) => v.id !== id));
+    addAuditLog('VACCINATION_RECORD_DELETED', `Tinanggal ang vaccination record (${id})`, 'Critical');
   };
 
   const handleUpdateFamilyPlanning = (updated: FamilyPlanningRecord) => {
     setFamilyPlannings((prev) => prev.map((f) => f.id === updated.id ? updated : f));
+    addAuditLog('FAMILY_PLANNING_UPDATED', `In-edit ang Family Planning record ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteFamilyPlanning = (id: string) => {
     setFamilyPlannings((prev) => prev.filter((f) => f.id !== id));
+    addAuditLog('FAMILY_PLANNING_DELETED', `Tinanggal ang Family Planning record (${id})`, 'Critical');
   };
 
   const handleUpdateReferral = (updated: Referral) => {
     setReferrals((prev) => prev.map((r) => r.id === updated.id ? updated : r));
+    addAuditLog('REFERRAL_RECORD_UPDATED', `In-edit ang hospital referral form ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteReferral = (id: string) => {
     setReferrals((prev) => prev.filter((r) => r.id !== id));
+    addAuditLog('REFERRAL_RECORD_DELETED', `Tinanggal ang referral record (${id})`, 'Critical');
   };
 
   const handleUpdateCertificate = (updated: HealthCertificate) => {
     setCertificates((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+    addAuditLog('CERTIFICATE_RECORD_UPDATED', `In-edit ang Barangay Health Certificate ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteCertificate = (id: string) => {
     setCertificates((prev) => prev.filter((c) => c.id !== id));
+    addAuditLog('CERTIFICATE_RECORD_DELETED', `Tinanggal ang health certificate (${id})`, 'Critical');
   };
 
   const handleUpdateDailyLog = (updated: DailyLogEntry) => {
     setDailyLogs((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+    addAuditLog('DAILY_LOG_UPDATED', `In-edit ang daily log entry para kay patient ${updated.patientName}`, 'Warning');
   };
   const handleDeleteDailyLog = (id: string) => {
     setDailyLogs((prev) => prev.filter((l) => l.id !== id));
+    addAuditLog('DAILY_LOG_DELETED', `Tinanggal ang daily log entry (${id})`, 'Critical');
   };
 
   const handleUpdateInventory = (updated: MedicineInventory) => {
     setInventory((prev) => prev.map((i) => i.id === updated.id ? updated : i));
+    addAuditLog('INVENTORY_STOCK_UPDATED', `In-edit ang stock level ng gamot: ${updated.medicineName}`, 'Warning');
   };
   const handleDeleteInventory = (id: string) => {
     setInventory((prev) => prev.filter((i) => i.id !== id));
+    addAuditLog('INVENTORY_STOCK_DELETED', `Tinanggal ang medicine product sa roster (${id})`, 'Critical');
   };
 
   const handleUpdateDispensed = (updated: MedicineDispensed) => {
     setDispensed((prev) => prev.map((d) => d.id === updated.id ? updated : d));
+    addAuditLog('DISPENSING_RECORD_UPDATED', `In-edit ang dispensing record ng patient ${updated.patientId}`, 'Warning');
   };
   const handleDeleteDispensed = (id: string) => {
     const dispItem = dispensed.find((d) => d.id === id);
@@ -320,6 +376,7 @@ export default function App() {
       }));
     }
     setDispensed((prev) => prev.filter((d) => d.id !== id));
+    addAuditLog('DISPENSING_RECORD_DELETED', `Tinanggal ang dispensing details (${id})`, 'Critical');
   };
 
   // Sync animation simulation
@@ -358,17 +415,17 @@ export default function App() {
 
     switch (role) {
       case 'BHW':
+        // BHW: Patient list view-only, Patient registration add-only, Clinical Vitals encode-only, Surveillance map.
         return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'map'].includes(t.id));
       case 'MIDWIFE':
-        return allTabs.filter((t) => ['overview', 'clinical', 'programs', 'clearance', 'map'].includes(t.id));
       case 'NURSE':
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'clearance', 'reports'].includes(t.id));
       case 'PHARMACIST':
-        return allTabs.filter((t) => ['overview', 'pharmacy', 'reports'].includes(t.id));
       case 'MHO':
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
+        // Midwife/Nurse: Clinical diagnostics, medical formulas prescribing, FHSIS monthly logs, program tracking.
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
       case 'ADMIN':
-        return allTabs.filter((t) => ['overview', 'admin_panel'].includes(t.id));
+        // Admin: Patient/vitals full editing, audits, setting center titles & logos, user list deactivations.
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies', 'admin_panel'].includes(t.id));
       default:
         return allTabs.filter((t) => ['overview', 'patients', 'clinical'].includes(t.id));
     }
@@ -377,12 +434,12 @@ export default function App() {
   // Map active staff name for registries tracking
   const getStaffNameByRole = (role: Role): string => {
     switch (role) {
-      case 'BHW': return 'Rosalie Abella (BHW)';
-      case 'MIDWIFE': return 'Ma. Fe Alcantara, RM (Kumadrona)';
-      case 'NURSE': return 'Sarah Genciana, RN (Naras)';
+      case 'BHW': return 'Julefe Magwate (BHW)';
+      case 'MIDWIFE': return 'Arlene Cagas Dayama, RM (Kumadrona)';
+      case 'NURSE': return 'Yvonne Galang, RN (Nars)';
       case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
       case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
-      case 'ADMIN': return 'Hon. Reynaldo Dela Cruz (Kapitan / Admin)';
+      case 'ADMIN': return 'Ericson Padunan (Admin)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -404,6 +461,9 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
         language={language}
         onChangeLanguage={setLanguage}
+        centerName={centerName}
+        centerAddress={centerAddress}
+        centerLogo={centerLogo}
       />
     );
   }
@@ -427,6 +487,9 @@ export default function App() {
           onSync={handleManualSync}
           isSyncing={isSyncing}
           onLogout={handleLogout}
+          centerName={centerName}
+          centerAddress={centerAddress}
+          centerLogo={centerLogo}
         />
 
         {/* Tailored Workspace Warning strip */}
@@ -574,6 +637,7 @@ export default function App() {
                 onDeleteConsultation={handleDeleteConsultation}
                 language={language}
                 attendingStaffName={getStaffNameByRole(activeRole)}
+                activeRole={activeRole}
               />
             )}
 
@@ -593,6 +657,7 @@ export default function App() {
                 onUpdateFamilyPlanning={handleUpdateFamilyPlanning}
                 onDeleteFamilyPlanning={handleDeleteFamilyPlanning}
                 language={language}
+                activeRole={activeRole}
               />
             )}
 
@@ -626,7 +691,15 @@ export default function App() {
             )}
 
             {activeTab === 'admin_panel' && (
-              <AdminPanel />
+              <AdminPanel
+                centerName={centerName}
+                setCenterName={setCenterName}
+                centerAddress={centerAddress}
+                setCenterAddress={setCenterAddress}
+                centerLogo={centerLogo}
+                setCenterLogo={setCenterLogo}
+                onAddAuditLog={addAuditLog}
+              />
             )}
 
             {activeTab === 'policies' && (

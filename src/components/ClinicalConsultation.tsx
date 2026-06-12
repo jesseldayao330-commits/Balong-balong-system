@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Patient, VitalSigns, Consultation, Language } from '../types';
+import { Patient, VitalSigns, Consultation, Language, Role } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { HeartPulse, Plus, BookOpen, AlertTriangle, Scale, Thermometer, ShieldCheck, Check, Trash2, Edit3 } from 'lucide-react';
 
@@ -20,6 +20,7 @@ interface ClinicalConsultationProps {
   onDeleteConsultation: (id: string) => void;
   language: Language;
   attendingStaffName: string;
+  activeRole?: Role;
 }
 
 export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
@@ -34,6 +35,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
   onDeleteConsultation,
   language,
   attendingStaffName,
+  activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const [selectedPatId, setSelectedPatId] = useState(patients[0]?.id || '');
@@ -205,7 +207,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
         bmi,
         bmiCategory,
         bloodSugar: bloodSugar ? parseInt(bloodSugar) : undefined,
-        loggedBy: attendingStaffName || 'Rosalie Abella (BHW)',
+        loggedBy: attendingStaffName || 'Julefe Magwate (BHW)',
       };
       onUpdateVitalSign(updatedV);
       setEditingVitalId(null);
@@ -225,7 +227,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
         bmi,
         bmiCategory,
         bloodSugar: bloodSugar ? parseInt(bloodSugar) : undefined,
-        loggedBy: attendingStaffName || 'Rosalie Abella (BHW)',
+        loggedBy: attendingStaffName || 'Julefe Magwate (BHW)',
       };
       onAddVitalSign(newV);
       alert('Matagumpay na naitala ang Vital Signs (Vital Signs logged successfully).');
@@ -541,7 +543,16 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
 
           {/* WORK TAB 2: Clean Consultation Form */}
           {activeTab === 'consultation' && (
-            <form onSubmit={handleSaveConsultation} className="space-y-4 pt-3" id="consultation-form-block">
+            <div className="space-y-4">
+              {activeRole === 'MIDWIFE' && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+                  <strong className="text-amber-800 font-bold block font-sans">📋 Pangkalahatang Konsulta (General Check-up Notice):</strong>
+                  <span>Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveConsultation} className="space-y-4 pt-3" id="consultation-form-block">
+                <fieldset disabled={activeRole === 'MIDWIFE'} className="space-y-4">
               {/* Vitals snapshot box under review */}
               {patientVitals.length > 0 && (
                 <div className="bg-emerald-50/30 border border-emerald-100 p-3 rounded-lg text-xs text-slate-600 flex items-center justify-between">
@@ -703,25 +714,29 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                {editingConsultId && (
-                  <button
-                    type="button"
-                    onClick={cancelEditingConsult}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
-                  >
-                    I-cancel (Cancel)
-                  </button>
+                {activeRole !== 'MIDWIFE' && (
+                  <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    {editingConsultId && (
+                      <button
+                        type="button"
+                        onClick={cancelEditingConsult}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
+                      >
+                        I-cancel (Cancel)
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                      id="consultation-entry-submit-button"
+                    >
+                      {editingConsultId ? 'I-update ang Consultation Record' : 'Ipasa ang Clinical Consultation Record'}
+                    </button>
+                  </div>
                 )}
-                <button
-                  type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                  id="consultation-entry-submit-button"
-                >
-                  {editingConsultId ? 'I-update ang Consultation Record' : 'Ipasa ang Clinical Consultation Record'}
-                </button>
-              </div>
-            </form>
+                </fieldset>
+              </form>
+            </div>
           )}
 
           {/* WORK TAB 3: Diagnostic and vitals histories */}
@@ -795,24 +810,26 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                         <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
                           <span className="text-xs font-bold text-slate-400 font-mono">ID: {con.id} • Petsa: {con.date}</span>
                           <div className="flex items-center gap-3">
-                            <div className="flex gap-0.5">
-                              <button
-                                type="button"
-                                onClick={() => startEditingConsult(con)}
-                                className="p-1 hover:text-emerald-700 hover:bg-slate-50 rounded cursor-pointer transition-all"
-                                title="Edit Consultation"
-                              >
-                                <Edit3 size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteConsultClick(con.id)}
-                                className="p-1 hover:text-rose-600 hover:bg-slate-50 rounded cursor-pointer transition-all"
-                                title="Delete Consultation"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
+                            {activeRole !== 'MIDWIFE' && (
+                              <div className="flex gap-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => startEditingConsult(con)}
+                                  className="p-1 hover:text-emerald-700 hover:bg-slate-55 rounded cursor-pointer transition-all"
+                                  title="Edit Consultation"
+                                >
+                                  <Edit3 size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteConsultClick(con.id)}
+                                  className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer transition-all"
+                                  title="Delete Consultation"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            )}
                             <span className="flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold bg-indigo-50 text-indigo-700 rounded-full font-mono">
                               Attendant: {con.attendingStaff}
                             </span>

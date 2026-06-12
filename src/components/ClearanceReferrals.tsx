@@ -49,7 +49,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
   const [purpose, setPurpose] = useState('');
   const [findings, setFindings] = useState('');
   const [remarks, setRemarks] = useState('');
-  const [signatory, setSignatory] = useState('Ma. Fe Alcantara, RM');
+  const [signatory, setSignatory] = useState('Arlene Cagas Dayama, RM');
   const [signatoryRole, setSignatoryRole] = useState('Barangay Midwife');
 
   // Print Review State

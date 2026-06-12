@@ -193,3 +193,20 @@ export interface DailyLogEntry {
   status: 'Waiting' | 'In Progress' | 'Completed' | 'Referred';
   purok: Purok;
 }
+
+export interface Appointment {
+  id: string;
+  patientId: string;
+  patientName: string;
+  date: string;
+  time?: string;
+  appointmentType: 'Checkup' | 'Vaccination' | 'Prenatal' | 'Family Planning' | 'Dental' | 'Sputum Test' | 'Hypertension Follow-up';
+  notes?: string;
+  purok: Purok;
+  status: 'Scheduled' | 'Completed' | 'No Show' | 'Cancelled';
+  assignedStaff: string;
+  reminderSent: boolean;
+  reminderChannel: 'SMS' | 'BHW Visit' | 'None';
+  reminderDate?: string;
+}
+

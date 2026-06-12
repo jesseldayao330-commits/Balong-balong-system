@@ -19,6 +19,9 @@ interface MainHeaderProps {
   onSync: () => void;
   isSyncing: boolean;
   onLogout: () => void; // Mandatory logout callback
+  centerName?: string;
+  centerAddress?: string;
+  centerLogo?: string;
 }
 
 export const MainHeader: React.FC<MainHeaderProps> = ({
@@ -32,6 +35,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   onSync,
   isSyncing,
   onLogout,
+  centerName,
+  centerAddress,
+  centerLogo,
 }) => {
   const text = LOCALIZED_TEXTS[language];
   
@@ -102,14 +108,19 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="bhc-branding">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold tracking-tight text-slate-800 flex items-center gap-1.5 flex-wrap">
-              <span className="bg-emerald-600 text-white rounded px-2 py-0.5 text-xl font-extrabold shadow-sm">DHRMS</span>
-              {text.title}
+            <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2 flex-wrap">
+              <span className="bg-emerald-600 text-white rounded px-2.5 py-0.5 text-base font-extrabold shadow-sm">
+                {centerLogo === 'heart' ? '❤️' :
+                 centerLogo === 'shield' ? '🛡️' :
+                 centerLogo === 'activity' ? '⚡' :
+                 '🏥'}
+              </span>
+              <span>{centerName || text.title}</span>
             </span>
           </div>
           <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
             <span className="bg-emerald-50 text-emerald-700 font-extrabold text-[10px] px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
-              Barangay Balong-balong, Pitogo, Zamboanga del Sur
+              {centerAddress || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur'}
             </span>
             <span className="text-slate-300 hidden sm:inline">•</span>
             <span>{text.subheading}</span>
@@ -170,26 +181,20 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
               </div>
               <div className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                 <span>
-                  {activeRole === 'BHW' ? 'Rosalie Abella' :
-                   activeRole === 'MIDWIFE' ? 'Ma. Fe Alcantara, RM' :
-                   activeRole === 'NURSE' ? 'Sarah Genciana, RN' :
-                   activeRole === 'PHARMACIST' ? 'Lorna Cruz, RPh' :
-                   activeRole === 'MHO' ? 'Dr. Arthur Sotto, MD' :
-                   'Hon. Reynaldo Dela Cruz'}
+                  {activeRole === 'BHW' ? 'Julefe Magwate' :
+                   activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' :
+                   activeRole === 'NURSE' ? 'Yvonne Galang, RN' :
+                   'Ericson Padunan'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${
                   activeRole === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                  activeRole === 'MHO' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                   activeRole === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border-teal-200' :
                   activeRole === 'NURSE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                  activeRole === 'PHARMACIST' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                   'bg-emerald-50 text-emerald-700 border-emerald-200'
                 }`}>
                   {activeRole === 'BHW' ? 'BHW' :
-                   activeRole === 'MIDWIFE' ? 'Midwife (RM)' :
-                   activeRole === 'NURSE' ? 'Public Health Nurse (RN)' :
-                   activeRole === 'PHARMACIST' ? 'Pharmacist (RPh)' :
-                   activeRole === 'MHO' ? 'MHO / Doctor' :
+                   activeRole === 'MIDWIFE' ? 'Midwife' :
+                   activeRole === 'NURSE' ? 'Nurse' :
                    'Administrator'}
                 </span>
               </div>

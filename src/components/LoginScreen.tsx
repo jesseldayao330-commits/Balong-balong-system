@@ -11,12 +11,18 @@ interface LoginScreenProps {
   onLoginSuccess: (role: Role) => void;
   language: Language;
   onChangeLanguage: (lang: Language) => void;
+  centerName?: string;
+  centerAddress?: string;
+  centerLogo?: string;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
   language,
   onChangeLanguage,
+  centerName,
+  centerAddress,
+  centerLogo,
 }) => {
   const [selectedRole, setSelectedRole] = useState<Role>('BHW');
   const [pin, setPin] = useState<string>('');
@@ -32,14 +38,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Select Workstation Active Role',
       passPrompt: 'Enter 4-Digit Security Passcode',
       btnLogin: 'Unlock Workstation Registry',
-      hint: 'PINs: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
+      hint: 'PINs: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO) / Doctor',
-      adminLabel: 'Admin / Barangay Captain',
+      adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     },
     TL: {
       title: 'Sistema ng Impormasyong Pangkalusugan ng Barangay',
@@ -47,14 +51,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Piliin ang Aktibong Gampanin',
       passPrompt: 'Ipasok ang 4-Digit Security Passcode',
       btnLogin: 'Buksan ang Registry ng Workstation',
-      hint: 'Mga PIN: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
+      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
-      adminLabel: 'Admin / Kapitan ng Barangay',
+      adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     },
     BY: {
       title: 'Sistema sa Impormasyong Panglawas sa Barangay',
@@ -62,27 +64,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Pilia ang Aktibong Papel sa Workstation',
       passPrompt: 'Ibutang ang 4-Digit Security Passcode',
       btnLogin: 'Ablihan ang Registry sa Workstation',
-      hint: 'Mga PIN: BHW (1111) • NURSE (2222) • MIDWIFE (3333) • PHARMACIST (4444) • MHO (5555) • ADMIN (1234)',
+      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
-      pharmacistLabel: 'Barangay Pharmacist (RPh)',
-      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
-      adminLabel: 'Admin / Kapitan sa Barangay',
+      adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     }
   };
 
   const currentDict = dict[language];
 
-  // Restrict to multiple original roles
+  // Restrict to authorized roles with separate Midwife and Nurse workstation credentials
   const rolesAllowed = [
-    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Patient demographics, census & environmental hygiene and health surveys', color: 'border-emerald-200 text-emerald-800' },
-    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care, child health / immunizations, and family planning', color: 'border-teal-200 text-teal-800' },
-    { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'Immunizations, deworming tracking, clinical triage, & national FHSIS reports', color: 'border-blue-200 text-blue-800' },
-    { key: 'PHARMACIST' as Role, label: currentDict.pharmacistLabel, desc: 'Local medicinal index inventory bookkeeping and dispensing logs', color: 'border-amber-200 text-amber-800' },
-    { key: 'MHO' as Role, label: currentDict.mhoLabel, desc: 'Full patient consultation, diagnostic overrides & ICD-10 medical prescriptions', color: 'border-rose-200 text-rose-800' },
-    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'Local clinical workstation config, user accounts list, and diagnostic audit trail', color: 'border-purple-200 text-purple-800' },
+    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Register patients and households, record vital signs, prenatal/vaccine visit data. Read-only records.', color: 'border-emerald-200 text-emerald-800' },
+    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care monitoring, pregnant client risk check, and Family Planning clinical forms.', color: 'border-teal-200 text-teal-800' },
+    { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'Childhood vaccines (EPI/Immunization records), clinical diagnosis & general medical checkups.', color: 'border-blue-200 text-blue-800' },
+    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.', color: 'border-purple-200 text-purple-800' },
   ];
 
   const handleKeyPress = (num: string) => {
@@ -200,14 +198,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-teal-500/15 rounded-full blur-[90px] pointer-events-none"></div>
             
             <div className="space-y-4 relative z-10">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center border border-emerald-400/30 shadow-[0_0_15px_rgba(16,185,129,0.35)]" id="login-people-logo-badge">
-                <ShieldCheck size={26} className="text-emerald-300" />
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center border border-emerald-400/30 shadow-[0_0_15px_rgba(16,185,129,0.35)] text-xl" id="login-people-logo-badge">
+                {centerLogo === 'heart' ? '❤️' :
+                 centerLogo === 'shield' ? '🛡️' :
+                 centerLogo === 'activity' ? '⚡' :
+                 '🏥'}
               </div>
               <div>
                 <span className="text-[10px] font-bold tracking-widest uppercase bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20">
                   Secured Access Only
                 </span>
-                <h1 className="text-xl font-bold mt-2 uppercase tracking-wide leading-snug">{currentDict.title}</h1>
+                <h1 className="text-xl font-bold mt-2 uppercase tracking-wide leading-snug">{centerName || currentDict.title}</h1>
               </div>
             </div>
 
@@ -295,7 +296,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div className="space-y-6 relative z-10">
               <div className="border-t border-slate-800 pt-4">
                 <span className="text-[9px] text-emerald-400 uppercase tracking-wider block font-mono">Authorized Station Location:</span>
-                <strong className="text-xs text-white block mt-0.5 font-sans leading-relaxed">{currentDict.sub}</strong>
+                <strong className="text-xs text-white block mt-0.5 font-sans leading-relaxed">{centerAddress || currentDict.sub}</strong>
               </div>
 
               <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 font-sans shadow-inner">
