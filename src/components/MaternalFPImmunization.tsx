@@ -359,9 +359,15 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               <span>Ang Maternal Prenatal Care ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM) dahil espesyalista siya sa buntis at prenatal. Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
             </div>
           )}
+          {activeRole === 'ADMIN' && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+              <span>Naka-log in bilang Admin (Ericson Padunan). Ang segment na ito ay may pahintulot na "View-Only" para sa pagrepaso ng maternal health program at hindi maaaring magkaroon ng bagong submission.</span>
+            </div>
+          )}
 
           <form onSubmit={handleSavePrenatal} className="space-y-4">
-            <fieldset disabled={activeRole === 'NURSE'} className="space-y-4">
+            <fieldset disabled={activeRole === 'NURSE' || activeRole === 'ADMIN'} className="space-y-4">
               <h3 className="text-xs font-black text-teal-800 uppercase tracking-wider">New Prenatal Encounter (MCH)</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
@@ -470,7 +476,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               />
             </div>
 
-              {activeRole !== 'NURSE' && (
+              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
                 <div className="flex justify-end gap-3">
                   {editingPrenatalId && (
                     <button
@@ -512,7 +518,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                       }`}>
                         {pr.riskClassification}
                       </span>
-                      {activeRole !== 'NURSE' && (
+                      {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
                         <>
                           <button
                             type="button"
@@ -549,9 +555,15 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               <span>Ang serye ng Pagbabakuna (EPI Vaccine) ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM). Maaari mo lamang basahin (read-only) ang records ng bakuna rito.</span>
             </div>
           )}
+          {activeRole === 'ADMIN' && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+              <span>Naka-log in bilang Admin (Ericson Padunan). Ang vaccination registers ay para sa read-only na pagrepaso ng Administrator. Walang pahintulot na mag-edit o magdagdag ng mga immunization record.</span>
+            </div>
+          )}
 
           <form onSubmit={handleSaveEpi} className="space-y-4">
-            <fieldset disabled={activeRole === 'MIDWIFE'} className="space-y-4">
+            <fieldset disabled={activeRole === 'MIDWIFE' || activeRole === 'ADMIN'} className="space-y-4">
               <h3 className="text-xs font-black text-emerald-800 uppercase tracking-wider">Expand Infant Vaccination Records (EPI Program)</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -603,7 +615,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               />
             </div>
 
-              {activeRole !== 'MIDWIFE' && (
+              {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
                 <div className="flex justify-end gap-3">
                   {editingVaccineId && (
                     <button
@@ -668,7 +680,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                       <strong className="text-slate-800">Vaccine: {v.vaccineName} (Dose #{v.doseNumber}) • Date: {v.dateGiven}</strong>
                       <p className="text-slate-500 mt-0.5 font-mono text-[11px]">{v.remarks || 'No remarks recorded.'}</p>
                     </div>
-                    {activeRole !== 'MIDWIFE' && (
+                    {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <button
                           type="button"
@@ -704,9 +716,15 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               <span>Ang Family Planning program ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM). Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
             </div>
           )}
+          {activeRole === 'ADMIN' && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+              <span>Naka-log in bilang Admin (Ericson Padunan). Ang programang ito ay may pahintulot na "View-Only" na para lamang sa pagrebyu ng Family Planning logs.</span>
+            </div>
+          )}
 
           <form onSubmit={handleSaveFP} className="space-y-4">
-            <fieldset disabled={activeRole === 'NURSE'} className="space-y-4">
+            <fieldset disabled={activeRole === 'NURSE' || activeRole === 'ADMIN'} className="space-y-4">
               <h3 className="text-xs font-black text-purple-800 uppercase tracking-wider">Family Planning Registry Intake</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -773,7 +791,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               </select>
             </div>
 
-              {activeRole !== 'NURSE' && (
+              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
                 <div className="flex justify-end gap-3">
                   {editingFpId && (
                     <button
@@ -809,7 +827,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                         Living Children: {fp.numberOfLivingChildren} • Desired Family Size: {fp.desiredFamilySize} • Next Service: {fp.nextServiceDate || 'N/A'}
                       </div>
                     </div>
-                    {activeRole !== 'NURSE' && (
+                    {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <button
                           type="button"

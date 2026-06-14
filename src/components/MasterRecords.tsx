@@ -14,7 +14,8 @@ import {
   MedicineInventory, 
   DailyLogEntry, 
   Language, 
-  Purok
+  Purok,
+  Role
 } from '../types';
 import { 
   Search, 
@@ -55,6 +56,7 @@ interface MasterRecordsProps {
   onDeleteHousehold?: (id: string) => void;
   onEditPatient?: (p: Patient) => void;
   onDeletePatient?: (id: string) => void;
+  activeRole?: Role;
 }
 
 type RecordTab = 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
@@ -74,19 +76,31 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   onDeleteHousehold,
   onEditPatient,
   onDeletePatient,
+  activeRole,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Checking active user role to prevent unauthorized roles from editing/deleting residents
-  const userActiveRole = localStorage.getItem('bhc_active_role') || 'BHW';
+  const userActiveRole = activeRole || localStorage.getItem('bhc_active_role') || 'BHW';
   const isBhw = userActiveRole === 'BHW';
   const isMidwifeOrNurse = userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE';
   const isAdmin = userActiveRole === 'ADMIN';
 
-  const canEdit = isAdmin || isMidwifeOrNurse || userActiveRole === 'MHO' || userActiveRole === 'PHARMACIST';
-  const canDelete = isAdmin;
+  const canEdit = userActiveRole === 'BHW'; // Only BHW can edit resident/patient profiles
+  const canDelete = false; // Admin is view-only, residents cannot be deleted by unauthorized staff
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
+
+  // Redirect roles away from restricted tabs
+  React.useEffect(() => {
+    if (userActiveRole === 'BHW' && ['prenatals', 'immunizations', 'inventory'].includes(activeSubTab)) {
+      setActiveSubTab('residents');
+    } else if (userActiveRole === 'MIDWIFE' && ['households', 'immunizations'].includes(activeSubTab)) {
+      setActiveSubTab('residents');
+    } else if (userActiveRole === 'NURSE' && ['households', 'prenatals'].includes(activeSubTab)) {
+      setActiveSubTab('residents');
+    }
+  }, [userActiveRole, activeSubTab]);
   
   // Filtering states
   const [purokFilter, setPurokFilter] = useState<string>('All');
@@ -359,6 +373,19 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
   // Filtering Logic
   const filteredResidents = patients.filter(p => {
+    // Role-based custom views requested by user
+    if (userActiveRole === 'MIDWIFE') {
+      const isPregnant = p.gender === 'Female' && (
+        p.activePrograms.includes('MCH') || 
+        prenatals.some(pr => pr.patientId === p.id)
+      );
+      if (!isPregnant) return false;
+    } else if (userActiveRole === 'NURSE') {
+      const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+      const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+      if (!isChild) return false;
+    }
+
     const query = searchQuery.toLowerCase();
     
     // Check if any of the patient's consultations have diagnosis matching query
@@ -467,6 +494,27 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   });
 
   const filteredInventory = inventory.filter(i => {
+    // Role-specific inventory filter
+    if (userActiveRole === 'MIDWIFE') {
+      const isPrenatal = 
+        i.category === 'Vitamins' || 
+        i.medicineName.toLowerCase().includes('prenatal') || 
+        i.medicineName.toLowerCase().includes('pre-natal') || 
+        i.medicineName.toLowerCase().includes('maternal') || 
+        i.medicineName.toLowerCase().includes('folic') || 
+        i.medicineName.toLowerCase().includes('iron') ||
+        i.genericName.toLowerCase().includes('ferrous') ||
+        i.genericName.toLowerCase().includes('folic');
+      if (!isPrenatal) return false;
+    } else if (userActiveRole === 'NURSE') {
+      const isImmunization = 
+        i.category === 'EPI Vaccines' || 
+        i.medicineName.toLowerCase().includes('vaccine') || 
+        i.medicineName.toLowerCase().includes('immuniz') ||
+        i.genericName.toLowerCase().includes('vaccine');
+      if (!isImmunization) return false;
+    }
+
     const query = searchQuery.toLowerCase();
     const matchesSearch = 
       i.id.toLowerCase().includes(query) ||
@@ -578,22 +626,29 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
       {/* Sub-tab navigation directory */}
       <div className="flex border-b border-slate-100 pb-0.5 gap-1.5 overflow-x-auto scroller-hidden mb-4" id="master-subtabs-strip">
+        {/* Patient / Resident Records Tab */}
         <button
           onClick={() => { setActiveSubTab('residents'); setSearchQuery(''); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
             activeSubTab === 'residents' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
         >
-          👤 Resident Records
+          {userActiveRole === 'MIDWIFE' ? '🤰 Patient (Buntis)' : userActiveRole === 'NURSE' ? '👶 Patient (Child/Mga Bata)' : '👤 Resident Records'}
         </button>
-        <button
-          onClick={() => { setActiveSubTab('households'); setSearchQuery(''); }}
-          className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
-            activeSubTab === 'households' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          🏡 Sambahayan (Households)
-        </button>
+
+        {/* Households Tab (hidden for Midwife & Nurse as requested) */}
+        {userActiveRole !== 'MIDWIFE' && userActiveRole !== 'NURSE' && (
+          <button
+            onClick={() => { setActiveSubTab('households'); setSearchQuery(''); }}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
+              activeSubTab === 'households' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            🏡 Sambahayan (Households)
+          </button>
+        )}
+
+        {/* Consultations Tab */}
         <button
           onClick={() => { setActiveSubTab('consultations'); setSearchQuery(''); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
@@ -602,6 +657,8 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         >
           📋 Consultations
         </button>
+
+        {/* Vital Signs Tab */}
         <button
           onClick={() => { setActiveSubTab('vitals'); setSearchQuery(''); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
@@ -610,30 +667,44 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         >
           🩺 Vital Signs
         </button>
-        <button
-          onClick={() => { setActiveSubTab('prenatals'); setSearchQuery(''); }}
-          className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
-            activeSubTab === 'prenatals' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          🤰 Prenatal MCH
-        </button>
-        <button
-          onClick={() => { setActiveSubTab('immunizations'); setSearchQuery(''); }}
-          className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
-            activeSubTab === 'immunizations' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          👶 Immunizations (EPI)
-        </button>
-        <button
-          onClick={() => { setActiveSubTab('inventory'); setSearchQuery(''); }}
-          className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
-            activeSubTab === 'inventory' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          💊 Medicine Stock
-        </button>
+
+        {/* Prenatal MCH Tab (not for BHW, and not for Nurse as requested) */}
+        {userActiveRole !== 'BHW' && userActiveRole !== 'NURSE' && (
+          <button
+            onClick={() => { setActiveSubTab('prenatals'); setSearchQuery(''); }}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
+              activeSubTab === 'prenatals' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            🤰 Prenatal MCH
+          </button>
+        )}
+
+        {/* Immunizations Tab (not for BHW, and not for Midwife as requested) */}
+        {userActiveRole !== 'BHW' && userActiveRole !== 'MIDWIFE' && (
+          <button
+            onClick={() => { setActiveSubTab('immunizations'); setSearchQuery(''); }}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
+              activeSubTab === 'immunizations' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            👶 Immunizations (EPI)
+          </button>
+        )}
+
+        {/* Medicine Stock Tab (not for BHW) */}
+        {userActiveRole !== 'BHW' && (
+          <button
+            onClick={() => { setActiveSubTab('inventory'); setSearchQuery(''); }}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
+              activeSubTab === 'inventory' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            💊 Medicine Stock
+          </button>
+        )}
+
+        {/* Walk-In Visitors & Reports Tab */}
         <button
           onClick={() => { setActiveSubTab('daily_logs'); setSearchQuery(''); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
@@ -652,7 +723,11 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             type="text"
             className="w-full bg-white border border-slate-200 pl-8 pr-4 py-2.5 rounded-lg focus:outline-hidden text-xs font-medium placeholder:text-slate-400 text-slate-800"
             placeholder={
-              activeSubTab === 'residents' ? 'Maghanap sa Pangalan, Sambahayan (Household) ID, o Health Status (MCH, EPI, Tb, obeso)...' :
+              activeSubTab === 'residents' ? (
+                userActiveRole === 'MIDWIFE' ? 'Maghanap sa Pangalan o Sambahayan ID ng Buntis...' :
+                userActiveRole === 'NURSE' ? 'Maghanap sa Pangalan o Sambahayan ID ng Bata...' :
+                'Maghanap sa Pangalan, Sambahayan (Household) ID, o Health Status (MCH, EPI, Tb, obeso)...'
+              ) :
               activeSubTab === 'households' ? 'Maghanap ng pangalan ng Ulo ng Pamilya, Sambahayan ID/No...' :
               activeSubTab === 'consultations' ? 'Maghanap ng Chief complaint o diagnosis...' :
               activeSubTab === 'immunizations' ? 'Maghanap ng bakuna, drayb, o sanggol...' :
@@ -1035,12 +1110,18 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             ) : (
               <div className="flex justify-between items-center bg-slate-50 border border-slate-200 p-3 rounded-lg">
                 <span className="text-xs text-slate-500 font-medium">Mayroon kang <strong>{filteredHouseholds.length}</strong> sambahayan na nahanap.</span>
-                <button
-                  onClick={() => setIsAddingHH(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs cursor-pointer transition-colors flex items-center gap-1"
-                >
-                  <Plus size={14} /> Magrehistro ng Sambahayan (Add Household)
-                </button>
+                {userActiveRole === 'BHW' ? (
+                  <button
+                    onClick={() => setIsAddingHH(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs cursor-pointer transition-colors flex items-center gap-1"
+                  >
+                    <Plus size={14} /> Magrehistro ng Sambahayan (Add Household)
+                  </button>
+                ) : (
+                  <span className="bg-slate-100 text-slate-500 border border-slate-250 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg">
+                    🔒 BHW Admin Only Records
+                  </span>
+                )}
               </div>
             )}
 
@@ -1096,22 +1177,26 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             </div>
                           </td>
                           <td className="p-3 py-4 text-center font-sans">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => startEditHH(h)}
-                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors"
-                                title="I-edit an Sambahayan"
-                              >
-                                <Edit size={14} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteHHCmd(h.id, h.householdHead)}
-                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
-                                title="Burahin an Sambahayan"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
+                            {userActiveRole === 'BHW' ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => startEditHH(h)}
+                                  className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors"
+                                  title="I-edit an Sambahayan"
+                                >
+                                  <Edit size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteHHCmd(h.id, h.householdHead)}
+                                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                                  title="Burahin an Sambahayan"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 font-bold uppercase italic">View Only</span>
+                            )}
                           </td>
                         </tr>
                       );

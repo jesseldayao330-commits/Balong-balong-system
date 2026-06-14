@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { MedicineInventory, MedicineDispensed, Patient, Language } from '../types';
+import { MedicineInventory, MedicineDispensed, Patient, Language, Role, PrenatalRecord } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X } from 'lucide-react';
 
@@ -12,30 +12,142 @@ interface PharmacyDispenserProps {
   inventory: MedicineInventory[];
   dispensed: MedicineDispensed[];
   patients: Patient[];
+  prenatals?: PrenatalRecord[];
   onDispense: (d: MedicineDispensed) => void;
   onUpdateInventory: (i: MedicineInventory) => void;
   onDeleteInventory: (id: string) => void;
   onUpdateDispensed: (d: MedicineDispensed) => void;
   onDeleteDispensed: (id: string) => void;
   language: Language;
+  activeRole?: Role;
 }
 
 export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   inventory,
   dispensed,
   patients,
+  prenatals = [],
   onDispense,
   onUpdateInventory,
   onDeleteInventory,
   onUpdateDispensed,
   onDeleteDispensed,
   language,
+  activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
+  
+  // Categorize medicine audience helper to separate Household, Pregnant (Buntis), and Child (Bata)
+  const getMedicineAudience = (item: MedicineInventory): 'Household Resident' | 'Buntis' | 'Bata' => {
+    const nameLower = item.medicineName.toLowerCase();
+    const catLower = (item.category || '').toLowerCase();
+    const genLower = item.genericName.toLowerCase();
+
+    // Bata (Pediatric & Children Vaccines/Syrups)
+    if (
+      nameLower.includes('vaccine') || 
+      nameLower.includes('drops') || 
+      nameLower.includes('pediatric') || 
+      nameLower.includes('bata') || 
+      nameLower.includes('syrup') || 
+      nameLower.includes('bcg') || 
+      nameLower.includes('child') ||
+      nameLower.includes('baby') ||
+      catLower.includes('vaccine') || 
+      genLower.includes('vaccine') ||
+      nameLower.includes('paracetamol drops')
+    ) {
+      return 'Bata';
+    }
+
+    // Buntis (Maternity, Prenatal Care, and Contraceptives/Family Planning)
+    if (
+      nameLower.includes('pre-natal') || 
+      nameLower.includes('prenatal') || 
+      nameLower.includes('folic') || 
+      nameLower.includes('contraceptive') || 
+      nameLower.includes('buntis') || 
+      nameLower.includes('maternity') || 
+      nameLower.includes('maternal') || 
+      catLower.includes('contraceptive') ||
+      nameLower.includes('dmpa') ||
+      genLower.includes('folic') ||
+      genLower.includes('levonorgestrel')
+    ) {
+      return 'Buntis';
+    }
+
+    // Household Resident
+    return 'Household Resident';
+  };
+
   const [selectedMedId, setSelectedMedId] = useState(inventory[0]?.id || '');
   const [selectedPatId, setSelectedPatId] = useState(patients[0]?.id || '');
   const [qty, setQty] = useState(10);
   const [useTranslationHelp, setUseTranslationHelp] = useState(true);
+
+  // Audience view filters based on roles
+  const [audienceTab, setAudienceTab] = useState<'All' | 'Household Resident' | 'Buntis' | 'Bata'>('All');
+
+  const getActiveAudienceFilter = (): 'All' | 'Household Resident' | 'Buntis' | 'Bata' => {
+    if (activeRole === 'BHW') return 'Household Resident';
+    if (activeRole === 'MIDWIFE') return 'Buntis';
+    if (activeRole === 'NURSE') return 'Bata';
+    return audienceTab;
+  };
+
+  const activeAudience = getActiveAudienceFilter();
+
+  // Filter inventory based on audience target
+  const filteredInventory = inventory.filter((item) => {
+    if (activeAudience === 'All') return true;
+    return getMedicineAudience(item) === activeAudience;
+  });
+
+  // Calculate current safe medicine selection
+  const safeSelectedMedId = filteredInventory.some(m => m.id === selectedMedId)
+    ? selectedMedId
+    : (filteredInventory[0]?.id || '');
+
+  const selectedMed = filteredInventory.find((m) => m.id === safeSelectedMedId);
+
+  // Filter patient selections based on active roles (pregnant for midwife, child for nurse)
+  const getFilteredPatients = (): Patient[] => {
+    if (activeRole === 'MIDWIFE') {
+      // Buntis only (Female with MCH or FAMILY_PLANNING programs, or listed under prenatals)
+      return patients.filter((p) => {
+        const isBuntisProgram = p.activePrograms.includes('MCH') || p.activePrograms.includes('FAMILY_PLANNING');
+        const hasPrenatalRecord = prenatals?.some(pr => pr.patientId === p.id);
+        return p.gender === 'Female' && (isBuntisProgram || hasPrenatalRecord);
+      });
+    }
+
+    if (activeRole === 'NURSE') {
+      // Bata only (Age <= 12 or in child EPI/OPT_PLUS programs)
+      return patients.filter((p) => {
+        const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+        const isBataProgram = p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+        return age <= 12 || isBataProgram;
+      });
+    }
+
+    return patients;
+  };
+
+  const filteredPatients = getFilteredPatients();
+
+  // Calculate current safe patient selection
+  const safeSelectedPatId = filteredPatients.some(p => p.id === selectedPatId)
+    ? selectedPatId
+    : (filteredPatients[0]?.id || '');
+
+  // Dispenser name generator based on logged-in role
+  const getDispenserForRole = (role?: Role): string => {
+    if (role === 'BHW') return 'Julefe Magwate (BHW)';
+    if (role === 'MIDWIFE') return 'Arlene Cagas Dayama, RM';
+    if (role === 'NURSE') return 'Yvonne Galang, RN';
+    return 'Lorna Cruz, RPh';
+  };
 
   // Common dosage options to auto-generate Philippine instructions
   const [frequency, setFrequency] = useState('3_times_day'); // 3 times a da, 2 times, once, before bed
@@ -57,8 +169,6 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   // Form states for edit dispensed record
   const [dispRecordInstructions, setDispRecordInstructions] = useState('');
   const [dispRecordQty, setDispRecordQty] = useState(10);
-
-  const selectedMed = inventory.find((m) => m.id === selectedMedId);
 
   // Auto instructions translation helper
   const translateInstruction = (freq: string, dur: string, lang: Language): string => {
@@ -200,7 +310,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
 
   const handleDispenseAction = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMed || !selectedPatId) return;
+    if (!selectedMed || !safeSelectedPatId) return;
 
     if (selectedMed.currentStock < qty) {
       alert('Babala: Kulang ang kasalukuyang stock para sa hininging dami! (Insufficient stock in inventory).');
@@ -212,11 +322,11 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
     const newDisp: MedicineDispensed = {
       id: `DISP-2026-00${dispensed.length + 1}`,
       date: new Date().toISOString().split('T')[0],
-      patientId: selectedPatId,
+      patientId: safeSelectedPatId,
       medicineName: selectedMed.medicineName,
       quantityDispensed: qty,
       instructions: generatedInstruction,
-      pharmacistDispenser: 'Lorna Cruz, RPh',
+      pharmacistDispenser: getDispenserForRole(activeRole),
     };
 
     onDispense(newDisp);
@@ -229,13 +339,91 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" id="pharmacy-dispensing-panel">
-      <div className="flex items-center gap-2 mb-5 border-b border-slate-100 pb-3">
-        <Pill className="text-indigo-600" size={20} />
+      <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+        <Pill className="text-indigo-600 animate-pulse" size={20} />
         <div>
-          <h2 className="text-md font-bold text-slate-800">Parmasya at Pamamahagi ng Gamot (E-Pharmacy Depot)</h2>
-          <p className="text-xs text-slate-500">Monitor vaccine, contraceptive, antibiotic stocks and log patient dispatches</p>
+          <h2 className="text-md font-bold text-slate-800 font-sans tracking-tight">Parmasya at Pamamahagi ng Gamot (E-Pharmacy Depot)</h2>
+          <p className="text-xs text-slate-500">Log patient medications and manage vaccines, maternal drugs, and child care stocks</p>
         </div>
       </div>
+
+      {/* TARGET AUDIENCE ROLE STATUS BANNERS */}
+      {activeRole === 'BHW' && (
+        <div className="bg-amber-50/70 border border-amber-200/80 text-amber-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-amber-800">
+            <span className="text-base">🏠</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Household Resident E-Pharmacy view (BHW Desk)</strong>
+          </div>
+          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
+            Naka-log in bilang <strong>BHW (Julefe Magwate)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Household Residents (Pangkalahatang Pangangailangan)** tulad ng paracetamol, pangunahing antibiotics, at gamot sa altapresyon.
+          </p>
+        </div>
+      )}
+
+      {activeRole === 'MIDWIFE' && (
+        <div className="bg-pink-50/70 border border-pink-200/80 text-pink-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-pink-800">
+            <span className="text-base">🤰</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Buntis Lamang E-Pharmacy view (Midwife Desk)</strong>
+          </div>
+          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
+            Naka-log in bilang <strong>Barangay Midwife (Arlene Cagas Dayama, RM)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Prenatal Care** (Pre-natal vitamins, Iron with folic acid, and family planning contraceptives).
+          </p>
+        </div>
+      )}
+
+      {activeRole === 'NURSE' && (
+        <div className="bg-emerald-50/60 border border-emerald-200/80 text-emerald-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-emerald-850">
+            <span className="text-base">👶</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Bata Lamang E-Pharmacy view (Nurse Desk)</strong>
+          </div>
+          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
+            Naka-log in bilang <strong>Public Health Nurse (Yvonne Galang, RN)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Bata (Pediatric & Baby Vaccines)** tulad ng BCG vaccines at pediatric paracetamol drops.
+          </p>
+        </div>
+      )}
+
+      {activeRole === 'ADMIN' && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1 mb-5">
+          <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+          <span>Naka-log in bilang Admin (Ericson Padunan). Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.</span>
+        </div>
+      )}
+
+      {/* FILTER BUTTON TABS FOR ADMIN, PHARMACIST, AND MHO */}
+      {(activeRole === 'PHARMACIST' || activeRole === 'MHO' || activeRole === 'ADMIN') && (
+        <div className="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div className="text-xs">
+            <span className="text-slate-400 font-mono font-black block text-[8px] uppercase tracking-widest">E-PHARMACY AUDIENCE FILTER</span>
+            <span className="text-slate-700 text-[11px] font-extrabold">Suriin ang mga gamot ayon sa kategorya ng pasyente:</span>
+          </div>
+          <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200">
+            {(['All', 'Household Resident', 'Buntis', 'Bata'] as const).map((tab) => {
+              const labelMap = {
+                All: '🌐 Lahat (All Stocks)',
+                'Household Resident': '🏠 Household',
+                Buntis: '🤰 Pang-Buntis',
+                Bata: '👶 Pang-Bata'
+              };
+              return (
+                <button
+                  type="button"
+                  key={tab}
+                  onClick={() => setAudienceTab(tab)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all ${
+                    audienceTab === tab
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900 bg-transparent'
+                  }`}
+                >
+                  {labelMap[tab]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT COMPONENT: Inventory Levels with low alerts */}
@@ -243,22 +431,24 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
           <div className="flex items-center justify-between mb-3 border-b border-slate-200/60 pb-2 gap-2">
             <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Medicine Stock Database</span>
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  if (showInventoryForm) {
-                    cancelEditingInventory();
-                  } else {
-                    setShowInventoryForm(true);
-                  }
-                }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-1 rounded transition-colors cursor-pointer text-[10px] flex items-center gap-1 uppercase px-1.5"
-              >
-                {showInventoryForm ? <X size={10} /> : <Plus size={10} />}
-                <span>Ibagong Gamot</span>
-              </button>
+              {activeRole !== 'ADMIN' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (showInventoryForm) {
+                      cancelEditingInventory();
+                    } else {
+                      setShowInventoryForm(true);
+                    }
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-1 rounded transition-colors cursor-pointer text-[10px] flex items-center gap-1 uppercase px-1.5"
+                >
+                  {showInventoryForm ? <X size={10} /> : <Plus size={10} />}
+                  <span>Ibagong Gamot</span>
+                </button>
+              )}
               <span className="px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[9px] font-mono rounded">
-                {inventory.length} items
+                {filteredInventory.length} items
               </span>
             </div>
           </div>
@@ -344,7 +534,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
           )}
 
           <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-            {inventory.map((item) => {
+            {filteredInventory.map((item) => {
               const isLowStock = item.currentStock <= item.reorderLevel;
               return (
                 <div key={item.id} className="p-3 bg-white border border-slate-150 rounded-lg flex justify-between items-center text-xs">
@@ -366,24 +556,26 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                         <span className="text-[9px] text-emerald-600 font-medium block">Optimal</span>
                       )}
                     </div>
-                    <div className="flex flex-col gap-0.5 border-l border-slate-100 pl-2 text-slate-400">
-                      <button
-                        type="button"
-                        onClick={() => startEditingInventory(item)}
-                        className="p-1 hover:text-indigo-600 hover:bg-slate-50 rounded cursor-pointer"
-                        title="Edit supply"
-                      >
-                        <Edit3 size={11} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteInventoryClick(item.id)}
-                        className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer"
-                        title="Delete supply"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    </div>
+                    {activeRole !== 'ADMIN' && (
+                      <div className="flex flex-col gap-0.5 border-l border-slate-100 pl-2 text-slate-400">
+                        <button
+                          type="button"
+                          onClick={() => startEditingInventory(item)}
+                          className="p-1 hover:text-indigo-600 hover:bg-slate-55 rounded cursor-pointer"
+                          title="Edit supply"
+                        >
+                          <Edit3 size={11} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteInventoryClick(item.id)}
+                          className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer"
+                          title="Delete supply"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -398,117 +590,125 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
               Dispense Medication Intake
             </h3>
 
-            {/* Choose receiver */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
-              <div>
-                <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Patient</label>
-                <select
-                  className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
-                  value={selectedPatId}
-                  onChange={(e) => setSelectedPatId(e.target.value)}
-                >
-                  {patients.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.lastName}, {p.firstName} ({p.id})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Medicine</label>
-                <select
-                  className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
-                  value={selectedMedId}
-                  onChange={(e) => setSelectedMedId(e.target.value)}
-                >
-                  {inventory.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.medicineName} ({m.currentStock} left)
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Quantity */}
-            <div className="text-xs font-semibold">
-              <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Quantity to Dispense (Bilang)</label>
-              <input
-                type="number"
-                min="1"
-                max={selectedMed?.currentStock || 100}
-                className="w-full border border-slate-200 py-2.5 px-3 rounded-lg text-sm text-center font-mono font-bold"
-                value={qty}
-                onChange={(e) => setQty(parseInt(e.target.value) || 1)}
-              />
-            </div>
-
-            {/* Smart instruction translator details */}
-            <div className="border border-dashed border-indigo-200 rounded-lg p-3 bg-indigo-50/20 text-xs">
-              <div className="flex justify-between items-center mb-2.5">
-                <span className="font-bold text-indigo-900 flex items-center gap-1">
-                  <Sparkles size={12} />
-                  Dosage Translation Intelligence Engine
-                </span>
-                <label className="flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="accent-indigo-600"
-                    checked={useTranslationHelp}
-                    onChange={(e) => setUseTranslationHelp(e.target.checked)}
-                  />
-                  <span className="text-[10px] text-indigo-700 font-bold uppercase">Translate Form</span>
-                </label>
-              </div>
-
-              {useTranslationHelp && (
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <div>
-                    <span className="text-slate-400 block mb-0.5">Gaano Kadalas (Frequency)</span>
-                    <select
-                      className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
-                      value={frequency}
-                      onChange={(e) => setFrequency(e.target.value)}
-                    >
-                      <option value="3_times_day">3x a day (pc) / Umaga-Hapon-Gabi</option>
-                      <option value="2_times_day">2x a day (bid) / Umaga-Gabi</option>
-                      <option value="once_day_morning">1x a day morning (od) / Umaga</option>
-                      <option value="once_day_night">1x a day bedtime (hs) / Gabi bago matulog</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block mb-0.5">Gaano Katagal (Duration)</span>
-                    <select
-                      className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                    >
-                      <option value="7_days">7 Days cycle (Pitong Araw)</option>
-                      <option value="3_days">3 Days check (Tatlong Araw)</option>
-                    </select>
-                  </div>
+            <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
+              {/* Choose receiver */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Patient</label>
+                  <select
+                    className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                    value={safeSelectedPatId}
+                    onChange={(e) => setSelectedPatId(e.target.value)}
+                  >
+                    {filteredPatients.length === 0 ? (
+                      <option value="">No patients available</option>
+                    ) : (
+                      filteredPatients.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.lastName}, {p.firstName} ({p.id})
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
-              )}
 
-              {/* Instant translation preview rendering */}
-              <div className="mt-3 pt-2.5 border-t border-indigo-100">
-                <span className="text-[10px] text-slate-400 block mb-0.5 uppercase font-black tracking-wider">Preview of generated prescription labeling:</span>
-                <p className="font-mono text-xs font-bold text-indigo-950 bg-white p-2 rounded border border-indigo-150">
-                  {translateInstruction(frequency, duration, language)}
-                </p>
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Medicine</label>
+                  <select
+                    className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                    value={safeSelectedMedId}
+                    onChange={(e) => setSelectedMedId(e.target.value)}
+                  >
+                    {filteredInventory.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.medicineName} ({m.currentStock} left)
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-              id="dispense-entry-submit-button"
-            >
-              Dispense now
-              <ArrowRight size={13} />
-            </button>
+              {/* Quantity */}
+              <div className="text-xs font-semibold">
+                <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Quantity to Dispense (Bilang)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={selectedMed?.currentStock || 100}
+                  className="w-full border border-slate-200 py-2.5 px-3 rounded-lg text-sm text-center font-mono font-bold"
+                  value={qty}
+                  onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                />
+              </div>
+
+              {/* Smart instruction translator details */}
+              <div className="border border-dashed border-indigo-200 rounded-lg p-3 bg-indigo-50/20 text-xs">
+                <div className="flex justify-between items-center mb-2.5">
+                  <span className="font-bold text-indigo-900 flex items-center gap-1">
+                    <Sparkles size={12} />
+                    Dosage Translation Intelligence Engine
+                  </span>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="accent-indigo-600"
+                      checked={useTranslationHelp}
+                      onChange={(e) => setUseTranslationHelp(e.target.checked)}
+                    />
+                    <span className="text-[10px] text-indigo-700 font-bold uppercase">Translate Form</span>
+                  </label>
+                </div>
+
+                {useTranslationHelp && (
+                  <div className="grid grid-cols-2 gap-2 text-[10px]">
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Gaano Kadalas (Frequency)</span>
+                      <select
+                        className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                        value={frequency}
+                        onChange={(e) => setFrequency(e.target.value)}
+                      >
+                        <option value="3_times_day">3x a day (pc) / Umaga-Hapon-Gabi</option>
+                        <option value="2_times_day">2x a day (bid) / Umaga-Gabi</option>
+                        <option value="once_day_morning">1x a day morning (od) / Umaga</option>
+                        <option value="once_day_night">1x a day bedtime (hs) / Gabi bago matulog</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Gaano Katagal (Duration)</span>
+                      <select
+                        className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                      >
+                        <option value="7_days">7 Days cycle (Pitong Araw)</option>
+                        <option value="3_days">3 Days check (Tatlong Araw)</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Instant translation preview rendering */}
+                <div className="mt-3 pt-2.5 border-t border-indigo-100">
+                  <span className="text-[10px] text-slate-400 block mb-0.5 uppercase font-black tracking-wider">Preview of generated prescription labeling:</span>
+                  <p className="font-mono text-xs font-bold text-indigo-950 bg-white p-2 rounded border border-indigo-150">
+                    {translateInstruction(frequency, duration, language)}
+                  </p>
+                </div>
+              </div>
+            </fieldset>
+
+            {activeRole !== 'ADMIN' && (
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                id="dispense-entry-submit-button"
+              >
+                Dispense now
+                <ArrowRight size={13} />
+              </button>
+            )}
           </form>
         </div>
       </div>
@@ -588,7 +788,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                   <th className="p-3">Gamot</th>
                   <th className="p-3">Dami</th>
                   <th className="p-3">Instructions & Dispenser</th>
-                  <th className="p-3 text-right">Actions</th>
+                  {activeRole !== 'ADMIN' && <th className="p-3 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -609,26 +809,28 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                         <p className="font-medium text-slate-700 italic">"{rec.instructions}"</p>
                         <span className="text-[9px] block text-slate-400 mt-1">Dispenser: {rec.pharmacistDispenser}</span>
                       </td>
-                      <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-1 text-slate-400">
-                          <button
-                            type="button"
-                            onClick={() => startEditingDispensed(rec)}
-                            className="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                            title="Edit dispensing record"
-                          >
-                            <Edit3 size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDispensedClick(rec.id)}
-                            className="p-1.5 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                            title="Delete dispensing record"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
+                      {activeRole !== 'ADMIN' && (
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1 text-slate-400">
+                            <button
+                              type="button"
+                              onClick={() => startEditingDispensed(rec)}
+                              className="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                              title="Edit dispensing record"
+                            >
+                              <Edit3 size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDispensedClick(rec.id)}
+                              className="p-1.5 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                              title="Delete dispensing record"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { Patient, Household, Purok, DOHProgram, Language } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Patient, Household, Purok, DOHProgram, Language, Role, ImmunizationRecord, PrenatalRecord } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { Search, UserPlus, Users, Eye, CheckCircle, ShieldAlert, AlertTriangle, Trash2, Link } from 'lucide-react';
 
@@ -16,6 +16,10 @@ interface PatientRegistrationProps {
   onDeletePatient: (id: string) => void;
   onAddHousehold?: (hh: Household) => void;
   language: Language;
+  activeRole?: Role;
+  initialPatientId?: string;
+  onAddVaccination?: (vac: ImmunizationRecord) => void;
+  onAddPrenatal?: (pre: PrenatalRecord) => void;
 }
 
 export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
@@ -26,12 +30,99 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
   onDeletePatient,
   onAddHousehold,
   language,
+  activeRole = 'BHW',
+  initialPatientId,
+  onAddVaccination,
+  onAddPrenatal,
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(patients[0] || null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Nurse Immunization Form States
+  const [includeImmunization, setIncludeImmunization] = useState(true);
+  const [motherName, setMotherName] = useState('');
+  const [vaccineName, setVaccineName] = useState<ImmunizationRecord['vaccineName']>('BCG');
+  const [doseNumber, setDoseNumber] = useState(1);
+  const [dateGiven, setDateGiven] = useState(new Date().toISOString().split('T')[0]);
+  const [givenBy, setGivenBy] = useState('Yvonne Galang, RN');
+  const [vacRemarks, setVacRemarks] = useState('');
+
+  // Midwife Prenatal Form States
+  const [includePrenatal, setIncludePrenatal] = useState(true);
+  const [lmp, setLmp] = useState('');
+  const [edc, setEdc] = useState('');
+  const [gravida, setGravida] = useState(1);
+  const [para, setPara] = useState(0);
+  const [abortion, setAbortion] = useState(0);
+  const [stillBirth, setStillBirth] = useState(0);
+  const [gestationalAgeWeeks, setGestationalAgeWeeks] = useState(12);
+  const [fundalHeightCm, setFundalHeightCm] = useState(15);
+  const [fetalHeartToneBpm, setFetalHeartToneBpm] = useState(140);
+  const [tetanusToxoidStatus, setTetanusToxoidStatus] = useState('TT1');
+  const [ironFolicAcidGiven, setIronFolicAcidGiven] = useState(true);
+  const [bloodPressure, setBloodPressure] = useState('120/80');
+  const [riskClassification, setRiskClassification] = useState<'Low Risk' | 'Medium Risk' | 'High Risk'>('Low Risk');
+  const [preRemarks, setPreRemarks] = useState('');
+  const [nextPrenatalVisit, setNextPrenatalVisit] = useState('');
+
+  const calculateEDC = (lmpString: string): string => {
+    if (!lmpString) return '';
+    const date = new Date(lmpString);
+    if (isNaN(date.getTime())) return '';
+    date.setDate(date.getDate() + 280);
+    return date.toISOString().split('T')[0];
+  };
+
+  const calculateGestationalAge = (lmpString: string): number => {
+    if (!lmpString) return 0;
+    const lmpDate = new Date(lmpString);
+    if (isNaN(lmpDate.getTime())) return 0;
+    const diffTime = Math.abs(new Date().getTime() - lmpDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.floor(diffDays / 7);
+  };
+
+  const handleLmpChange = (val: string) => {
+    setLmp(val);
+    if (val) {
+      setEdc(calculateEDC(val));
+      const weeks = calculateGestationalAge(val);
+      if (weeks > 0 && weeks <= 42) {
+        setGestationalAgeWeeks(weeks);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (initialPatientId) {
+      const match = patients.find((p) => p.id === initialPatientId);
+      if (match) {
+        setSelectedPatient(match);
+        setLastName(match.lastName);
+        setFirstName(match.firstName);
+        setMiddleName(match.middleName || '');
+        setSuffix(match.suffix || '');
+        setBirthDate(match.birthDate);
+        setGender(match.gender);
+        setCivilStatus(match.civilStatus);
+        setPurok(match.purok);
+        setPhoneNumber(match.phoneNumber);
+        setPhilHealthId(match.philHealthId || '');
+        setPhilHealthCategory(match.philHealthCategory || 'Not Enrolled');
+        setIsIndigent(match.isIndigent);
+        setBloodType(match.bloodType || 'O+');
+        setAllergies(match.allergies || '');
+        setActivePrograms(match.activePrograms);
+        setHouseholdId(match.householdId);
+        setPhoto(match.photo || '');
+        setIsEditing(true);
+        setIsRegistering(false);
+      }
+    }
+  }, [initialPatientId, patients]);
 
   // Registration Form State
   const [lastName, setLastName] = useState('');
@@ -165,6 +256,15 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
       alert('Matagumpay na na-update ang impormasyon ng pasyente! (Patient info updated successfully).');
     } else {
       const nextId = `PAT-2026-000${patients.length + 1}`;
+      
+      const programsCopy = [...activePrograms];
+      if (activeRole === 'NURSE' && includeImmunization && !programsCopy.includes('EPI')) {
+        programsCopy.push('EPI');
+      }
+      if (activeRole === 'MIDWIFE' && includePrenatal && !programsCopy.includes('MCH')) {
+        programsCopy.push('MCH');
+      }
+
       const newPat: Patient = {
         id: nextId,
         householdId,
@@ -182,14 +282,62 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         isIndigent,
         bloodType,
         allergies,
-        activePrograms,
+        activePrograms: programsCopy,
         createdAt: new Date().toISOString().split('T')[0],
         photo,
       };
 
       onAddPatient(newPat);
+
+      // Handle nurse immunization submission
+      if (activeRole === 'NURSE' && includeImmunization && onAddVaccination) {
+        const newVac: ImmunizationRecord = {
+          id: `VAC-2026-000${Date.now()}`,
+          patientId: nextId,
+          motherName: motherName || 'Hindi Alám',
+          vaccineName,
+          doseNumber,
+          dateGiven,
+          givenBy: givenBy || 'Yvonne Galang, RN',
+          remarks: vacRemarks || 'Added during initial nurse registration',
+        };
+        onAddVaccination(newVac);
+      }
+
+      // Handle midwife prenatal submission
+      if (activeRole === 'MIDWIFE' && includePrenatal && onAddPrenatal) {
+        const newPre: PrenatalRecord = {
+          id: `PRE-2026-000${Date.now()}`,
+          patientId: nextId,
+          lmp,
+          edc: edc || calculateEDC(lmp),
+          gravida,
+          para,
+          abortion: abortion || 0,
+          stillBirth: stillBirth || 0,
+          gestationalAgeWeeks,
+          fundalHeightCm: fundalHeightCm || undefined,
+          fetalHeartToneBpm: fetalHeartToneBpm || undefined,
+          tetanusToxoidStatus,
+          ironFolicAcidGiven,
+          bloodPressure: bloodPressure || '120/80',
+          riskClassification,
+          remarks: preRemarks || 'Added during initial midwife prenatal registration',
+          nextPrenatalVisit: nextPrenatalVisit || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        };
+        onAddPrenatal(newPre);
+      }
+
       setSelectedPatient(newPat);
       setIsRegistering(false);
+
+      let msg = `Matagumpay na nairerehistro si ${firstName} ${lastName}! (Registered successfully).`;
+      if (activeRole === 'NURSE' && includeImmunization) {
+        msg += `\n✓ Na-log din ang vaccine record na "${vaccineName}" sa ilalim ng patient ID: ${nextId}.`;
+      } else if (activeRole === 'MIDWIFE' && includePrenatal) {
+        msg += `\n✓ Na-log din ang prenatal care record sa pregnancy registry sa ilalim ng patient ID: ${nextId}.`;
+      }
+      alert(msg);
     }
     
     // Clear registration records
@@ -201,6 +349,19 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
     setPhoneNumber('');
     setPhilHealthId('');
     setPhoto('');
+    // Clear immunization fields
+    setMotherName('');
+    setVacRemarks('');
+    setDoseNumber(1);
+    // Clear prenatal fields
+    setLmp('');
+    setEdc('');
+    setGravida(1);
+    setPara(0);
+    setAbortion(0);
+    setStillBirth(0);
+    setPreRemarks('');
+    setNextPrenatalVisit('');
   };
 
   const handleProgramCheck = (prog: DOHProgram) => {
@@ -255,14 +416,16 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
           />
         </div>
 
-        <button
-          onClick={() => setIsRegistering(!isRegistering)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm cursor-pointer transition-all flex items-center justify-center gap-1.5 touch-none"
-          id="patient-register-toggle-button"
-        >
-          <UserPlus size={16} />
-          {isRegistering ? 'Tumingin sa Directory (View Directory)' : text.registerPatient}
-        </button>
+        {['BHW', 'NURSE', 'MIDWIFE'].includes(activeRole) && (
+          <button
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm cursor-pointer transition-all flex items-center justify-center gap-1.5 touch-none"
+            id="patient-register-toggle-button"
+          >
+            <UserPlus size={16} />
+            {isRegistering ? 'Tumingin sa Directory (View Directory)' : text.registerPatient}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 min-h-[480px]">
@@ -732,6 +895,381 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 </div>
               </div>
 
+              {/* NURSE - IMMUNIZATION SUB-FORM */}
+              {activeRole === 'NURSE' && (
+                <div className="border-t border-slate-100 pt-5 space-y-4" id="nurse-immunization-section">
+                  <div className="flex items-center justify-between bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/60">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={includeImmunization}
+                        onChange={(e) => setIncludeImmunization(e.target.checked)}
+                        className="rounded-sm border-indigo-300 text-indigo-600 focus:ring-indigo-500 w-4.5 h-4.5"
+                      />
+                      <div>
+                        <span className="block text-sm font-black text-indigo-900">
+                          I-log ang Unang Pagbabakuna (Log First Immunization Record)?
+                        </span>
+                        <span className="text-[11px] text-indigo-600 font-medium font-sans">
+                          Awtomatikong magrerehistro sa National EPI Program.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {includeImmunization && (
+                    <div className="bg-indigo-50/20 border border-indigo-100/40 p-4 rounded-xl space-y-4">
+                      <div className="text-xs font-extrabold uppercase text-indigo-800 tracking-wider">
+                        💉 Detalye ng Bakuna (Immunization Details - Nurse Desk)
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Pangalan ng Ina (Mother's Name)
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden"
+                            placeholder="e.g. Maria Clara"
+                            value={motherName}
+                            onChange={(e) => setMotherName(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Pangalan ng Bakuna (Vaccine Name) *
+                          </label>
+                          <select
+                            required={includeImmunization}
+                            className="w-full border border-slate-200 p-2 bg-white rounded-lg text-xs focus:outline-hidden"
+                            value={vaccineName}
+                            onChange={(e) => setVaccineName(e.target.value as any)}
+                          >
+                            <option value="BCG">BCG (Tuberculosis)</option>
+                            <option value="HepB">HepB (Hepatitis B)</option>
+                            <option value="Pentavalent 1">Pentavalent 1 (DPT-HepB-Hib)</option>
+                            <option value="Pentavalent 2">Pentavalent 2 (DPT-HepB-Hib)</option>
+                            <option value="Pentavalent 3">Pentavalent 3 (DPT-HepB-Hib)</option>
+                            <option value="OPV 1">OPV 1 (Oral Polio)</option>
+                            <option value="OPV 2">OPV 2 (Oral Polio)</option>
+                            <option value="OPV 3">OPV 3 (Oral Polio)</option>
+                            <option value="PCV 1">PCV 1 (Pneumococcal Conjugate)</option>
+                            <option value="PCV 2">PCV 2 (Pneumococcal Conjugate)</option>
+                            <option value="PCV 3">PCV 3 (Pneumococcal Conjugate)</option>
+                            <option value="IPV">IPV (Inactivated Polio)</option>
+                            <option value="MCV 1 (Measles)">MCV 1 (Measles)</option>
+                            <option value="MCV 2 (MMR)">MCV 2 (MMR - Measles, Mumps, Rubella)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Dose Number *
+                          </label>
+                          <input
+                            type="number"
+                            required={includeImmunization}
+                            min="1"
+                            max="5"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={doseNumber}
+                            onChange={(e) => setDoseNumber(parseInt(e.target.value) || 1)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Araw ng Bakuna (Date Given) *
+                          </label>
+                          <input
+                            type="date"
+                            required={includeImmunization}
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={dateGiven}
+                            onChange={(e) => setDateGiven(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Nagbakuna (Administered By)
+                          </label>
+                          <input
+                            type="text"
+                            required={includeImmunization}
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden"
+                            value={givenBy}
+                            onChange={(e) => setGivenBy(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Mga Paalala / Remarks
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden"
+                            placeholder="e.g. No adverse reaction recorded"
+                            value={vacRemarks}
+                            onChange={(e) => setVacRemarks(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MIDWIFE - PRENATAL SUB-FORM */}
+              {activeRole === 'MIDWIFE' && (
+                <div className="border-t border-slate-100 pt-5 space-y-4" id="midwife-prenatal-section">
+                  <div className="flex items-center justify-between bg-rose-50/50 p-3 rounded-lg border border-rose-100/60">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={includePrenatal}
+                        onChange={(e) => setIncludePrenatal(e.target.checked)}
+                        className="rounded-sm border-rose-300 text-rose-600 focus:ring-rose-500 w-4.5 h-4.5"
+                      />
+                      <div>
+                        <span className="block text-sm font-black text-rose-900">
+                          I-log ang Unang Prenatal Visit Record (Log First Prenatal Visit)?
+                        </span>
+                        <span className="text-[11px] text-rose-600 font-medium font-sans">
+                          Awtomatikong magrerehistro sa National MCH (Maternal and Child Health) Program.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {includePrenatal && (
+                    <div className="bg-rose-50/20 border border-rose-150 p-4 rounded-xl space-y-4">
+                      <div className="text-xs font-extrabold uppercase text-rose-800 tracking-wider">
+                        🤰 Prenatal Check-up Parameters (Midwife Prenatal Desk)
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Huling Sumpong (LMP) *
+                          </label>
+                          <input
+                            type="date"
+                            required={includePrenatal}
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={lmp}
+                            onChange={(e) => handleLmpChange(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Petsa ng Panganganak (EDC / Due Date)
+                          </label>
+                          <input
+                            type="date"
+                            required={includePrenatal}
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs bg-slate-50 focus:outline-hidden font-mono"
+                            value={edc}
+                            onChange={(e) => setEdc(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Bilang ng Pagbubuntis (Gravida)
+                          </label>
+                          <input
+                            type="number"
+                            required={includePrenatal}
+                            min="1"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={gravida}
+                            onChange={(e) => setGravida(parseInt(e.target.value) || 1)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Bilang ng Isinilang na Buhay (Para)
+                          </label>
+                          <input
+                            type="number"
+                            required={includePrenatal}
+                            min="0"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={para}
+                            onChange={(e) => setPara(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Abortion (Kunan kung mayroon)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={abortion}
+                            onChange={(e) => setAbortion(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Still Birth (Ipinanganak na Patay)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={stillBirth}
+                            onChange={(e) => setStillBirth(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Edad ng Pagbubuntis (Weeks)
+                          </label>
+                          <input
+                            type="number"
+                            required={includePrenatal}
+                            min="1"
+                            max="45"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={gestationalAgeWeeks}
+                            onChange={(e) => setGestationalAgeWeeks(parseInt(e.target.value) || 12)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Fundal Height (cm)
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={fundalHeightCm}
+                            onChange={(e) => setFundalHeightCm(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Fetal Heart Tone (bpm)
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            placeholder="e.g. 140"
+                            value={fetalHeartToneBpm}
+                            onChange={(e) => setFetalHeartToneBpm(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Tetanus Toxoid Status (TT)
+                          </label>
+                          <select
+                            className="w-full border border-slate-200 p-2 bg-white rounded-lg text-xs focus:outline-hidden"
+                            value={tetanusToxoidStatus}
+                            onChange={(e) => setTetanusToxoidStatus(e.target.value)}
+                          >
+                            <option value="TT1">TT1 (First Dose)</option>
+                            <option value="TT2">TT2 (At least 1 month after TT1)</option>
+                            <option value="TT3">TT3 (At least 6 months after TT2)</option>
+                            <option value="TT4">TT4 (At least 1 year after TT3)</option>
+                            <option value="TT5">TT5 (At least 1 year after TT4)</option>
+                            <option value="None">None (Unvaccinated)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Presyon ng Dugo (Blood Pressure)
+                          </label>
+                          <input
+                            type="text"
+                            required={includePrenatal}
+                            placeholder="e.g. 120/80"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={bloodPressure}
+                            onChange={(e) => setBloodPressure(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-rose-800 uppercase mb-1">
+                            Risk Classification *
+                          </label>
+                          <select
+                            className="w-full border border-rose-250 p-2 bg-white rounded-lg text-xs focus:outline-hidden font-semibold"
+                            value={riskClassification}
+                            onChange={(e) => setRiskClassification(e.target.value as any)}
+                          >
+                            <option value="Low Risk">Walang Panganib (Low Risk)</option>
+                            <option value="Medium Risk">Katamtamang Panganib (Medium Risk)</option>
+                            <option value="High Risk">Mataas na Panganib (High Risk - Red alert)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="flex items-center pt-2 select-none">
+                          <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={ironFolicAcidGiven}
+                              onChange={(e) => setIronFolicAcidGiven(e.target.checked)}
+                              className="rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                            />
+                            May Kasamang Iron & Folic Acid
+                          </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Susunod na Bisita (Next Visit Date) *
+                          </label>
+                          <input
+                            type="date"
+                            required={includePrenatal}
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden font-mono"
+                            value={nextPrenatalVisit}
+                            onChange={(e) => setNextPrenatalVisit(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-slate-600 uppercase mb-1">
+                            Remarks ng Midwife
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 p-2 rounded-lg text-xs focus:outline-hidden"
+                            placeholder="e.g. Advice on healthy diet given"
+                            value={preRemarks}
+                            onChange={(e) => setPreRemarks(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button
                   type="button"
@@ -780,21 +1318,29 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={startEditing}
-                    className="bg-slate-900 hover:bg-slate-800 text-white py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs"
-                    id="btn-edit-patient-action"
-                  >
-                    I-edit (Edit Profile)
-                  </button>
-                  <button
-                    onClick={handleDeletePatientClick}
-                    className="bg-rose-600 hover:bg-rose-700 text-white py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1"
-                    id="btn-delete-patient-action"
-                  >
-                    <Trash2 size={13} />
-                    I-delete (Delete)
-                  </button>
+                  {['BHW', 'NURSE', 'MIDWIFE'].includes(activeRole) ? (
+                    <>
+                      <button
+                        onClick={startEditing}
+                        className="bg-slate-900 hover:bg-slate-800 text-white py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs"
+                        id="btn-edit-patient-action"
+                      >
+                        I-edit (Edit Profile)
+                      </button>
+                      <button
+                        onClick={handleDeletePatientClick}
+                        className="bg-rose-600 hover:bg-rose-700 text-white py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1"
+                        id="btn-delete-patient-action"
+                      >
+                        <Trash2 size={13} />
+                        I-delete (Delete)
+                      </button>
+                    </>
+                  ) : (
+                    <span className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg">
+                      🔒 Read-Only Patient File
+                    </span>
+                  )}
                   {selectedPatient.isIndigent && (
                     <span className="bg-rose-100 text-rose-800 font-black border border-rose-200 text-xs uppercase px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
                       <ShieldAlert size={14} />

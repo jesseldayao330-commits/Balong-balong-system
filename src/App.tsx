@@ -415,16 +415,18 @@ export default function App() {
 
     switch (role) {
       case 'BHW':
-        // BHW: Patient list view-only, Patient registration add-only, Clinical Vitals encode-only, Surveillance map.
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'map'].includes(t.id));
-      case 'MIDWIFE':
+        // BHW: Patient list view-only, Patient registration add-only, Clinical Vitals encode-only, Surveillance map, and E-Pharmacy (Household Residents).
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'pharmacy', 'map'].includes(t.id));
       case 'NURSE':
+        // Nurse: Has E-Pharmacy (Child/Pediatric), clinical/programs/clearance/map etc.
+        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
+      case 'MIDWIFE':
       case 'PHARMACIST':
       case 'MHO':
-        // Midwife/Nurse: Clinical diagnostics, medical formulas prescribing, FHSIS monthly logs, program tracking.
+        // Midwife/Pharmacist/MHO: Clinical diagnostics, programs, pharmacy, and admin reports.
         return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
       case 'ADMIN':
-        // Admin: Patient/vitals full editing, audits, setting center titles & logos, user list deactivations.
+        // Admin: Patient/vitals view-only details, audits, settings, maps, reports.
         return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies', 'admin_panel'].includes(t.id));
       default:
         return allTabs.filter((t) => ['overview', 'patients', 'clinical'].includes(t.id));
@@ -536,7 +538,14 @@ export default function App() {
           {/* Core content viewport */}
           <div className="col-span-1 md:col-span-9" id="bhc-workspace-viewport">
             {activeTab === 'overview' && (
-              <SystemOverview patients={patients} households={households} language={language} />
+              <SystemOverview 
+                patients={patients} 
+                households={households} 
+                language={language} 
+                userActiveRole={activeRole}
+                prenatals={prenatals}
+                vaccinations={vaccinations}
+              />
             )}
 
             {activeTab === 'map' && (
@@ -573,7 +582,7 @@ export default function App() {
                           : 'text-slate-500 hover:text-slate-800'
                       }`}
                     >
-                      👤 Add New Patient
+                      {activeRole === 'ADMIN' ? '👤 View All Patients' : '👤 Add New Patient'}
                     </button>
                   </div>
                 </div>
@@ -589,6 +598,7 @@ export default function App() {
                     inventory={inventory}
                     dailyLogs={dailyLogs}
                     language={language}
+                    activeRole={activeRole}
                     onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
                     onUpdateHousehold={(updatedHH) => setHouseholds((prev) => prev.map((h) => h.id === updatedHH.id ? updatedHH : h))}
                     onDeleteHousehold={(id) => setHouseholds((prev) => prev.filter((h) => h.id !== id))}
@@ -618,7 +628,10 @@ export default function App() {
                     }}
                     onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
                     language={language}
+                    activeRole={activeRole}
                     initialPatientId={selectedPatientIdForEdit}
+                    onAddVaccination={(newVac) => setVaccinations((prev) => [...prev, newVac])}
+                    onAddPrenatal={(newPre) => setPrenatals((prev) => [...prev, newPre])}
                   />
                 )}
               </div>
@@ -666,12 +679,14 @@ export default function App() {
                 inventory={inventory}
                 dispensed={dispensed}
                 patients={patients}
+                prenatals={prenatals}
                 onDispense={(newDisp) => setDispensed([...dispensed, newDisp])}
                 onUpdateInventory={handleUpdateInventory}
                 onDeleteInventory={handleDeleteInventory}
                 onUpdateDispensed={handleUpdateDispensed}
                 onDeleteDispensed={handleDeleteDispensed}
                 language={language}
+                activeRole={activeRole}
               />
             )}
 
@@ -687,6 +702,7 @@ export default function App() {
                 onUpdateCertificate={handleUpdateCertificate}
                 onDeleteCertificate={handleDeleteCertificate}
                 language={language}
+                activeRole={activeRole}
               />
             )}
 

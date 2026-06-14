@@ -192,6 +192,11 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
     e.preventDefault();
     if (!selectedPatId) return;
 
+    if (activeRole === 'ADMIN') {
+      alert('Access Denied: Read-only access for Administrator.');
+      return;
+    }
+
     if (editingVitalId) {
       const updatedV: VitalSigns = {
         id: editingVitalId,
@@ -240,6 +245,11 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
   const handleSaveConsultation = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPatId) return;
+
+    if (activeRole === 'ADMIN') {
+      alert('Access Denied: Read-only access for Administrator.');
+      return;
+    }
 
     if (editingConsultId) {
       const updatedC: Consultation = {
@@ -355,7 +365,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
               }`}
               id="tab-vitals"
             >
-              {editingVitalId ? '✏️ Ibahagi ang Vitals (Editing)' : '1. Vital Signs Log'}
+              {activeRole === 'ADMIN' ? '👁️ View Vital Signs' : (editingVitalId ? '✏️ Ibahagi ang Vitals (Editing)' : '1. Vital Signs Log')}
             </button>
             <button
               onClick={() => setActiveTab('consultation')}
@@ -364,7 +374,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
               }`}
               id="tab-consultation"
             >
-              {editingConsultId ? '✏️ Ibahagi ang Konsulta (Editing)' : '2. Log Consultation'}
+              {activeRole === 'ADMIN' ? '👁️ View Consultation Detail' : (editingConsultId ? '✏️ Ibahagi ang Konsulta (Editing)' : '2. Log Consultation')}
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -373,369 +383,572 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
               }`}
               id="tab-diagnostic-history"
             >
-              Medical History ({patientConsults.length})
+              {activeRole === 'ADMIN' ? '👁️ View Medical History' : 'Medical History'} ({patientConsults.length})
             </button>
           </div>
 
           {/* WORK TAB 1: Vital Signs Form */}
           {activeTab === 'vitals' && (
-            <form onSubmit={handleSaveVitals} className="space-y-4 pt-3" id="vitals-entry-form">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Blood Pressure (Systolic) *</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      required
-                      min="50"
-                      max="250"
-                      className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono"
-                      value={systolic}
-                      onChange={(e) => setSystolic(parseInt(e.target.value) || 120)}
-                    />
-                    <span className="text-xs text-slate-400">mmHg</span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1">
+              {/* Form & Detail Viewer */}
+              <div className="lg:col-span-8 space-y-4">
+                {activeRole === 'ADMIN' && (
+                  <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+                    {editingVitalId ? (
+                      <span>Nakasentro sa record ID <strong className="font-mono text-blue-950 font-extrabold">{editingVitalId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon gamit ang button sa ibaba.</span>
+                    ) : (
+                      <span>Naka-log in bilang Admin (Ericson Padunan). Pumili ng anumang vital signs record sa listahan sa kanan upang suriin ang bawat parametro ng pasyente sa form view sa ibaba.</span>
+                    )}
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">BP (Diastolic) *</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      required
-                      min="30"
-                      max="150"
-                      className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono"
-                      value={diastolic}
-                      onChange={(e) => setDiastolic(parseInt(e.target.value) || 80)}
-                    />
-                    <span className="text-xs text-slate-400">mmHg</span>
-                  </div>
-                </div>
+                <form onSubmit={handleSaveVitals} className="space-y-4 pt-1" id="vitals-entry-form">
+                  <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Blood Pressure (Systolic) *</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            required
+                            min="50"
+                            max="250"
+                            className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                            value={systolic}
+                            onChange={(e) => setSystolic(parseInt(e.target.value) || 120)}
+                          />
+                          <span className="text-xs text-slate-400">mmHg</span>
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Lagnat (Temperature °C) *</label>
-                  <div className="flex items-center gap-1">
-                    <Thermometer size={14} className="text-amber-500" />
-                    <input
-                      type="number"
-                      step="0.1"
-                      required
-                      min="33"
-                      max="43"
-                      className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono"
-                      value={temperature}
-                      onChange={(e) => setTemperature(parseFloat(e.target.value) || 36.5)}
-                    />
-                    <span className="text-xs text-slate-400">°C</span>
-                  </div>
-                </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">BP (Diastolic) *</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            required
+                            min="30"
+                            max="150"
+                            className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                            value={diastolic}
+                            onChange={(e) => setDiastolic(parseInt(e.target.value) || 80)}
+                          />
+                          <span className="text-xs text-slate-400">mmHg</span>
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Detox/Heart Rate (bpm)</label>
-                  <input
-                    type="number"
-                    className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono"
-                    value={heartRate}
-                    onChange={(e) => setHeartRate(parseInt(e.target.value) || 72)}
-                  />
-                </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Lagnat (Temperature °C) *</label>
+                        <div className="flex items-center gap-1">
+                          <Thermometer size={14} className="text-amber-500" />
+                          <input
+                            type="number"
+                            step="0.1"
+                            required
+                            min="33"
+                            max="43"
+                            className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                            value={temperature}
+                            onChange={(e) => setTemperature(parseFloat(e.target.value) || 36.5)}
+                          />
+                          <span className="text-xs text-slate-400">°C</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Detox/Heart Rate (bpm)</label>
+                        <input
+                          type="number"
+                          className="w-full border border-slate-200 p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                          value={heartRate}
+                          onChange={(e) => setHeartRate(parseInt(e.target.value) || 72)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Patient scale body parameters Weight, Height, BMI */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/20">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Weight (Timbang) *</label>
+                        <div className="flex items-center gap-1">
+                          <Scale size={14} className="text-slate-400" />
+                          <input
+                            type="number"
+                            step="0.1"
+                            required
+                            className="w-full border border-slate-200 bg-white p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                            value={weightKg}
+                            onChange={(e) => setWeightKg(parseFloat(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-slate-400">Kg</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Height (Taas) *</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            required
+                            className="w-full border border-slate-200 bg-white p-2.5 rounded-lg text-sm text-center font-mono bg-white"
+                            value={heightCm}
+                            onChange={(e) => setHeightCm(parseInt(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-slate-400">Cm</span>
+                        </div>
+                      </div>
+
+                      {/* BMI Auto compute output */}
+                      <div className="col-span-2 flex items-center justify-between border-l border-slate-200 pl-4">
+                        <div className="font-mono text-xs">
+                          <span className="text-slate-400 text-[10px] block font-sans">COMPUTED BMI</span>
+                          <strong className="text-slate-800 text-lg mr-2">{bmi}</strong>
+                          <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
+                            bmiCategory === 'Normal' ? 'bg-emerald-100 text-emerald-800' :
+                            bmiCategory === 'Underweight' ? 'bg-amber-100 text-amber-800 animate-pulse' :
+                            'bg-rose-100 text-rose-800 font-bold'
+                          }`}>
+                            {bmiCategory}
+                          </span>
+                        </div>
+                        
+                        {bmiCategory === 'Underweight' && (
+                          <span className="text-[10px] font-medium text-amber-700 bg-amber-50 p-2 rounded max-w-44">
+                            Refer to Operation Timbang Nutritions checklist
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Seniors sugar check metrics */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Respiratory Rate (breaths/min)</label>
+                        <input
+                          type="number"
+                          className="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-mono bg-white"
+                          value={respiratoryRate}
+                          onChange={(e) => setRespiratoryRate(Math.max(1, parseInt(e.target.value) || 18))}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Random Blood Sugar (Seniors Alert prn)</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-mono bg-white"
+                          placeholder="mg/dL (e.g. 110)"
+                          value={bloodSugar}
+                          onChange={(e) => setBloodSugar(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  {activeRole !== 'ADMIN' && (
+                    <div className="flex justify-end gap-3 pt-3">
+                      {editingVitalId && (
+                        <button
+                          type="button"
+                          onClick={cancelEditingVital}
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
+                        >
+                          I-cancel (Cancel)
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                        id="vitals-entry-submit-button"
+                      >
+                        {editingVitalId ? 'I-update ang mga Vital Stats (Update Vitals)' : 'I-save ang mga Vital Stats (Process to Consultation)'}
+                      </button>
+                    </div>
+                  )}
+
+                  {activeRole === 'ADMIN' && editingVitalId && (
+                    <div className="flex justify-end pt-3">
+                      <button
+                        type="button"
+                        onClick={cancelEditingVital}
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold py-2 px-5 rounded-lg text-xs cursor-pointer border border-slate-300/60"
+                      >
+                        Reset / Clear Seleksyon
+                      </button>
+                    </div>
+                  )}
+                </form>
               </div>
 
-              {/* Patient scale body parameters Weight, Height, BMI */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/20">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Weight (Timbang) *</label>
-                  <div className="flex items-center gap-1">
-                    <Scale size={14} className="text-slate-400" />
-                    <input
-                      type="number"
-                      step="0.1"
-                      required
-                      className="w-full border border-slate-200 bg-white p-2.5 rounded-lg text-sm text-center font-mono"
-                      value={weightKg}
-                      onChange={(e) => setWeightKg(parseFloat(e.target.value) || 0)}
-                    />
-                    <span className="text-xs text-slate-400">Kg</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Height (Taas) *</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      required
-                      className="w-full border border-slate-200 bg-white p-2.5 rounded-lg text-sm text-center font-mono"
-                      value={heightCm}
-                      onChange={(e) => setHeightCm(parseInt(e.target.value) || 0)}
-                    />
-                    <span className="text-xs text-slate-400">Cm</span>
-                  </div>
-                </div>
-
-                {/* BMI Auto compute output */}
-                <div className="col-span-2 flex items-center justify-between border-l border-slate-200 pl-4">
-                  <div className="font-mono text-xs">
-                    <span className="text-slate-400 text-[10px] block font-sans">COMPUTED BMI</span>
-                    <strong className="text-slate-800 text-lg mr-2">{bmi}</strong>
-                    <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
-                      bmiCategory === 'Normal' ? 'bg-emerald-100 text-emerald-800' :
-                      bmiCategory === 'Underweight' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                      'bg-rose-100 text-rose-800 font-bold'
-                    }`}>
-                      {bmiCategory}
-                    </span>
+              {/* Sidebar Past Vitals Log Record */}
+              <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between h-[550px]" id="admin-vitals-list-sidebar">
+                <div className="space-y-3">
+                  <div className="border-b border-slate-200 pb-2.5">
+                    <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                      📁 Vital Signs Audit Log
+                    </h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Lahat ng Vital Records ng Patient</p>
                   </div>
                   
-                  {bmiCategory === 'Underweight' && (
-                    <span className="text-[10px] font-medium text-amber-700 bg-amber-50 p-2 rounded max-w-44">
-                      Refer to Operation Timbang Nutritions checklist
-                    </span>
+                  {patientVitals.length === 0 ? (
+                    <div className="p-4 text-center text-slate-400 text-xs bg-white rounded-lg italic border border-slate-100">
+                      Walang nakaraang records (Empty record stack).
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+                      {patientVitals.map((vit) => (
+                        <div 
+                          key={vit.id} 
+                          className={`p-3 rounded-xl border transition-all ${
+                            editingVitalId === vit.id 
+                              ? 'bg-blue-50/55 border-blue-500 shadow-2xs' 
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-2 text-[10px] font-mono">
+                            <span className="font-extrabold text-slate-500">Petsa: {vit.date}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                              vit.bmiCategory === 'Normal' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                            }`}>
+                              BMI: {vit.bmi}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] font-mono text-slate-650">
+                            <div>BP: <strong className="text-slate-800">{vit.systolic}/{vit.diastolic}</strong></div>
+                            <div>Temp: <strong className="text-slate-800">{vit.temperature}°C</strong></div>
+                            <div>Weight: <strong className="text-slate-800">{vit.weightKg}kg</strong></div>
+                            <div>HR: <strong className="text-slate-800">{vit.heartRate} bpm</strong></div>
+                          </div>
+
+                          <div className="mt-3.5 border-t border-slate-100/70 pt-2 flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => startEditingVital(vit)}
+                              className={`w-full py-1.5 px-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center ${
+                                editingVitalId === vit.id 
+                                  ? 'bg-blue-600 text-white shadow-xs font-semibold' 
+                                  : 'bg-slate-150 hover:bg-slate-200 text-slate-700 font-semibold'
+                              }`}
+                            >
+                              {editingVitalId === vit.id ? '👁️ Selected' : '👁️ View In Form'}
+                            </button>
+                            
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteVitalClick(vit.id)}
+                                className="bg-rose-50 hover:bg-rose-100 text-rose-600 p-1.5 rounded-lg border border-rose-200/45 cursor-pointer"
+                                title="Burahin"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-              </div>
-
-              {/* Seniors sugar check metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Respiratory Rate (breaths/min)</label>
-                  <input
-                    type="number"
-                    className="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-mono"
-                    value={respiratoryRate}
-                    onChange={(e) => setRespiratoryRate(Math.max(1, parseInt(e.target.value) || 18))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Random Blood Sugar (Seniors Alert prn)</label>
-                  <input
-                    type="text"
-                    className="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-mono"
-                    placeholder="mg/dL (e.g. 110)"
-                    value={bloodSugar}
-                    onChange={(e) => setBloodSugar(e.target.value)}
-                  />
+                <div className="text-[9px] text-slate-450 font-mono mt-2 bg-slate-100/50 p-2 rounded-lg border border-slate-200/40 text-center">
+                  Total Vital Records: <strong>{patientVitals.length} logs</strong>
                 </div>
               </div>
-
-              <div className="flex justify-end gap-3 pt-3">
-                {editingVitalId && (
-                  <button
-                    type="button"
-                    onClick={cancelEditingVital}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
-                  >
-                    I-cancel (Cancel)
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                  id="vitals-entry-submit-button"
-                >
-                  {editingVitalId ? 'I-update ang mga Vital Stats (Update Vitals)' : 'I-save ang mga Vital Stats (Process to Consultation)'}
-                </button>
-              </div>
-            </form>
+            </div>
           )}
 
           {/* WORK TAB 2: Clean Consultation Form */}
           {activeTab === 'consultation' && (
-            <div className="space-y-4">
-              {activeRole === 'MIDWIFE' && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                  <strong className="text-amber-800 font-bold block font-sans">📋 Pangkalahatang Konsulta (General Check-up Notice):</strong>
-                  <span>Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.</span>
-                </div>
-              )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1">
+              {/* Form Side */}
+              <div className="lg:col-span-8 space-y-4">
+                {activeRole === 'MIDWIFE' && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+                    <strong className="text-amber-800 font-bold block font-sans">📋 Pangkalahatang Konsulta (General Check-up Notice):</strong>
+                    <span>Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.</span>
+                  </div>
+                )}
+                {activeRole === 'ADMIN' && (
+                  <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
+                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+                    {editingConsultId ? (
+                      <span>Nakasentro sa consultation ID <strong className="font-mono text-blue-950 font-extrabold">{editingConsultId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon.</span>
+                    ) : (
+                      <span>Naka-log in bilang Admin (Ericson Padunan). Pumili ng anumang consultation record sa listahan sa kanan upang suriin ang mga detalyadong tala at diagnosis ng pasyente rito.</span>
+                    )}
+                  </div>
+                )}
 
-              <form onSubmit={handleSaveConsultation} className="space-y-4 pt-3" id="consultation-form-block">
-                <fieldset disabled={activeRole === 'MIDWIFE'} className="space-y-4">
-              {/* Vitals snapshot box under review */}
-              {patientVitals.length > 0 && (
-                <div className="bg-emerald-50/30 border border-emerald-100 p-3 rounded-lg text-xs text-slate-600 flex items-center justify-between">
-                  <span>Pinakahuling Vital Signs ({patientVitals[patientVitals.length - 1].date}): </span>
-                  <span className="font-bold font-mono text-slate-800">
-                    BP: {patientVitals[patientVitals.length - 1].systolic}/{patientVitals[patientVitals.length - 1].diastolic} mmHg •
-                    Temp: {patientVitals[patientVitals.length - 1].temperature}°C •
-                    Weight: {patientVitals[patientVitals.length - 1].weightKg}Kg •
-                    BMI: {patientVitals[patientVitals.length - 1].bmi} ({patientVitals[patientVitals.length - 1].bmiCategory})
-                  </span>
-                </div>
-              )}
+                <form onSubmit={handleSaveConsultation} className="space-y-4 pt-1" id="consultation-form-block">
+                  <fieldset disabled={activeRole === 'MIDWIFE' || activeRole === 'ADMIN'} className="space-y-4">
+                    {/* Vitals snapshot box under review */}
+                    {patientVitals.length > 0 && (
+                      <div className="bg-emerald-50/30 border border-emerald-100 p-3 rounded-lg text-xs text-slate-600 flex items-center justify-between">
+                        <span>Pinakahuling Vital Signs ({patientVitals[patientVitals.length - 1].date}): </span>
+                        <span className="font-bold font-mono text-slate-800">
+                          BP: {patientVitals[patientVitals.length - 1].systolic}/{patientVitals[patientVitals.length - 1].diastolic} mmHg •
+                          Temp: {patientVitals[patientVitals.length - 1].temperature}°C •
+                          Weight: {patientVitals[patientVitals.length - 1].weightKg}Kg •
+                          BMI: {patientVitals[patientVitals.length - 1].bmi} ({patientVitals[patientVitals.length - 1].bmiCategory})
+                        </span>
+                      </div>
+                    )}
 
-              {/* Chef complaints */}
-              <div>
-                <label className="block text-xs font-black text-slate-600 uppercase mb-1">Pangunahing Daing (Chief Complaint) *</label>
-                <textarea
-                  required
-                  rows={2}
-                  className="w-full border border-slate-200 p-2.5 rounded-lg text-sm focus:outline-hidden"
-                  placeholder="Isulat ang mismong salita ng pasyente. Halimbawa: Inubo ng may plema sa loob ng dalawang linggo."
-                  value={chiefComplaint}
-                  onChange={(e) => setChiefComplaint(e.target.value)}
-                />
-              </div>
+                    {/* Chief complaints */}
+                    <div>
+                      <label className="block text-xs font-black text-slate-600 uppercase mb-1">Pangunahing Daing (Chief Complaint) *</label>
+                      <textarea
+                        required
+                        rows={2}
+                        className="w-full border border-slate-200 p-2.5 rounded-lg text-sm focus:outline-hidden bg-white"
+                        placeholder="Isulat ang mismong salita ng pasyente. Halimbawa: Inubo ng may plema sa loob ng dalawang linggo."
+                        value={chiefComplaint}
+                        onChange={(e) => setChiefComplaint(e.target.value)}
+                      />
+                    </div>
 
-              {/* Subjective Objective details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Subjective (Mga nararamdaman pa ng pasyente)</label>
-                  <textarea
-                    rows={3}
-                    className="w-full border border-slate-200 p-2.5 rounded-lg text-xs"
-                    placeholder="Kasaysayan ng sakit, pamilya, o gamot na ininom..."
-                    value={subjective}
-                    onChange={(e) => setSubjective(e.target.value)}
-                  />
-                </div>
+                    {/* Subjective Objective details */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Subjective (Mga nararamdaman pa ng pasyente)</label>
+                        <textarea
+                          rows={3}
+                          className="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-white"
+                          placeholder="Kasaysayan ng sakit, pamilya, o gamot na ininom..."
+                          value={subjective}
+                          onChange={(e) => setSubjective(e.target.value)}
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Objective (Klinikal na obserbasyon ng BHW/Midwife)</label>
-                  <textarea
-                    rows={3}
-                    className="w-full border border-slate-200 p-2.5 rounded-lg text-xs"
-                    placeholder="Pisikal na pagsusuri, tunog ng baga, lalamunan..."
-                    value={objective}
-                    onChange={(e) => setObjective(e.target.value)}
-                  />
-                </div>
-              </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Objective (Klinikal na obserbasyon ng BHW/Midwife)</label>
+                        <textarea
+                          rows={3}
+                          className="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-white"
+                          placeholder="Pisikal na pagsusuri, tunog ng baga, lalamunan..."
+                          value={objective}
+                          onChange={(e) => setObjective(e.target.value)}
+                        />
+                      </div>
+                    </div>
 
-              {/* Diagnostic/ICD-10 quick checkboxes selection */}
-              <div>
-                <label className="block text-xs font-black text-indigo-950 uppercase mb-2">Philippine Common Cases & ICD-10 Coding Checkbox</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200/50">
-                  {icdQuickOptions.map((opt) => {
-                    const selectKey = `${opt.code} - ${opt.term}`;
-                    const isSelected = diagnoses.includes(selectKey);
-                    return (
+                    {/* Diagnostic/ICD-10 quick checkboxes selection */}
+                    <div>
+                      <label className="block text-xs font-black text-indigo-950 uppercase mb-2">Philippine Common Cases & ICD-10 Coding Checkbox</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200/50">
+                        {icdQuickOptions.map((opt) => {
+                          const selectKey = `${opt.code} - ${opt.term}`;
+                          const isSelected = diagnoses.includes(selectKey);
+                          return (
+                            <button
+                              type="button"
+                              key={opt.code}
+                              onClick={() => handleDiagnoseSelect(selectKey)}
+                              className={`text-left p-2 rounded text-[11px] font-semibold flex items-center justify-between border cursor-pointer ${
+                                isSelected ? 'bg-indigo-600 text-white border-indigo-650' : 'bg-white text-slate-700 border-slate-200'
+                              }`}
+                            >
+                              <span>{opt.code}: {opt.term}</span>
+                              {isSelected && <Check size={12} className="shrink-0 ml-1" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Custom diagnosis */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="flex-1 border border-slate-200 p-2 rounded-lg text-xs bg-white"
+                        placeholder="Iba pang Diagnosis / ICD-10 codings..."
+                        value={customDiagnosis}
+                        onChange={(e) => setCustomDiagnosis(e.target.value)}
+                      />
                       <button
                         type="button"
-                        key={opt.code}
-                        onClick={() => handleDiagnoseSelect(selectKey)}
-                        className={`text-left p-2 rounded text-[11px] font-semibold flex items-center justify-between border cursor-pointer ${
-                          isSelected ? 'bg-indigo-600 text-white border-indigo-650' : 'bg-white text-slate-700 border-slate-200'
-                        }`}
+                        onClick={() => {
+                          if (customDiagnosis.trim()) {
+                            setDiagnoses([...diagnoses, customDiagnosis.trim()]);
+                            setCustomDiagnosis('');
+                          }
+                        }}
+                        className="bg-indigo-100 hover:bg-slate-200 border border-indigo-200 text-indigo-900 text-xs px-3 py-1.5 rounded-lg cursor-pointer"
                       >
-                        <span>{opt.code}: {opt.term}</span>
-                        {isSelected && <Check size={12} className="shrink-0 ml-1" />}
+                        Idugang Diagnosis
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Custom diagnosis */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  className="flex-1 border border-slate-200 p-2 rounded-lg text-xs"
-                  placeholder="Iba pang Diagnosis / ICD-10 codings..."
-                  value={customDiagnosis}
-                  onChange={(e) => setCustomDiagnosis(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (customDiagnosis.trim()) {
-                      setDiagnoses([...diagnoses, customDiagnosis.trim()]);
-                      setCustomDiagnosis('');
-                    }
-                  }}
-                  className="bg-indigo-100 hover:bg-slate-200 border border-indigo-200 text-indigo-900 text-xs px-3 py-1.5 rounded-lg cursor-pointer"
-                >
-                  Idugang Diagnosis
-                </button>
-              </div>
-
-              {/* Disease surveillance triggers */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-b border-dashed border-slate-200 py-3 bg-red-50/20 p-3 rounded-xl">
-                <div>
-                  <label className="flex items-start gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="mt-1 accent-rose-600"
-                      checked={isTBPossible}
-                      onChange={(e) => setIsTBPossible(e.target.checked)}
-                    />
-                    <div>
-                      <span className="text-xs font-bold text-rose-800 flex items-center gap-1">
-                        <AlertTriangle size={12} /> TB Presumptive Alert
-                      </span>
-                      <p className="text-[10px] text-slate-500 mt-0.5">May ubo ng mahigit 2 linggo, lagnat sa hapon, o bawas sa timbang.</p>
                     </div>
-                  </label>
-                </div>
 
-                <div>
-                  <label className="flex items-start gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="mt-1 accent-indigo-600"
-                      checked={isDenguePossible}
-                      onChange={(e) => setIsDenguePossible(e.target.checked)}
-                    />
-                    <div>
-                      <span className="text-xs font-bold text-indigo-800 flex items-center gap-1">
-                        <AlertTriangle size={12} /> Dengue Outbreak Check
-                      </span>
-                      <p className="text-[10px] text-slate-500 mt-0.5">May mataas na lagnat, sakit ng ulo, likod ng mata, o mga petechiae.</p>
+                    {/* Disease surveillance triggers */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-b border-dashed border-slate-200 py-3 bg-red-50/20 p-3 rounded-xl">
+                      <div>
+                        <label className="flex items-start gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            className="mt-1 accent-rose-600"
+                            checked={isTBPossible}
+                            onChange={(e) => setIsTBPossible(e.target.checked)}
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-rose-800 flex items-center gap-1">
+                              <AlertTriangle size={12} /> TB Presumptive Alert
+                            </span>
+                            <p className="text-[10px] text-slate-500 mt-0.5">May ubo ng mahigit 2 linggo, lagnat sa hapon, o bawas sa timbang.</p>
+                          </div>
+                        </label>
+                      </div>
+
+                      <div>
+                        <label className="flex items-start gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            className="mt-1 accent-indigo-600"
+                            checked={isDenguePossible}
+                            onChange={(e) => setIsDenguePossible(e.target.checked)}
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-indigo-800 flex items-center gap-1">
+                              <AlertTriangle size={12} /> Dengue Outbreak Check
+                            </span>
+                            <p className="text-[10px] text-slate-500 mt-0.5">May mataas na lagnat, sakit ng ulo, likod ng mata, o mga petechiae.</p>
+                          </div>
+                        </label>
+                      </div>
                     </div>
-                  </label>
-                </div>
-              </div>
 
-              {/* Planned treatment plan prescriptions */}
-              <div>
-                <label className="block text-xs font-black text-slate-600 uppercase mb-1">Plano at Paggamot (Plan & Treatment Prescription) *</label>
-                <textarea
-                  required
-                  rows={3}
-                  className="w-full border border-slate-200 p-2.5 rounded-lg text-xs"
-                  placeholder="Ilista ang ireresetang gamot (medicine dosage format) pati na rin ang mga payo o iskedyul ng lab..."
-                  value={planTreatment}
-                  onChange={(e) => setPlanTreatment(e.target.value)}
-                />
-              </div>
+                    {/* Planned treatment plan prescriptions */}
+                    <div>
+                      <label className="block text-xs font-black text-slate-600 uppercase mb-1">Plano at Paggamot (Plan & Treatment Prescription) *</label>
+                      <textarea
+                        required
+                        rows={3}
+                        className="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-white text-slate-800 font-mono"
+                        placeholder="Ilista ang ireresetang gamot (medicine dosage format) pati na rin ang mga payo o iskedyul ng lab..."
+                        value={planTreatment}
+                        onChange={(e) => setPlanTreatment(e.target.value)}
+                      />
+                    </div>
 
-              {/* Referral check */}
-              <div>
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="accent-emerald-600"
-                    checked={referredToHospital}
-                    onChange={(e) => setReferredToHospital(e.target.checked)}
-                  />
-                  <span>Kailangang i-refer sa Municipal Hospital? (Requires Outgoing Referral document)</span>
-                </label>
-              </div>
+                    {/* Referral check */}
+                    <div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="accent-emerald-600"
+                          checked={referredToHospital}
+                          onChange={(e) => setReferredToHospital(e.target.checked)}
+                        />
+                        <span>Kailangang i-refer sa Municipal Hospital? (Requires Outgoing Referral document)</span>
+                      </label>
+                    </div>
+                  </fieldset>
 
-                {activeRole !== 'MIDWIFE' && (
-                  <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                    {editingConsultId && (
+                  {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                    <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                      {editingConsultId && (
+                        <button
+                          type="button"
+                          onClick={cancelEditingConsult}
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
+                        >
+                          I-cancel (Cancel)
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
+                        id="consultation-entry-submit-button"
+                      >
+                        {editingConsultId ? 'I-update ang Consultation Record' : 'Ipasa ang Clinical Consultation Record'}
+                      </button>
+                    </div>
+                  )}
+
+                  {activeRole === 'ADMIN' && editingConsultId && (
+                    <div className="flex justify-end pt-3 border-t border-slate-100">
                       <button
                         type="button"
                         onClick={cancelEditingConsult}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-lg text-xs cursor-pointer"
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold py-2 px-5 rounded-lg text-xs cursor-pointer border border-slate-300/60"
                       >
-                        I-cancel (Cancel)
+                        Reset / Clear Seleksyon
                       </button>
-                    )}
-                    <button
-                      type="submit"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-                      id="consultation-entry-submit-button"
-                    >
-                      {editingConsultId ? 'I-update ang Consultation Record' : 'Ipasa ang Clinical Consultation Record'}
-                    </button>
+                    </div>
+                  )}
+                </form>
+              </div>
+
+              {/* Sidebar: Past Consultation Records List */}
+              <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between h-[550px]" id="admin-consults-list-sidebar">
+                <div className="space-y-3">
+                  <div className="border-b border-slate-200 pb-2.5">
+                    <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                      📁 Clinical Consultation Audit Log
+                    </h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Lahat ng Consultation ng Patient</p>
                   </div>
-                )}
-                </fieldset>
-              </form>
+
+                  {patientConsults.length === 0 ? (
+                    <div className="p-4 text-center text-slate-400 text-xs bg-white rounded-lg italic border border-slate-100">
+                      Walang nakaraang records (Empty record stack).
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+                      {patientConsults.map((con) => (
+                        <div 
+                          key={con.id} 
+                          className={`p-3 rounded-xl border transition-all ${
+                            editingConsultId === con.id 
+                              ? 'bg-blue-50/55 border-blue-500 shadow-2xs' 
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-2 text-[10px] font-mono">
+                            <span className="font-extrabold text-slate-500">Petsa: {con.date}</span>
+                            <span className="text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded text-[8px] font-black uppercase">
+                              {con.attendingStaff}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1 text-xs">
+                            <span className="text-rose-900 font-bold block text-[10px]">Daing / Complaint:</span>
+                            <p className="text-slate-600 line-clamp-2 italic text-[11px]">"{con.chiefComplaint}"</p>
+                          </div>
+
+                          <div className="mt-3 border-t border-slate-100/70 pt-2 flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => startEditingConsult(con)}
+                              className={`w-full py-1.5 px-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center ${
+                                editingConsultId === con.id 
+                                  ? 'bg-blue-600 text-white shadow-xs font-semibold' 
+                                  : 'bg-slate-150 hover:bg-slate-200 text-slate-700 font-semibold'
+                              }`}
+                            >
+                              {editingConsultId === con.id ? '👁️ Selected' : '👁️ View In Form'}
+                            </button>
+
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteConsultClick(con.id)}
+                                className="bg-rose-50 hover:bg-rose-100 text-rose-600 p-1.5 rounded-lg border border-rose-200/45 cursor-pointer"
+                                title="Burahin"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="text-[9px] text-slate-450 font-mono mt-2 bg-slate-100/50 p-2 rounded-lg border border-slate-200/40 text-center">
+                  Total Consultations: <strong>{patientConsults.length} logs</strong>
+                </div>
+              </div>
             </div>
           )}
 
@@ -755,24 +968,26 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                       <div key={vit.id} className="border border-slate-200 rounded-lg p-3 bg-white shadow-xs">
                         <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-2">
                           <span className="text-[10px] font-bold text-slate-400 font-mono">ID: {vit.id} • Petsa: {vit.date}</span>
-                          <div className="flex gap-1 text-slate-500">
-                            <button
-                              type="button"
-                              onClick={() => startEditingVital(vit)}
-                              className="p-1 hover:text-emerald-700 hover:bg-slate-50 rounded cursor-pointer transition-colors"
-                              title="Edit Vitals"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteVitalClick(vit.id)}
-                              className="p-1 hover:text-rose-600 hover:bg-slate-50 rounded cursor-pointer transition-colors"
-                              title="Delete Vitals"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
+                          {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                            <div className="flex gap-1 text-slate-500">
+                              <button
+                                type="button"
+                                onClick={() => startEditingVital(vit)}
+                                className="p-1 hover:text-emerald-700 hover:bg-slate-50 rounded cursor-pointer transition-colors"
+                                title="Edit Vitals"
+                              >
+                                <Edit3 size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteVitalClick(vit.id)}
+                                className="p-1 hover:text-rose-600 hover:bg-slate-50 rounded cursor-pointer transition-colors"
+                                title="Delete Vitals"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-1 text-[11px] font-mono text-slate-755">
                           <div><span className="text-slate-400">BP:</span> <strong>{vit.systolic}/{vit.diastolic}</strong></div>
@@ -810,7 +1025,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                         <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
                           <span className="text-xs font-bold text-slate-400 font-mono">ID: {con.id} • Petsa: {con.date}</span>
                           <div className="flex items-center gap-3">
-                            {activeRole !== 'MIDWIFE' && (
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
                               <div className="flex gap-0.5">
                                 <button
                                   type="button"
