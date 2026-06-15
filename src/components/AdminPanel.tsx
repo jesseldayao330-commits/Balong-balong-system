@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, UserCheck, Settings, Database, Edit3, Trash2, Plus, Monitor, ShieldAlert, KeyRound, Wifi, RefreshCw } from 'lucide-react';
-import { Role } from '../types';
+import { ShieldCheck, UserCheck, Settings, Database, Edit3, Trash2, Plus, Monitor, ShieldAlert, KeyRound, Wifi, RefreshCw, Users, Search, ClipboardList } from 'lucide-react';
+import { Role, Patient } from '../types';
 
 interface UserAccount {
   id: string;
@@ -33,6 +33,7 @@ interface AdminPanelProps {
   centerLogo: string;
   setCenterLogo: (logo: string) => void;
   onAddAuditLog?: (action: string, details: string, severity?: 'Info' | 'Warning' | 'Critical') => void;
+  patients?: Patient[];
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -42,8 +43,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   setCenterAddress,
   centerLogo,
   setCenterLogo,
-  onAddAuditLog
+  onAddAuditLog,
+  patients = []
 }) => {
+  // States to filter patients registered under different roles
+  const [selectedWorkerFilter, setSelectedWorkerFilter] = useState<'ALL' | 'BHW' | 'MIDWIFE' | 'NURSE'>('ALL');
+  const [patientSearch, setPatientSearch] = useState('');
+
   // Workstation Accounts state - tailored to the authorized BHW, Midwife, Nurse, and Admin roles
   const [users, setUsers] = useState<UserAccount[]>(() => {
     const saved = localStorage.getItem('bhc_admin_users');
@@ -247,6 +253,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     alert(`Matagumpay na nabura ang account ni ${name}.`);
   };
 
+  // Categorize patients under specific roles (BHW, Nurse, Midwife) with high-accuracy fallback rules:
+  const bhwPatients = patients.filter(p => {
+    return p.registeredBy === 'BHW' || (!p.registeredBy && (!p.activePrograms.includes('EPI') && !p.activePrograms.includes('MCH') && !p.activePrograms.includes('FAMILY_PLANNING')));
+  });
+
+  const midwifePatients = patients.filter(p => {
+    return p.registeredBy === 'MIDWIFE' || (!p.registeredBy && (p.activePrograms.includes('MCH') || p.activePrograms.includes('FAMILY_PLANNING')));
+  });
+
+  const nursePatients = patients.filter(p => {
+    return p.registeredBy === 'NURSE' || (!p.registeredBy && p.activePrograms.includes('EPI'));
+  });
+
+  // Calculate filtered lists for search & detailed visualization
+  let filteredWorkerPatients = patients;
+  if (selectedWorkerFilter === 'BHW') {
+    filteredWorkerPatients = bhwPatients;
+  } else if (selectedWorkerFilter === 'MIDWIFE') {
+    filteredWorkerPatients = midwifePatients;
+  } else if (selectedWorkerFilter === 'NURSE') {
+    filteredWorkerPatients = nursePatients;
+  }
+
+  if (patientSearch.trim()) {
+    const sQuery = patientSearch.toLowerCase();
+    filteredWorkerPatients = filteredWorkerPatients.filter(p => 
+      `${p.firstName} ${p.lastName}`.toLowerCase().includes(sQuery) ||
+      p.id.toLowerCase().includes(sQuery) ||
+      p.purok.toLowerCase().includes(sQuery)
+    );
+  }
+
   return (
     <div className="space-y-6" id="admin-panel-viewport">
       
@@ -266,6 +304,225 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="flex items-center gap-1.5 self-start md:self-auto relative z-10">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
           <span className="text-[10px] font-bold font-mono text-emerald-400 uppercase tracking-widest bg-emerald-950/40 p-2 rounded border border-emerald-900/40">SYSTEM STATUS: ENCRYPTED PORTKEY</span>
+        </div>
+      </div>
+
+      {/* WORKER SPECIFIC PATIENT REGISTRIES AND DETAILED CENSUS MAP */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden" id="admin-patient-role-registry">
+        <div className="bg-slate-50 border-b border-slate-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Users className="text-purple-600" size={18} />
+            <div>
+              <h3 className="text-sm font-black uppercase text-slate-700 tracking-wide">
+                Worker Patient Desk Registries & Census Directory
+              </h3>
+              <p className="text-[10px] text-slate-400 font-sans mt-0.5">
+                Breakdown of active patients registered under each medical role desk (BHW, Midwife, and Nurse).
+              </p>
+            </div>
+          </div>
+          <span className="bg-slate-200 text-slate-700 px-2.5 py-1 text-[10px] font-mono font-black rounded border border-slate-300 uppercase tracking-wider self-start sm:self-auto">
+            Total System Registry: {patients.length} Patient(s)
+          </span>
+        </div>
+
+        <div className="p-5 space-y-6">
+          {/* Metrics summary row - clickable to auto-switch filter */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <button
+              type="button"
+              onClick={() => setSelectedWorkerFilter('ALL')}
+              className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                selectedWorkerFilter === 'ALL'
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider">Lahat ng Pasyente</span>
+                <ClipboardList size={16} className={selectedWorkerFilter === 'ALL' ? 'text-slate-300' : 'text-slate-400'} />
+              </div>
+              <div className="text-2xl font-black font-mono">{patients.length}</div>
+              <p className={`text-[10px] mt-1 ${selectedWorkerFilter === 'ALL' ? 'text-slate-300' : 'text-slate-500'}`}>
+                All registered people in Barangay census.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedWorkerFilter('BHW')}
+              className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                selectedWorkerFilter === 'BHW'
+                  ? 'bg-emerald-700 text-white border-emerald-800 shadow-sm'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-100 hover:bg-emerald-100/50'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Barangay Health Worker (BHW)</span>
+                <Users size={16} className={selectedWorkerFilter === 'BHW' ? 'text-emerald-200' : 'text-emerald-600'} />
+              </div>
+              <div className="text-2xl font-black font-mono">{bhwPatients.length}</div>
+              <p className={`text-[10px] mt-1 ${selectedWorkerFilter === 'BHW' ? 'text-emerald-200' : 'text-emerald-600 font-medium'}`}>
+                General profiling & nutritional tracking desk.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedWorkerFilter('MIDWIFE')}
+              className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                selectedWorkerFilter === 'MIDWIFE'
+                  ? 'bg-rose-700 text-white border-rose-800 shadow-sm'
+                  : 'bg-rose-50 text-rose-800 border-rose-100 hover:bg-rose-100/50'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Barangay Midwife (RM)</span>
+                <Users size={16} className={selectedWorkerFilter === 'MIDWIFE' ? 'text-rose-200' : 'text-rose-600'} />
+              </div>
+              <div className="text-2xl font-black font-mono">{midwifePatients.length}</div>
+              <p className={`text-[10px] mt-1 ${selectedWorkerFilter === 'MIDWIFE' ? 'text-rose-200' : 'text-rose-600 font-medium'}`}>
+                Maternal health, prenatal & MCH registry.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedWorkerFilter('NURSE')}
+              className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                selectedWorkerFilter === 'NURSE'
+                  ? 'bg-indigo-700 text-white border-indigo-800 shadow-sm'
+                  : 'bg-indigo-50 text-indigo-800 border-indigo-100 hover:bg-indigo-100/50'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Barangay Nurse (RN)</span>
+                <Users size={16} className={selectedWorkerFilter === 'NURSE' ? 'text-indigo-200' : 'text-indigo-600'} />
+              </div>
+              <div className="text-2xl font-black font-mono">{nursePatients.length}</div>
+              <p className={`text-[10px] mt-1 ${selectedWorkerFilter === 'NURSE' ? 'text-indigo-200' : 'text-indigo-600 font-medium'}`}>
+                National EPI Program & immunization vaccines.
+              </p>
+            </button>
+          </div>
+
+          {/* Interactive Search inside selected registry */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200/80">
+            <div className="w-full sm:w-80 relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 rounded-lg text-xs text-slate-700 focus:outline-hidden focus:border-slate-400 font-sans"
+                placeholder={`Search ${selectedWorkerFilter === 'ALL' ? 'all' : selectedWorkerFilter} patients by name, ID or purok...`}
+                value={patientSearch}
+                onChange={(e) => setPatientSearch(e.target.value)}
+              />
+            </div>
+            
+            <div className="text-[11px] text-slate-500 font-medium self-end sm:self-auto font-mono">
+              Showing <span className="font-bold text-slate-800">{filteredWorkerPatients.length}</span> of <span className="font-bold">{
+                selectedWorkerFilter === 'ALL' ? patients.length :
+                selectedWorkerFilter === 'BHW' ? bhwPatients.length :
+                selectedWorkerFilter === 'MIDWIFE' ? midwifePatients.length :
+                nursePatients.length
+              }</span> patient(s)
+            </div>
+          </div>
+
+          {/* Patient Directory Table */}
+          <div className="overflow-x-auto rounded-xl border border-slate-150 shadow-2xs max-h-[380px] overflow-y-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/85 text-slate-500 font-black uppercase tracking-wider text-[10px] border-b border-slate-250 sticky top-0 bg-white z-10">
+                  <th className="p-3">Patient ID</th>
+                  <th className="p-3">Full Name (Pangalan)</th>
+                  <th className="p-3">Gender / Age</th>
+                  <th className="p-3">Purok Address</th>
+                  <th className="p-3">DOH Active Program(s)</th>
+                  <th className="p-3">Assigned Desk / Source</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {filteredWorkerPatients.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-400 font-sans italic">
+                      Walang nakatagong pasyente sa registry na ito. (No record entries match with your query list).
+                    </td>
+                  </tr>
+                ) : (
+                  filteredWorkerPatients.map((pat) => {
+                    const age = new Date().getFullYear() - new Date(pat.birthDate).getFullYear();
+                    const isBhw = bhwPatients.some(b => b.id === pat.id);
+                    const isMidwife = midwifePatients.some(m => m.id === pat.id);
+                    const isNurse = nursePatients.some(n => n.id === pat.id);
+                    const roleTag = isNurse ? 'NURSE' : isMidwife ? 'MIDWIFE' : 'BHW';
+                    
+                    return (
+                      <tr key={pat.id} className="hover:bg-slate-50/40 select-none transition-colors border-b border-slate-100">
+                        <td className="p-3">
+                          <span className="font-mono bg-indigo-50/50 border border-indigo-100/60 font-black text-indigo-800 py-1 px-2.5 rounded text-[10px] uppercase shadow-2xs">
+                            {pat.id}
+                          </span>
+                        </td>
+                        <td className="p-3 font-extrabold text-slate-800 text-[13px]">
+                          {pat.lastName}, {pat.firstName} {pat.middleName ? `${pat.middleName.charAt(0)}.` : ''} {pat.suffix || ''}
+                        </td>
+                        <td className="p-3 font-semibold text-slate-600">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold mr-1.5 uppercase ${
+                            pat.gender === 'Female' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {pat.gender === 'Female' ? 'Babae' : 'Lalaki'}
+                          </span>
+                          <span className="font-mono text-xs">{age} y/o</span>
+                        </td>
+                        <td className="p-3 font-bold text-slate-700 font-sans">
+                          📍 {pat.purok}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-1">
+                            {pat.activePrograms.length === 0 ? (
+                              <span className="text-[10px] text-slate-400 italic">No program enrolled</span>
+                            ) : (
+                              pat.activePrograms.map(prog => (
+                                <span
+                                  key={prog}
+                                  className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                    prog === 'EPI' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/40' :
+                                    prog === 'MCH' ? 'bg-rose-50 text-rose-700 border border-rose-200/40' :
+                                    prog === 'FAMILY_PLANNING' ? 'bg-pink-50 text-pink-700 border border-pink-200/40' :
+                                    prog === 'TB_DOTS' ? 'bg-amber-55 text-amber-700 border border-amber-200/30' :
+                                    'bg-slate-100 text-slate-700 border border-slate-200/40'
+                                  }`}
+                                >
+                                  {prog}
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-extrabold border ${
+                            roleTag === 'NURSE' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
+                            roleTag === 'MIDWIFE' ? 'bg-rose-50 border-rose-100 text-rose-700' :
+                            'bg-emerald-50 border-emerald-100 text-emerald-700'
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${
+                              roleTag === 'NURSE' ? 'bg-indigo-500' :
+                              roleTag === 'MIDWIFE' ? 'bg-rose-500' :
+                              'bg-emerald-500'
+                            }`} />
+                            {roleTag === 'NURSE' ? 'Nars Desk (RN)' : 
+                             roleTag === 'MIDWIFE' ? 'Kumadrona Desk (RM)' : 
+                             'BHW Desk'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

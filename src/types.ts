@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Role = 'BHW' | 'MIDWIFE' | 'NURSE' | 'PHARMACIST' | 'MHO' | 'ADMIN';
+export type Role = 'BHW' | 'MIDWIFE' | 'NURSE' | 'PHARMACIST' | 'MHO' | 'ADMIN' | 'CAPITAN';
 
 export type Language = 'EN' | 'TL' | 'BY'; // English, Tagalog, Bisaya
 
@@ -40,6 +40,7 @@ export interface Patient {
   activePrograms: DOHProgram[];
   createdAt: string;
   photo?: string; // Base64 image data-URI or reference
+  registeredBy?: Role;
 }
 
 export type DOHProgram = 

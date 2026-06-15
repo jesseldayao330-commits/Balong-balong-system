@@ -7,6 +7,12 @@ import React, { useState } from 'react';
 import { Role, Language } from '../types';
 import { ShieldCheck, Lock, User, Key, Globe, EyeOff, Eye, CheckCircle2, Users } from 'lucide-react';
 
+import bhwWorkersLogin from '../assets/images/bhw_workers_login_1781077540359.png';
+import bhwCheckupPregnant from '../assets/images/bhw_checkup_pregnant_1781077672362.png';
+import bhwDoctorConsult from '../assets/images/bhw_doctor_consult_1781077692389.png';
+import bhwNurseImmunize from '../assets/images/bhw_nurse_immunize_1781077708993.png';
+import bhwPharmacyStock from '../assets/images/bhw_pharmacy_stock_1781077723656.png';
+
 interface LoginScreenProps {
   onLoginSuccess: (role: Role) => void;
   language: Language;
@@ -38,11 +44,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Select Workstation Active Role',
       passPrompt: 'Enter 4-Digit Security Passcode',
       btnLogin: 'Unlock Workstation Registry',
-      hint: 'PINs: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
+      hint: 'PINs: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      capitanLabel: 'Barangay Captain (Capitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     },
     TL: {
@@ -51,11 +58,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Piliin ang Aktibong Gampanin',
       passPrompt: 'Ipasok ang 4-Digit Security Passcode',
       btnLogin: 'Buksan ang Registry ng Workstation',
-      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
+      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      capitanLabel: 'Punong Barangay (Kapitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     },
     BY: {
@@ -64,11 +72,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       roleSelect: 'Pilia ang Aktibong Papel sa Workstation',
       passPrompt: 'Ibutang ang 4-Digit Security Passcode',
       btnLogin: 'Ablihan ang Registry sa Workstation',
-      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • ADMIN (1234)',
+      hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
+      textCapitan: 'Kapitan sa Barangay (Capitan - View Only)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
       bhwLabel: 'Barangay Health Worker (BHW)',
       midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      capitanLabel: 'Kapitan sa Barangay (Capitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
     }
   };
@@ -80,6 +90,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Register patients and households, record vital signs, prenatal/vaccine visit data. Read-only records.', color: 'border-emerald-200 text-emerald-800' },
     { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care monitoring, pregnant client risk check, and Family Planning clinical forms.', color: 'border-teal-200 text-teal-800' },
     { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'Childhood vaccines (EPI/Immunization records), clinical diagnosis & general medical checkups.', color: 'border-blue-200 text-blue-800' },
+    { key: 'CAPITAN' as Role, label: currentDict.capitanLabel, desc: 'Executive dashboard view, patient registered records view-only stream, and community health surveillance. Strictly forbidden from adding or editing.', color: 'border-amber-200 text-amber-800' },
     { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.', color: 'border-purple-200 text-purple-800' },
   ];
 
@@ -111,6 +122,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     else if (selectedRole === 'MIDWIFE' && pin === '3333') isValid = true;
     else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
     else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
+    else if (selectedRole === 'CAPITAN' && pin === '7777') isValid = true;
     else if (selectedRole === 'ADMIN' && pin === '1234') isValid = true;
     
     // Also support fallback universal unlocking for a smooth local check
@@ -222,7 +234,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="space-y-1">
                 <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-md aspect-video">
                   <img
-                    src="/src/assets/images/bhw_workers_login_1781077540359.png"
+                    src={bhwWorkersLogin}
                     alt="BHW Active Heroes"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
@@ -238,7 +250,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="space-y-1">
                   <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
                     <img
-                      src="/src/assets/images/bhw_checkup_pregnant_1781077672362.png"
+                      src={bhwCheckupPregnant}
                       alt="Midwife Maternal Checkup"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -252,7 +264,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="space-y-1">
                   <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
                     <img
-                      src="/src/assets/images/bhw_doctor_consult_1781077692389.png"
+                      src={bhwDoctorConsult}
                       alt="Doctor Consultation"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -266,7 +278,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="space-y-1">
                   <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
                     <img
-                      src="/src/assets/images/bhw_nurse_immunize_1781077708993.png"
+                      src={bhwNurseImmunize}
                       alt="Nurse Child Health tracker"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -280,7 +292,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="space-y-1">
                   <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
                     <img
-                      src="/src/assets/images/bhw_pharmacy_stock_1781077723656.png"
+                      src={bhwPharmacyStock}
                       alt="Pharmacy Inventory management"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"

@@ -7,6 +7,8 @@ import React, { useState } from 'react';
 import { Patient, Household, Purok } from '../types';
 import { MapPin, Users, Flame, ShieldAlert, CheckCircle, Droplet, AlertTriangle, Image as ImageIcon, Map as MapIcon, ShoppingBag } from 'lucide-react';
 
+import balongBalongMap from '../assets/images/balong_balong_map_1781075564140.png';
+
 interface BarangayHealthMapProps {
   patients: Patient[];
   households: Household[];
@@ -102,7 +104,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             /* REAL SATELLITE MAP RENDER LAYOUT WITH Pin Overlays & Labels */
             <div className="relative w-full max-w-[550px] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md aspect-[460/350]">
               <img 
-                src="/src/assets/images/balong_balong_map_1781075564140.png" 
+                src={balongBalongMap} 
                 alt="Barangay Balong-balong satellite map with red outline" 
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover select-none"

@@ -715,6 +715,7 @@ export default function App() {
                 centerLogo={centerLogo}
                 setCenterLogo={setCenterLogo}
                 onAddAuditLog={addAuditLog}
+                patients={patients}
               />
             )}
 

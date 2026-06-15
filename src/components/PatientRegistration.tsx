@@ -285,6 +285,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         activePrograms: programsCopy,
         createdAt: new Date().toISOString().split('T')[0],
         photo,
+        registeredBy: activeRole as Role,
       };
 
       onAddPatient(newPat);
