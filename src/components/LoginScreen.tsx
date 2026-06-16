@@ -229,7 +229,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         <div className="flex items-center gap-2" id="login-lang-toggles">
           <Globe size={13} className="text-slate-400" />
           <div className="inline-flex rounded-lg border border-slate-800 p-0.5 bg-slate-900">
-            {(['EN', 'TL', 'BY'] as Language[]).map((lang) => (
+            {(['EN', 'TL'] as Language[]).map((lang) => (
               <button
                 key={lang}
                 onClick={() => onChangeLanguage(lang)}
@@ -240,7 +240,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 }`}
                 id={`login-lang-${lang}`}
               >
-                {lang === 'EN' ? 'English' : lang === 'TL' ? 'Tagalog' : 'Bisaya'}
+                {lang === 'EN' ? 'English' : 'Tagalog'}
               </button>
             ))}
           </div>

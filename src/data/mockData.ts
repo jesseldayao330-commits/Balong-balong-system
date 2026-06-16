@@ -152,8 +152,8 @@ export const MOCK_HOUSEHOLDS: Household[] = [
     purok: 'Purok 5',
     numberOfMembers: 6,
     waterSource: 'Level I (Point Source)',
-    sanitaryToilet: false,
-    solidWasteManagement: 'Open Dumping',
+    sanitaryToilet: true,
+    solidWasteManagement: 'Segregated',
     indigentStatus: true,
   },
   {
@@ -171,9 +171,9 @@ export const MOCK_HOUSEHOLDS: Household[] = [
     householdHead: 'Alcantara, Teodoro',
     purok: 'Purok 7',
     numberOfMembers: 7,
-    waterSource: 'Unsanitary/Unprotected',
-    sanitaryToilet: false,
-    solidWasteManagement: 'Disposed/Burned',
+    waterSource: 'Level II (Communal Faucet)',
+    sanitaryToilet: true,
+    solidWasteManagement: 'Segregated',
     indigentStatus: true,
   }
 ];

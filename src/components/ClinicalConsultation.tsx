@@ -421,11 +421,25 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
               <div className="lg:col-span-8 space-y-4">
                 {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                   <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
+                    <strong className="text-blue-800 font-bold block font-sans">
+                      {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+                    </strong>
                     {editingVitalId ? (
-                      <span>Nakasentro sa record ID <strong className="font-mono text-blue-950 font-extrabold">{editingVitalId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon gamit ang button sa ibaba.</span>
+                      <span>
+                        {language === 'EN' 
+                          ? `Focused on record ID `
+                          : `Nakasentro sa record ID `}
+                        <strong className="font-mono text-blue-950 font-extrabold">{editingVitalId}</strong>. 
+                        {language === 'EN'
+                          ? ` Select another from the list on the right or clear selection using the button below.`
+                          : ` Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon gamit ang button sa ibaba.`}
+                      </span>
                     ) : (
-                      <span>Naka-log in bilang Cap. Judeth Pila. Pumili ng anumang vital signs record sa listahan sa kanan upang suriin ang bawat parametro ng pasyente sa form view sa ibaba.</span>
+                      <span>
+                        {language === 'EN'
+                          ? 'Logged in as Administrator. Select any vital signs record on the right to review parameters in the form below.'
+                          : 'Naka-log in bilang Ericson Padunan. Pumili ng anumang vital signs record sa listahan sa kanan upang suriin ang bawat parametro ng pasyente sa form view sa ibaba.'}
+                      </span>
                     )}
                   </div>
                 )}
@@ -692,17 +706,33 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
               <div className="lg:col-span-8 space-y-4">
                 {activeRole === 'MIDWIFE' && (
                   <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                    <strong className="text-amber-800 font-bold block font-sans">📋 Pangkalahatang Konsulta (General Check-up Notice):</strong>
-                    <span>Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.</span>
+                    <strong className="text-amber-800 font-bold block font-sans">
+                      {language === 'EN' ? '📋 General Check-up Notice:' : '📋 Pangkalahatang Konsulta (General Check-up Notice):'}
+                    </strong>
+                    <span>
+                      {language === 'EN'
+                        ? 'General clinical consultations and check-ups are managed by our Public Health Nurse (Yvonne Galang, RN). Your active workstation session is for the Barangay Midwife (Arlene Cagas Dayama, RM) focusing on Maternal and Prenatal care. You may view these records in read-only mode.'
+                        : 'Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.'}
+                    </span>
                   </div>
                 )}
                 {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                   <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
+                    <strong className="text-blue-800 font-bold block font-sans">
+                      {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+                    </strong>
                     {editingConsultId ? (
-                      <span>Nakasentro sa consultation ID <strong className="font-mono text-blue-950 font-extrabold">{editingConsultId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon.</span>
+                      <span>
+                        {language === 'EN' ? 'Focused on consultation ID ' : 'Nakasentro sa consultation ID '}
+                        <strong className="font-mono text-blue-950 font-extrabold">{editingConsultId}</strong>. 
+                        {language === 'EN' ? ' Choose another from the list on the right or clear the selection.' : ' Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon.'}
+                      </span>
                     ) : (
-                      <span>Naka-log in bilang Cap. Judeth Pila. Pumili ng anumang consultation record sa listahan sa kanan upang suriin ang mga detalyadong tala at diagnosis ng pasyente rito.</span>
+                      <span>
+                        {language === 'EN'
+                          ? 'Logged in as Administrator. Select any consultation record from the list on the right to review patient details and diagnosis here.'
+                          : 'Naka-log in bilang Ericson Padunan. Pumili ng anumang consultation record sa listahan sa kanan upang suriin ang mga detalyadong tala at diagnosis ng pasyente rito.'}
+                      </span>
                     )}
                   </div>
                 )}

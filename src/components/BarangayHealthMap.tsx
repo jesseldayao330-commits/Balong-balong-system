@@ -212,19 +212,11 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Health Program Demographics</h3>
               
               <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 border border-slate-100 rounded-lg bg-emerald-50/50">
-                  <span className="text-[10px] text-slate-500 block">Prenatal (MCH)</span>
-                  <span className="text-base font-extrabold text-emerald-700">{activePrenatal} active</span>
-                </div>
-                <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
-                  <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
-                  <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
-                </div>
-                {activeRole === 'MIDWIFE' || activeRole === 'BHW' ? (
+                {activeRole === 'NURSE' ? (
                   <>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
-                      <span className="text-[10px] text-slate-500 block">Family Planning</span>
-                      <span className="text-base font-extrabold text-indigo-700">{activeFP} active</span>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
+                      <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
+                      <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
                     </div>
                     <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
                       <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
@@ -233,14 +225,37 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                   </>
                 ) : (
                   <>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
-                      <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
-                      <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-emerald-50/50">
+                      <span className="text-[10px] text-slate-500 block">Prenatal (MCH)</span>
+                      <span className="text-base font-extrabold text-emerald-700">{activePrenatal} active</span>
                     </div>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
-                      <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
-                      <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
+                      <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
+                      <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
                     </div>
+                    {activeRole === 'MIDWIFE' || activeRole === 'BHW' ? (
+                      <>
+                        <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
+                          <span className="text-[10px] text-slate-500 block">Family Planning</span>
+                          <span className="text-base font-extrabold text-indigo-700">{activeFP} active</span>
+                        </div>
+                        <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
+                          <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
+                          <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
+                          <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
+                          <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
+                        </div>
+                        <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
+                          <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
+                          <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </div>

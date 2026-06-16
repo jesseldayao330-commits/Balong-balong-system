@@ -52,56 +52,6 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs" id="bhc-header">
-      {/* Top micro bar for Connectivity & Security Guidelines */}
-      <div className="bg-slate-900 text-white px-4 py-1.5 flex flex-wrap items-center justify-between text-xs gap-2" id="bhc-topbar">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <ShieldAlert size={14} className="text-amber-400" />
-            <span className="font-mono tracking-wide text-amber-200">RA 10173 PRIVACY ENCRYPTED</span>
-          </div>
-          <span className="text-slate-500">|</span>
-          <div className="flex items-center gap-1.5 text-slate-300">
-            <Clock size={12} />
-            <span>PST (Philippine Standard Time): 2026-06-01 15:45 (GMT+8)</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Connectivity simulation toggle */}
-          <button
-            onClick={onToggleOnline}
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer font-medium ${
-              isOnline ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-            }`}
-            title="Toggle offline-first test mode"
-            id="toggle-connectivity-button"
-          >
-            {isOnline ? (
-              <>
-                <Wifi size={13} className="animate-pulse" />
-                <span>{text.online}</span>
-              </>
-            ) : (
-              <>
-                <WifiOff size={13} />
-                <span>{text.offline}</span>
-              </>
-            )}
-          </button>
-
-          {/* Sync Trigger */}
-          <button
-            onClick={onSync}
-            disabled={isSyncing}
-            className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            id="sync-button"
-          >
-            <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
-            <span>{isSyncing ? 'Syncing...' : text.syncButton}</span>
-            <span className="text-slate-400 font-mono">({lastSynced})</span>
-          </button>
-        </div>
-      </div>
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="bhc-branding">
         <div>
           <div className="flex items-center gap-2">
@@ -130,7 +80,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
           <div className="flex items-center gap-2" id="language-toggles">
             <Globe size={14} className="text-slate-400" />
             <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-              {(['EN', 'TL', 'BY'] as Language[]).map((lang) => (
+            {(['EN', 'TL'] as Language[]).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => onChangeLanguage(lang)}
@@ -141,7 +91,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   }`}
                   id={`lang-toggle-${lang}`}
                 >
-                  {lang === 'EN' ? 'English' : lang === 'TL' ? 'Tagalog' : 'Bisaya'}
+                  {lang === 'EN' ? 'English' : 'Tagalog'}
                 </button>
               ))}
             </div>
@@ -181,7 +131,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   {activeRole === 'BHW' ? 'Julefe Magwate' :
                    activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' :
                    activeRole === 'NURSE' ? 'Yvonne Galang, RN' :
-                   'Cap. Judeth Pila'}
+                   'Ericson Padunan'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${
                   activeRole === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :

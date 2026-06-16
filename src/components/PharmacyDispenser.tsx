@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { MedicineInventory, MedicineDispensed, Patient, Language, Role, PrenatalRecord } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X } from 'lucide-react';
+import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X, Lock } from 'lucide-react';
 
 interface PharmacyDispenserProps {
   inventory: MedicineInventory[];
@@ -36,6 +36,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
+  const isEPharmacyViewOnly = activeRole === 'BHW' || activeRole === 'MIDWIFE' || activeRole === 'NURSE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN';
   
   // Categorize medicine audience helper to separate Household, Pregnant (Buntis), and Child (Bata)
   const getMedicineAudience = (item: MedicineInventory): 'Household Resident' | 'Buntis' | 'Bata' => {
@@ -352,10 +353,20 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
         <div className="bg-amber-50/70 border border-amber-200/80 text-amber-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
           <div className="flex items-center gap-1.5 text-amber-800">
             <span className="text-base">🏠</span>
-            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Household Resident E-Pharmacy view (BHW Desk)</strong>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">
+              {language === 'EN' ? 'Household Residents E-Pharmacy View (BHW Desk)' : 'Pang-Household Resident E-Pharmacy view (BHW Desk)'}
+            </strong>
           </div>
           <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
-            Naka-log in bilang <strong>BHW (Julefe Magwate)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Household Residents (Pangkalahatang Pangangailangan)** tulad ng paracetamol, pangunahing antibiotics, at gamot sa altapresyon.
+            {language === 'EN' ? (
+              <>
+                Logged in as <strong>BHW (Julefe Magwate)</strong>. The stock listed below is automatically filtered to include general household essentials only (e.g. paracetamol, common antibiotics, and blood pressure medications).
+              </>
+            ) : (
+              <>
+                Naka-log in bilang <strong>BHW (Julefe Magwate)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Household Residents (Pangkalahatang Pangangailangan)** tulad ng paracetamol, pangunahing antibiotics, at gamot sa altapresyon.
+              </>
+            )}
           </p>
         </div>
       )}
@@ -364,18 +375,34 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
         <div className="bg-pink-50/70 border border-pink-200/80 text-pink-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
           <div className="flex items-center gap-1.5 text-pink-850">
             <span className="text-base">🤰👶</span>
-            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Buntis at Bata E-Pharmacy view (Midwife & Nurse Workstation)</strong>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">
+              {language === 'EN' ? 'Maternal & Child E-Pharmacy View (Workspace)' : 'Pang-Buntis at Bata E-Pharmacy view (Midwife & Nurse Workstation)'}
+            </strong>
           </div>
           <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
-            Naka-log in bilang <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Ang stock ng gamot na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Bata** (Pre-natal vitamins, vaccines tulad ng BCG, pediatric paracetamol drops, at family planning contraceptives).
+            {language === 'EN' ? (
+              <>
+                Logged in as <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Medicine stocks listed below are filtered specifically for **Mothers & Kids** (such as pre-natal vitamins, vaccines like BCG, pediatric paracetamol drops, and family planning contraceptives).
+              </>
+            ) : (
+              <>
+                Naka-log in bilang <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Ang stock ng gamot na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Bata** (Pre-natal vitamins, vaccines tulad ng BCG, pediatric paracetamol drops, at family planning contraceptives).
+              </>
+            )}
           </p>
         </div>
       )}
 
       {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
         <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1 mb-5">
-          <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
-          <span>Naka-log in bilang Cap. Judeth Pila. Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.</span>
+          <strong className="text-blue-800 font-bold block font-sans">
+            {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+          </strong>
+          <span>
+            {language === 'EN'
+              ? 'Logged in as Admin. This workstation has read-only permissions to audit medicine stocks. Saving, dispensing, or removing records is disabled.'
+              : 'Naka-log in bilang Cap. Judeth Pila. Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.'}
+          </span>
         </div>
       )}
 
@@ -419,7 +446,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
           <div className="flex items-center justify-between mb-3 border-b border-slate-200/60 pb-2 gap-2">
             <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Medicine Stock Database</span>
             <div className="flex items-center gap-1.5">
-              {activeRole !== 'ADMIN' && (
+              {!isEPharmacyViewOnly && (
                 <button
                   type="button"
                   onClick={() => {
@@ -544,7 +571,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                         <span className="text-[9px] text-emerald-600 font-medium block">Optimal</span>
                       )}
                     </div>
-                    {activeRole !== 'ADMIN' && (
+                    {!isEPharmacyViewOnly && (
                       <div className="flex flex-col gap-0.5 border-l border-slate-100 pl-2 text-slate-400">
                         <button
                           type="button"
@@ -572,133 +599,152 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
         </div>
 
         {/* RIGHT COMPONENT: Fast Dispense Dispatch Form */}
-        <div className="lg:col-span-6 bg-white p-4 border border-slate-150 rounded-xl" id="dispensing-dispatch-form">
-          <form onSubmit={handleDispenseAction} className="space-y-4">
-            <h3 className="text-xs font-black text-indigo-950 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
-              Dispense Medication Intake
-            </h3>
-
-            <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
-              {/* Choose receiver */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Patient</label>
-                  <select
-                    className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
-                    value={safeSelectedPatId}
-                    onChange={(e) => setSelectedPatId(e.target.value)}
-                  >
-                    {filteredPatients.length === 0 ? (
-                      <option value="">No patients available</option>
-                    ) : (
-                      filteredPatients.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.lastName}, {p.firstName} ({p.id})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Medicine</label>
-                  <select
-                    className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
-                    value={safeSelectedMedId}
-                    onChange={(e) => setSelectedMedId(e.target.value)}
-                  >
-                    {filteredInventory.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.medicineName} ({m.currentStock} left)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+        {isEPharmacyViewOnly ? (
+          <div className="lg:col-span-6 bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col justify-between items-center text-center">
+            <div className="my-auto py-8">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock size={20} />
               </div>
+              <h3 className="text-xs font-black text-indigo-950 uppercase tracking-widest mb-2 font-mono">
+                E-Pharmacy System (View-Only)
+              </h3>
+              <p className="text-[11px] text-slate-500 max-w-sm">
+                Naka-lock ang pamamahagi ng gamot at pamamahala ng imbentaryo para sa <strong>{activeRole}</strong>. Ang pamamahagi (dispensing) ay pinangangasiwaan ng Capitán.
+              </p>
+            </div>
+            <div className="w-full bg-indigo-50/50 p-2.5 rounded border border-indigo-100 text-[10px] text-indigo-900 font-mono">
+              Role Protection Activated • Pitogo DHRMS LGU Compliant
+            </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-6 bg-white p-4 border border-slate-150 rounded-xl" id="dispensing-dispatch-form">
+            <form onSubmit={handleDispenseAction} className="space-y-4">
+              <h3 className="text-xs font-black text-indigo-950 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
+                Dispense Medication Intake
+              </h3>
 
-              {/* Quantity */}
-              <div className="text-xs font-semibold">
-                <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Quantity to Dispense (Bilang)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={selectedMed?.currentStock || 100}
-                  className="w-full border border-slate-200 py-2.5 px-3 rounded-lg text-sm text-center font-mono font-bold"
-                  value={qty}
-                  onChange={(e) => setQty(parseInt(e.target.value) || 1)}
-                />
-              </div>
-
-              {/* Smart instruction translator details */}
-              <div className="border border-dashed border-indigo-200 rounded-lg p-3 bg-indigo-50/20 text-xs">
-                <div className="flex justify-between items-center mb-2.5">
-                  <span className="font-bold text-indigo-900 flex items-center gap-1">
-                    <Sparkles size={12} />
-                    Dosage Translation Intelligence Engine
-                  </span>
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="accent-indigo-600"
-                      checked={useTranslationHelp}
-                      onChange={(e) => setUseTranslationHelp(e.target.checked)}
-                    />
-                    <span className="text-[10px] text-indigo-700 font-bold uppercase">Translate Form</span>
-                  </label>
-                </div>
-
-                {useTranslationHelp && (
-                  <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Gaano Kadalas (Frequency)</span>
-                      <select
-                        className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
-                        value={frequency}
-                        onChange={(e) => setFrequency(e.target.value)}
-                      >
-                        <option value="3_times_day">3x a day (pc) / Umaga-Hapon-Gabi</option>
-                        <option value="2_times_day">2x a day (bid) / Umaga-Gabi</option>
-                        <option value="once_day_morning">1x a day morning (od) / Umaga</option>
-                        <option value="once_day_night">1x a day bedtime (hs) / Gabi bago matulog</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Gaano Katagal (Duration)</span>
-                      <select
-                        className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                      >
-                        <option value="7_days">7 Days cycle (Pitong Araw)</option>
-                        <option value="3_days">3 Days check (Tatlong Araw)</option>
-                      </select>
-                    </div>
+              <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
+                {/* Choose receiver */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Patient</label>
+                    <select
+                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                      value={safeSelectedPatId}
+                      onChange={(e) => setSelectedPatId(e.target.value)}
+                    >
+                      {filteredPatients.length === 0 ? (
+                        <option value="">No patients available</option>
+                      ) : (
+                        filteredPatients.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.lastName}, {p.firstName} ({p.id})
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
-                )}
 
-                {/* Instant translation preview rendering */}
-                <div className="mt-3 pt-2.5 border-t border-indigo-100">
-                  <span className="text-[10px] text-slate-400 block mb-0.5 uppercase font-black tracking-wider">Preview of generated prescription labeling:</span>
-                  <p className="font-mono text-xs font-bold text-indigo-950 bg-white p-2 rounded border border-indigo-150">
-                    {translateInstruction(frequency, duration, language)}
-                  </p>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Medicine</label>
+                    <select
+                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                      value={safeSelectedMedId}
+                      onChange={(e) => setSelectedMedId(e.target.value)}
+                    >
+                      {filteredInventory.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.medicineName} ({m.currentStock} left)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
-            </fieldset>
 
-            {activeRole !== 'ADMIN' && (
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-                id="dispense-entry-submit-button"
-              >
-                Dispense now
-                <ArrowRight size={13} />
-              </button>
-            )}
-          </form>
-        </div>
+                {/* Quantity */}
+                <div className="text-xs font-semibold">
+                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Quantity to Dispense (Bilang)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={selectedMed?.currentStock || 100}
+                    className="w-full border border-slate-200 py-2.5 px-3 rounded-lg text-sm text-center font-mono font-bold"
+                    value={qty}
+                    onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+
+                {/* Smart instruction translator details */}
+                <div className="border border-dashed border-indigo-200 rounded-lg p-3 bg-indigo-50/20 text-xs">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="font-bold text-indigo-900 flex items-center gap-1">
+                      <Sparkles size={12} />
+                      Dosage Translation Intelligence Engine
+                    </span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="accent-indigo-600"
+                        checked={useTranslationHelp}
+                        onChange={(e) => setUseTranslationHelp(e.target.checked)}
+                      />
+                      <span className="text-[10px] text-indigo-700 font-bold uppercase">Translate Form</span>
+                    </label>
+                  </div>
+
+                  {useTranslationHelp && (
+                    <div className="grid grid-cols-2 gap-2 text-[10px]">
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">Gaano Kadalas (Frequency)</span>
+                        <select
+                          className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                          value={frequency}
+                          onChange={(e) => setFrequency(e.target.value)}
+                        >
+                          <option value="3_times_day">3x a day (pc) / Umaga-Hapon-Gabi</option>
+                          <option value="2_times_day">2x a day (bid) / Umaga-Gabi</option>
+                          <option value="once_day_morning">1x a day morning (od) / Umaga</option>
+                          <option value="once_day_night">1x a day bedtime (hs) / Gabi bago matulog</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">Gaano Katagal (Duration)</span>
+                        <select
+                          className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                        >
+                          <option value="7_days">7 Days cycle (Pitong Araw)</option>
+                          <option value="3_days">3 Days check (Tatlong Araw)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Instant translation preview rendering */}
+                  <div className="mt-3 pt-2.5 border-t border-indigo-100">
+                    <span className="text-[10px] text-slate-400 block mb-0.5 uppercase font-black tracking-wider">Preview of generated prescription labeling:</span>
+                    <p className="font-mono text-xs font-bold text-indigo-950 bg-white p-2 rounded border border-indigo-150">
+                      {translateInstruction(frequency, duration, language)}
+                    </p>
+                  </div>
+                </div>
+              </fieldset>
+
+              {activeRole !== 'ADMIN' && (
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                  id="dispense-entry-submit-button"
+                >
+                  Dispense now
+                  <ArrowRight size={13} />
+                </button>
+              )}
+            </form>
+          </div>
+        )}
       </div>
 
       {/* EDIT DISPENSED LOG CONTEXT FORM */}
@@ -776,7 +822,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                   <th className="p-3">Gamot</th>
                   <th className="p-3">Dami</th>
                   <th className="p-3">Instructions & Dispenser</th>
-                  {activeRole !== 'ADMIN' && <th className="p-3 text-right">Actions</th>}
+                  {!isEPharmacyViewOnly && <th className="p-3 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -797,7 +843,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                         <p className="font-medium text-slate-700 italic">"{rec.instructions}"</p>
                         <span className="text-[9px] block text-slate-400 mt-1">Dispenser: {rec.pharmacistDispenser}</span>
                       </td>
-                      {activeRole !== 'ADMIN' && (
+                      {!isEPharmacyViewOnly && (
                         <td className="p-3 text-right">
                           <div className="flex items-center justify-end gap-1 text-slate-400">
                             <button

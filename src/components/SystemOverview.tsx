@@ -15,6 +15,7 @@ interface SystemOverviewProps {
   prenatals?: PrenatalRecord[];
   vaccinations?: ImmunizationRecord[];
   onKpiClick?: (filterType: string, subTab?: 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs', additionalFilter?: string) => void;
+  onSwitchRole?: (role: Role) => void;
 }
 
 export const SystemOverview: React.FC<SystemOverviewProps> = ({ 
@@ -24,7 +25,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   userActiveRole,
   prenatals = [],
   vaccinations = [],
-  onKpiClick
+  onKpiClick,
+  onSwitchRole
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const isMidwife = userActiveRole === 'MIDWIFE';
@@ -63,15 +65,29 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         <div className="bg-indigo-50 border border-indigo-200 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-base font-black text-indigo-900 flex items-center gap-2">
-              <span className="text-xl">🤰</span> Maternal Health & Prenatal Care Workspace
+              <span className="text-xl">🤰</span> {language === 'EN' ? 'Maternal Health & Prenatal Care Workspace' : 'Maternal Health & Prenatal Care Workspace'}
             </h2>
             <p className="text-xs text-indigo-800 leading-relaxed font-semibold">
-              Naka-log in bilang midwife. Ang iyong dashboard ay naka-focus sa regular na pagsubaybay sa kalusugan ng mga Buntis, pre-natal care, at maternal health indicators ng barangay.
+              {language === 'EN' 
+                ? 'Logged in as midwife. Your dashboard is focused on regular monitoring of maternal care, prenatal check-ups, and health indicators.' 
+                : 'Naka-log in bilang midwife. Ang iyong dashboard ay naka-focus sa regular na pagsubaybay sa kalusugan ng mga Buntis, pre-natal care, at maternal health indicators ng barangay.'}
             </p>
           </div>
-          <span className="bg-indigo-600 text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0 shadow-xs">
-            MIDWIFE PORTFOLIO
-          </span>
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <span className="bg-indigo-600 text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest text-center shadow-xs flex items-center justify-center">
+              {language === 'EN' ? 'MIDWIFE PORTFOLIO' : 'MIDWIFE PORTFOLIO'}
+            </span>
+            {onSwitchRole && (
+              <button
+                type="button"
+                onClick={() => onSwitchRole('NURSE')}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] px-3.5 py-1.5 rounded-full uppercase tracking-widest text-center flex items-center justify-center gap-1 cursor-pointer shadow-xs border border-emerald-500 transition-colors"
+                id="switch-to-nurse-btn"
+              >
+                {language === 'EN' ? '💉 NURSE WORKSPACE ➔' : '💉 NURSE WORKSPACE ➔'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Pregnant Demography KPI Cards */}
@@ -172,9 +188,11 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
             <div className="border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-sm font-bold text-slate-700 flex items-center">
                 <span className="w-2.5 h-5 bg-indigo-600 rounded-xs mr-2 block"></span>
-                Distribusyon ng Buntis sa bawat Purok (Pregnancy Density Map)
+                {language === 'EN' ? 'Maternal Purok Distribution (Pregnancy Density Map)' : 'Distribusyon ng Buntis sa bawat Purok (Pregnancy Density Map)'}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">Sukat ng mga aktibong buntis na residente mula Purok 1 hanggang Purok 7</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {language === 'EN' ? 'Census of active pregnant patients across Purok 1 to Purok 7' : 'Sukat ng mga aktibong buntis na residente mula Purok 1 hanggang Purok 7'}
+              </p>
             </div>
             
             <div className="space-y-3.5">
@@ -191,7 +209,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                           className="bg-indigo-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
                           style={{ width: `${Math.max(widthPercentage, 10)}%` }}
                         >
-                          {`${countOfPregnant} Buntis`}
+                          {`${countOfPregnant} ${language === 'EN' ? 'Pregnant' : 'Buntis'}`}
                         </div>
                       )}
                     </div>
@@ -285,15 +303,29 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         <div className="bg-emerald-50 border border-emerald-250 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-base font-black text-emerald-900 flex items-center gap-2">
-              <span className="text-xl">👶</span> Pediatric Care & Immunization Workspace
+              <span className="text-xl">👶</span> {language === 'EN' ? 'Pediatric Care & Immunization Workspace' : 'Pediatric Care & Immunization Workspace'}
             </h2>
             <p className="text-xs text-emerald-800 leading-relaxed font-semibold">
-              Naka-log in bilang nurse. Ang iyong dashboard ay naka-focus sa pagsubaybay sa kalusugan ng mga bata, Expanded Program on Immunization (EPI), at pediatric nutrition sa barangay.
+              {language === 'EN' 
+                ? 'Logged in as nurse. Your dashboard is focused on monitoring children health, Expanded Program on Immunization (EPI), and pediatric nutrition.' 
+                : 'Naka-log in bilang nurse. Ang iyong dashboard ay naka-focus sa pagsubaybay sa kalusugan ng mga bata, Expanded Program on Immunization (EPI), at pediatric nutrition sa barangay.'}
             </p>
           </div>
-          <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0 shadow-xs">
-            NURSE PORTFOLIO
-          </span>
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-3 py-1.5 rounded-full uppercase tracking-widest text-center shadow-xs flex items-center justify-center">
+              {language === 'EN' ? 'NURSE PORTFOLIO' : 'NURSE PORTFOLIO'}
+            </span>
+            {onSwitchRole && (
+              <button
+                type="button"
+                onClick={() => onSwitchRole('MIDWIFE')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] px-3.5 py-1.5 rounded-full uppercase tracking-widest text-center flex items-center justify-center gap-1 cursor-pointer shadow-xs border border-indigo-500 transition-colors"
+                id="switch-to-midwife-btn"
+              >
+                {language === 'EN' ? '🤰 MIDWIFE WORKSPACE ➔' : '🤰 MIDWIFE WORKSPACE ➔'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Child Demography KPI Cards */}
@@ -394,9 +426,11 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
             <div className="border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-sm font-bold text-slate-700 flex items-center">
                 <span className="w-2.5 h-5 bg-emerald-600 rounded-xs mr-2 block"></span>
-                Distribusyon ng Bata sa bawat Purok (Pediatric Density Map)
+                {language === 'EN' ? 'Pediatric Purok Distribution (Pediatric Density Map)' : 'Distribusyon ng Bata sa bawat Purok (Pediatric Density Map)'}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">Sukat ng mga batang residente (0-12 years) mula Purok 1 hanggang Purok 7</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {language === 'EN' ? 'Census of active pediatric patients (0-12 years) across Purok 1 to Purok 7' : 'Sukat ng mga batang residente (0-12 years) mula Purok 1 hanggang Purok 7'}
+              </p>
             </div>
             
             <div className="space-y-3.5">
@@ -410,10 +444,10 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                     <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
                       {countOfChildren > 0 && (
                         <div 
-                          className="bg-emerald-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
+                           className="bg-emerald-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
                           style={{ width: `${Math.max(widthPercentage, 10)}%` }}
                         >
-                          {`${countOfChildren} Bata`}
+                          {`${countOfChildren} ${language === 'EN' ? 'Children' : 'Bata'}`}
                         </div>
                       )}
                     </div>
@@ -608,19 +642,22 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
           
           <div className="space-y-3.5">
             {['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Purok 6', 'Purok 7'].map((purok) => {
+              const residentCount = patients.filter((p) => p.purok === purok).length;
               const householdCount = households.filter((h) => h.purok === purok).length;
-              const widthPercentage = Math.min((householdCount / 8) * 105, 100);
+              const widthPercentage = Math.min((residentCount / 8) * 105, 100);
               return (
                 <div key={purok} className="flex items-center gap-3" id={`purok-bar-${purok.replace(' ', '')}`}>
                   <span className="text-xs font-mono font-bold text-slate-650 w-16">{purok}</span>
                   <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
-                    {householdCount > 0 && (
+                    {residentCount > 0 ? (
                       <div 
                         className="bg-emerald-600 h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
                         style={{ width: `${Math.max(widthPercentage, 8)}%` }}
                       >
-                        {`${householdCount} HH`}
+                        {`${residentCount} Tao (${householdCount} HH)`}
                       </div>
+                    ) : (
+                      <span className="absolute inset-0 flex items-center pl-3 text-[10px] text-slate-400 font-mono">0 Resident</span>
                     )}
                   </div>
                 </div>
@@ -630,29 +667,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         </div>
 
         {/* Environmental Hygiene & Indigency eligibility cards */}
-        <div className="md:col-span-4 space-y-5 flex flex-col justify-between">
+        <div className="md:col-span-4 flex flex-col justify-between">
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between">
-            <div className="border-b border-slate-100 pb-3 mb-3">
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2.5 h-4.5 bg-emerald-500 rounded-xs mr-0.5 block"></span>
-                {text.environmentalHygiene}
-              </h4>
-              <p className="text-[10px] text-slate-400 mt-0.5">Critical DOH standards for cleanliness</p>
-            </div>
-
-            <div className="my-3 flex items-center justify-center relative">
-              <div className="w-24 h-24 rounded-full border-[7px] border-slate-100 flex flex-col items-center justify-center border-t-emerald-600">
-                <span className="text-xl font-black text-slate-800">{sanitaryPercentage}%</span>
-                <span className="text-[8px] text-slate-400 font-bold uppercase">Sanitary toilet</span>
-              </div>
-            </div>
-
-            <div className="text-[10px] text-slate-500 leading-snug text-center font-mono bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-2">
-              <strong>{sanitaryToiletsCount} of {totalHouseholds}</strong> households verified with DOH compliant sanitary toilets.
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between mt-4">
             <div className="border-b border-slate-100 pb-3 mb-3">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
                 <span className="w-2.5 h-4.5 bg-blue-500 rounded-xs mr-0.5 block"></span>

@@ -509,12 +509,12 @@ export default function App() {
   const getStaffNameByRole = (role: Role): string => {
     switch (role) {
       case 'BHW': return 'Julefe Magwate (BHW)';
-      case 'MIDWIFE': return 'Arlene Cagas, RM & Yvonne Galang, RN (Midwife & Nurse)';
+      case 'MIDWIFE': return 'Arlene Cagas Dayama, RM (Midwife)';
       case 'NURSE': return 'Yvonne Galang, RN (Nars)';
       case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
       case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
-      case 'ADMIN': return 'Cap. Judeth Pila (Admin)';
-      case 'CAPITAN': return 'Cap. Judeth Pila (Kapitan)';
+      case 'ADMIN': return 'Ericson Padunan (Admin)';
+      case 'CAPITAN': return 'Ericson Padunan (Kapitan)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -526,6 +526,11 @@ export default function App() {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+  };
+
+  const handleDirectSwitchRole = (role: Role) => {
+    setActiveRole(role);
+    localStorage.setItem('bhc_active_role', role);
   };
 
   const allowedTabs = getTabsForRole(activeRole);
@@ -618,6 +623,7 @@ export default function App() {
                 userActiveRole={activeRole}
                 prenatals={prenatals}
                 vaccinations={vaccinations}
+                onSwitchRole={handleDirectSwitchRole}
                 onKpiClick={(filterType, subTab, riskFilterValue) => {
                   setInitialHealthStatusFilter(filterType);
                   if (subTab) {

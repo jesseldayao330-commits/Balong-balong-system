@@ -37,6 +37,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const [activeTab, setActiveTab] = useState<'referrals' | 'certificates'>('referrals');
+  const isViewOnly = activeRole === 'ADMIN' || activeRole === 'CAPITAN' || activeRole === 'PHARMACIST' || activeRole === 'MHO';
 
   // Filter patients for Midwife and Nurse so only pregnant mothers ("buntis") and children/babies ("bata") appear
   const filteredPatients = React.useMemo(() => {
@@ -80,8 +81,8 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
   const [signatory, setSignatory] = useState(() => {
     if (activeRole === 'NURSE') return 'Yvonne Galang, RN';
     if (activeRole === 'MIDWIFE') return 'Arlene Cagas Dayama, RM';
-    if (activeRole === 'ADMIN') return 'Cap. Judeth Pila, LGU Admin';
-    if (activeRole === 'CAPITAN') return 'Cap. Judeth Pila, Punong Barangay';
+    if (activeRole === 'ADMIN') return 'Ericson Padunan, LGU Admin';
+    if (activeRole === 'CAPITAN') return 'Ericson Padunan, Punong Barangay';
     return 'Julefe Magwate, BHW';
   });
   const [signatoryRole, setSignatoryRole] = useState(() => {
@@ -109,10 +110,10 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
       setSignatory('Arlene Cagas Dayama, RM');
       setSignatoryRole('Barangay Midwife');
     } else if (activeRole === 'ADMIN') {
-      setSignatory('Cap. Judeth Pila, LGU Admin');
+      setSignatory('Ericson Padunan, LGU Admin');
       setSignatoryRole('Health Center Administrator');
     } else if (activeRole === 'CAPITAN') {
-      setSignatory('Cap. Judeth Pila, Punong Barangay');
+      setSignatory('Ericson Padunan, Punong Barangay');
       setSignatoryRole('Punong Barangay (Kapitan)');
     }
   }, [activeRole]);
@@ -281,116 +282,118 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
         {activeTab === 'referrals' ? (
           /* OUTGOING REFERRALS MODULE */
           <>
-            <div className="lg:col-span-4 p-4 border border-slate-200 rounded-xl space-y-4">
-              <h3 className="text-xs font-black text-rose-800 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3 flex items-center gap-1.5">
-                <AlertOctagon size={14} className="text-rose-600" />
-                Draft New Emergency Referral
-              </h3>
+            {!isViewOnly && (
+              <div className="lg:col-span-4 p-4 border border-slate-200 rounded-xl space-y-4">
+                <h3 className="text-xs font-black text-rose-800 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3 flex items-center gap-1.5">
+                  <AlertOctagon size={14} className="text-rose-600" />
+                  Draft New Emergency Referral
+                </h3>
 
-              <form onSubmit={handleSaveReferral} className="space-y-3.5 text-xs">
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Select Patient</label>
-                    <select
-                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden font-bold"
-                      value={targetPatId}
-                      onChange={(e) => setTargetPatId(e.target.value)}
-                    >
-                      {filteredPatients.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.lastName}, {p.firstName} ({p.id})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Referred to Facility</label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full border border-slate-200 p-2.5 rounded-lg font-semibold text-slate-800"
-                      placeholder="e.g. Municipal Health Office Emergency"
-                      value={referredTo}
-                      onChange={(e) => setReferredTo(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+                <form onSubmit={handleSaveReferral} className="space-y-3.5 text-xs">
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Transit Arrangements</label>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Select Patient</label>
                       <select
-                        className="w-full border border-slate-200 py-2 px-2 bg-white rounded-lg font-bold text-xs"
-                        value={transport}
-                        onChange={(e) => setTransport(e.target.value as any)}
+                        className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden font-bold"
+                        value={targetPatId}
+                        onChange={(e) => setTargetPatId(e.target.value)}
                       >
-                        <option value="Ambulance">Ambulance (LGU)</option>
-                        <option value="Tricycle">Barangay Tricycle/Patrol</option>
-                        <option value="Private/LGU Vehicle">Sari-sariling sasakyan</option>
-                        <option value="None">Walang sasakyan</option>
+                        {filteredPatients.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.lastName}, {p.firstName} ({p.id})
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Urgency Alert</label>
-                      <select
-                        className="w-full border border-slate-200 py-2 px-2 bg-white rounded-lg font-bold text-xs"
-                        value={urgency}
-                        onChange={(e) => setUrgency(e.target.value as any)}
-                      >
-                        <option value="Routine">Standard (Routine)</option>
-                        <option value="Urgent">Mahigpit (Urgent)</option>
-                        <option value="Emergency">Apurahan (Emergency - Red Alert)</option>
-                      </select>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Referred to Facility</label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full border border-slate-200 p-2.5 rounded-lg font-semibold text-slate-800"
+                        placeholder="e.g. Municipal Health Office Emergency"
+                        value={referredTo}
+                        onChange={(e) => setReferredTo(e.target.value)}
+                      />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Reason for Referral *</label>
-                    <textarea
-                      required
-                      rows={2}
-                      className="w-full border border-slate-200 p-2.5 rounded-lg text-slate-700"
-                      placeholder="Altapresyon, abnormal fetal tone, o patuloy na pagdurugo..."
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                    />
-                  </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Transit Arrangements</label>
+                        <select
+                          className="w-full border border-slate-200 py-2 px-2 bg-white rounded-lg font-bold text-xs"
+                          value={transport}
+                          onChange={(e) => setTransport(e.target.value as any)}
+                        >
+                          <option value="Ambulance">Ambulance (LGU)</option>
+                          <option value="Tricycle">Barangay Tricycle/Patrol</option>
+                          <option value="Private/LGU Vehicle">Sari-sariling sasakyan</option>
+                          <option value="None">Walang sasakyan</option>
+                        </select>
+                      </div>
 
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Clinical Summary and triage vitals</label>
-                    <textarea
-                      rows={2}
-                      className="w-full border border-slate-200 p-2.5 rounded-lg text-slate-700"
-                      placeholder="Ilista ang BP, temperatura, at unang gamot na binigay sa DHRMS..."
-                      value={clinicalSummary}
-                      onChange={(e) => setClinicalSummary(e.target.value)}
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Urgency Alert</label>
+                        <select
+                          className="w-full border border-slate-200 py-2 px-2 bg-white rounded-lg font-bold text-xs"
+                          value={urgency}
+                          onChange={(e) => setUrgency(e.target.value as any)}
+                        >
+                          <option value="Routine">Standard (Routine)</option>
+                          <option value="Urgent">Mahigpit (Urgent)</option>
+                          <option value="Emergency">Apurahan (Emergency - Red Alert)</option>
+                        </select>
+                      </div>
+                    </div>
 
-                  <div className="flex gap-2 text-xs">
-                    {editingReferralId && (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Reason for Referral *</label>
+                      <textarea
+                        required
+                        rows={2}
+                        className="w-full border border-slate-200 p-2.5 rounded-lg text-slate-700"
+                        placeholder="Altapresyon, abnormal fetal tone, o patuloy na pagdurugo..."
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-semibold">Clinical Summary and triage vitals</label>
+                      <textarea
+                        rows={2}
+                        className="w-full border border-slate-200 p-2.5 rounded-lg text-slate-700"
+                        placeholder="Ilista ang BP, temperatura, at unang gamot na binigay sa DHRMS..."
+                        value={clinicalSummary}
+                        onChange={(e) => setClinicalSummary(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex gap-2 text-xs">
+                      {editingReferralId && (
+                        <button
+                          type="button"
+                          onClick={cancelEditingReferral}
+                          className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer uppercase text-[10px]"
+                        >
+                          I-cancel
+                        </button>
+                      )}
                       <button
-                        type="button"
-                        onClick={cancelEditingReferral}
-                        className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer uppercase text-[10px]"
+                        type="submit"
+                        className="flex-1 bg-rose-650 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer uppercase shadow-sm font-sans"
+                        id="referral-submit-button"
                       >
-                        I-cancel
+                        <Ambulance size={14} />
+                        {editingReferralId ? 'I-update Referral' : 'Compile Referral'}
                       </button>
-                    )}
-                    <button
-                      type="submit"
-                      className="flex-1 bg-rose-650 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer uppercase shadow-sm font-sans"
-                      id="referral-submit-button"
-                    >
-                      <Ambulance size={14} />
-                      {editingReferralId ? 'I-update Referral' : 'Compile Referral'}
-                    </button>
-                  </div>
-                </form>
-            </div>
+                    </div>
+                  </form>
+              </div>
+            )}
 
             {/* List referrals and status checks */}
-            <div className="lg:col-span-4 bg-slate-50/60 p-4 border border-slate-200 rounded-xl space-y-3">
+            <div className={`${isViewOnly ? 'lg:col-span-6' : 'lg:col-span-4'} bg-slate-50/60 p-4 border border-slate-200 rounded-xl space-y-3`}>
               <span className="text-xs font-black text-slate-500 uppercase tracking-wider block border-b border-slate-200 pb-2">
                 Active Outgoing Referral Logs
               </span>
@@ -418,22 +421,26 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
                           }`}>
                             {ref.urgency}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => startEditingReferral(ref)}
-                            className="p-1 hover:text-emerald-700 hover:bg-slate-50 rounded cursor-pointer transition-colors text-slate-400"
-                            title="Edit Referral Log"
-                          >
-                            <Edit3 size={11} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteReferralClick(ref.id)}
-                            className="p-1 hover:text-rose-600 hover:bg-slate-50 rounded cursor-pointer transition-colors text-slate-400"
-                            title="Delete Referral Log"
-                          >
-                            <Trash2 size={11} />
-                          </button>
+                          {!isViewOnly && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEditingReferral(ref)}
+                                className="p-1 hover:text-emerald-700 hover:bg-slate-50 rounded cursor-pointer transition-colors text-slate-400"
+                                title="Edit Referral Log"
+                              >
+                                <Edit3 size={11} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteReferralClick(ref.id)}
+                                className="p-1 hover:text-rose-600 hover:bg-slate-50 rounded cursor-pointer transition-colors text-slate-400"
+                                title="Delete Referral Log"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -452,7 +459,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
             </div>
 
             {/* Official clinical print preview frame */}
-            <div className="lg:col-span-4 bg-slate-50 p-4 border border-slate-200 rounded-xl flex flex-col justify-between" id="printable-referral-area">
+            <div className={`${isViewOnly ? 'lg:col-span-6' : 'lg:col-span-4'} bg-slate-50 p-4 border border-slate-200 rounded-xl flex flex-col justify-between`} id="printable-referral-area">
               <span className="text-[9px] font-black tracking-widest text-slate-400 block uppercase mb-3 text-center">
                 OFFICIAL PRINTABLE EMERGENCY REFERRAL (DOH DHRMS COMPLIANT)
               </span>
@@ -624,108 +631,111 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
         ) : (
           /* CERTIFICATE ISSUANCE & clearance templates */
           <>
-            <div className="lg:col-span-5 p-4 border border-slate-200 rounded-xl space-y-4">
-              <h3 className="text-xs font-black text-emerald-800 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
-                Issue Barangay Health Certificate
-              </h3>              <form onSubmit={handleSaveCertificate} className="space-y-3.5 text-xs">
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1">Select Patient</label>
-                    <select
-                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden font-bold"
-                      value={targetPatId}
-                      onChange={(e) => setTargetPatId(e.target.value)}
-                    >
-                      {filteredPatients.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.lastName}, {p.firstName} 
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Certificate Type</label>
-                    <select
-                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg"
-                      value={certType}
-                      onChange={(e) => setCertType(e.target.value as any)}
-                    >
-                      <option value="Barangay Health Clearance">Barangay Health Clearance (General)</option>
-                      <option value="Medical Fit to Work">Medical Fit to Work</option>
-                      <option value="Student Medical Certificate">Student Medical Certificate</option>
-                      <option value="Indigency Medical Voucher">Indigency Medical Voucher (AICS Subsidy)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1">Purpose of Issuance *</label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full border border-slate-200 p-2.5 rounded-lg"
-                      placeholder="School enrollment / Social welfare claims / Employment..."
-                      value={purpose}
-                      onChange={(e) => setPurpose(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-400 uppercase mb-1">Vitals Findings / Screening Result</label>
-                    <input
-                      type="text"
-                      className="w-full border border-slate-200 p-2.5 rounded-lg"
-                      placeholder="e.g. Normal blood pressure & temperature verified."
-                      value={findings}
-                      onChange={(e) => setFindings(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+            {!isViewOnly && (
+              <div className="lg:col-span-5 p-4 border border-slate-200 rounded-xl space-y-4">
+                <h3 className="text-xs font-black text-emerald-800 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
+                  Issue Barangay Health Certificate
+                </h3>
+                <form onSubmit={handleSaveCertificate} className="space-y-3.5 text-xs">
                     <div>
-                      <label className="block text-[10px] text-slate-400 uppercase mb-1">Signatory Officer</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 p-2 rounded"
-                        value={signatory}
-                        onChange={(e) => setSignatory(e.target.value)}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] text-slate-400 uppercase mb-1">Signatory Title</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 p-2 rounded"
-                        value={signatoryRole}
-                        onChange={(e) => setSignatoryRole(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    {editingCertificateId && (
-                      <button
-                        type="button"
-                        onClick={cancelEditingCertificate}
-                        className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer text-xs uppercase"
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1">Select Patient</label>
+                      <select
+                        className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden font-bold"
+                        value={targetPatId}
+                        onChange={(e) => setTargetPatId(e.target.value)}
                       >
-                        I-cancel
+                        {filteredPatients.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.lastName}, {p.firstName} 
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Certificate Type</label>
+                      <select
+                        className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg"
+                        value={certType}
+                        onChange={(e) => setCertType(e.target.value as any)}
+                      >
+                        <option value="Barangay Health Clearance">Barangay Health Clearance (General)</option>
+                        <option value="Medical Fit to Work">Medical Fit to Work</option>
+                        <option value="Student Medical Certificate">Student Medical Certificate</option>
+                        <option value="Indigency Medical Voucher">Indigency Medical Voucher (AICS Subsidy)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1">Purpose of Issuance *</label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full border border-slate-200 p-2.5 rounded-lg"
+                        placeholder="School enrollment / Social welfare claims / Employment..."
+                        value={purpose}
+                        onChange={(e) => setPurpose(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase mb-1">Vitals Findings / Screening Result</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 p-2.5 rounded-lg"
+                        placeholder="e.g. Normal blood pressure & temperature verified."
+                        value={findings}
+                        onChange={(e) => setFindings(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-400 uppercase mb-1">Signatory Officer</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 p-2 rounded"
+                          value={signatory}
+                          onChange={(e) => setSignatory(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] text-slate-405 uppercase mb-1">Signatory Title</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 p-2 rounded"
+                          value={signatoryRole}
+                          onChange={(e) => setSignatoryRole(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {editingCertificateId && (
+                        <button
+                          type="button"
+                          onClick={cancelEditingCertificate}
+                          className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer text-xs uppercase"
+                        >
+                          I-cancel
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer text-xs uppercase"
+                        id="certificate-submit-button"
+                      >
+                        <Printer size={14} />
+                        {editingCertificateId ? 'I-update ang Sertipiko' : 'Authorize & Print Document'}
                       </button>
-                    )}
-                    <button
-                      type="submit"
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer text-xs uppercase"
-                      id="certificate-submit-button"
-                    >
-                      <Printer size={14} />
-                      {editingCertificateId ? 'I-update ang Sertipiko' : 'Authorize & Print Document'}
-                    </button>
-                  </div>
-                </form>
-            </div>
+                    </div>
+                  </form>
+              </div>
+            )}
 
             {/* Print live preview templates */}
-            <div className="lg:col-span-7 bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col justify-between" id="printable-clearance-area">
+            <div className={`${isViewOnly ? 'lg:col-span-12' : 'lg:col-span-7'} bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col justify-between`} id="printable-clearance-area">
               <span className="text-[9px] font-black tracking-widest text-slate-400 block uppercase mb-4 text-center">
                 OFFICIAL PRINTABLE PREVIEW ACCREDITATION (DOH LGU COMPLIANT)
               </span>
@@ -826,22 +836,26 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
                                 >
                                   Preview
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => startEditingCertificate(cert)}
-                                  className="p-1 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                                  title="Edit Certificate"
-                                >
-                                  <Edit3 size={11} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteCertificateClick(cert.id)}
-                                  className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                                  title="Delete Certificate"
-                                >
-                                  <Trash2 size={11} />
-                                </button>
+                                {!isViewOnly && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => startEditingCertificate(cert)}
+                                      className="p-1 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                      title="Edit Certificate"
+                                    >
+                                      <Edit3 size={11} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteCertificateClick(cert.id)}
+                                      className="p-1 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                      title="Delete Certificate"
+                                    >
+                                      <Trash2 size={11} />
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>

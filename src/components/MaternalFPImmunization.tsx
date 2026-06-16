@@ -393,14 +393,26 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         <div className="space-y-4 pt-3" id="prenatal-tab-content">
           {activeRole === 'NURSE' && (
             <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-              <strong className="text-amber-800 font-bold block font-sans">🤰 Gampanin sa Workstation (Workstation Notice):</strong>
-              <span>Ang Maternal Prenatal Care ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM) dahil espesyalista siya sa buntis at prenatal. Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
+              <strong className="text-amber-800 font-bold block font-sans">
+                {language === 'EN' ? '🤰 Workstation Notice:' : '🤰 Gampanin sa Workstation (Workstation Notice):'}
+              </strong>
+              <span>
+                {language === 'EN'
+                  ? 'Maternal Prenatal Care is managed by our Barangay Midwife (Arlene Cagas Dayama, RM) who specializes in maternal/prenatal care. Your active workstation session is for the Public Health Nurse (Yvonne Galang, RN). You may view these records in read-only mode.'
+                  : 'Ang Maternal Prenatal Care ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM) dahil espesyalista siya sa buntis at prenatal. Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.'}
+              </span>
             </div>
           )}
           {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
             <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
-              <span>Naka-log in bilang Cap. Judeth Pila. Ang segment na ito ay may pahintulot na "View-Only" para sa pagrepaso ng maternal health program at hindi maaaring magkaroon ng bagong submission.</span>
+              <strong className="text-blue-800 font-bold block font-sans">
+                {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+              </strong>
+              <span>
+                {language === 'EN'
+                  ? 'Logged in as Administrator. This segment is layout in read-only format for reviewing the maternal health program and no new submissions can be made.'
+                  : 'Naka-log in bilang Ericson Padunan. Ang segment na ito ay may pahintulot na "View-Only" para sa pagrepaso ng maternal health program at hindi maaaring magkaroon ng bagong submission.'}
+              </span>
             </div>
           )}
 
@@ -589,8 +601,14 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         <div className="space-y-4 pt-3 text-xs" id="epi-tab-content">
           {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
             <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
-              <span>Naka-log in bilang Cap. Judeth Pila. Ang vaccination registers ay para sa read-only na pagrepaso ng Administrator. Walang pahintulot na mag-edit o magdagdag ng mga immunization record.</span>
+              <strong className="text-blue-800 font-bold block font-sans">
+                {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+              </strong>
+              <span>
+                {language === 'EN'
+                  ? 'Logged in as Administrator. Vaccination registers are for read-only audit review. No editing or creating of immunization records is allowed.'
+                  : 'Naka-log in bilang Ericson Padunan. Ang vaccination registers ay para sa read-only na pagrepaso ng Administrator. Walang pahintulot na mag-edit o magdagdag ng mga immunization record.'}
+              </span>
             </div>
           )}
 
@@ -744,14 +762,26 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         <div className="space-y-4 pt-3 text-xs" id="fp-tab-content">
           {activeRole === 'NURSE' && (
             <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-              <strong className="text-amber-800 font-bold block font-sans">🤰 Gampanin sa Workstation (Workstation Notice):</strong>
-              <span>Ang Family Planning program ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM). Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.</span>
+              <strong className="text-amber-800 font-bold block font-sans">
+                {language === 'EN' ? '🤰 Workstation Notice:' : '🤰 Gampanin sa Workstation (Workstation Notice):'}
+              </strong>
+              <span>
+                {language === 'EN'
+                  ? 'The Family Planning program is managed by our Barangay Midwife (Arlene Cagas Dayama, RM). Your active workstation session is for the Public Health Nurse (Yvonne Galang, RN). You may view these logs in read-only mode.'
+                  : 'Ang Family Planning program ay pinamamahalaan ng ating Barangay Midwife (Arlene Cagas Dayama, RM). Ang active workstation ngayon ay para sa Public Health Nurse (Yvonne Galang, RN). Maaari mo lamang basahin (read-only) ang records dito.'}
+              </span>
             </div>
           )}
           {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
             <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-              <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
-              <span>Naka-log in bilang Cap. Judeth Pila. Ang programang ito ay may pahintulot na "View-Only" na para lamang sa pagrebyu ng Family Planning logs.</span>
+              <strong className="text-blue-800 font-bold block font-sans">
+                {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+              </strong>
+              <span>
+                {language === 'EN'
+                  ? 'Logged in as Administrator. This program is in "View-Only" mode for reviewing Family Planning logs. Submissions are disabled.'
+                  : 'Naka-log in bilang Ericson Padunan. Ang programang ito ay may pahintulot na "View-Only" na para lamang sa pagrebyu ng Family Planning logs.'}
+              </span>
             </div>
           )}
 
