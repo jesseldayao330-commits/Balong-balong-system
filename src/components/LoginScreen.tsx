@@ -31,6 +31,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   centerLogo,
 }) => {
   const [selectedRole, setSelectedRole] = useState<Role>('BHW');
+  const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
   const [pin, setPin] = useState<string>('');
   const [showPin, setShowPin] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>('');
@@ -61,11 +62,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       securityPolicy3: 'Session surveillance metrics synchronize securely with Pitogo Municipal EHR.',
       headerNote: 'Barangay Balong-balong BHW & Medical Team',
       imgCaption: 'Barangay Midwife Prenatal & Maternal Clinic',
-      bentoLabel1: '1. Barangay Health Workers Group',
-      bentoLabel2: '2. Midwife Prenatal',
-      bentoLabel3: '3. MHO Consultation',
-      bentoLabel4: '4. Immunization RN',
-      bentoLabel5: '5. E-Pharmacy Store',
+      bentoLabel1: '1. Group of BHW',
+      bentoLabel2: '2. Prenatal Clinic',
+      bentoLabel3: '3. Konsulta sa MHO/DOCTOR',
+      bentoLabel4: '4. Bakuna (Vaccination)',
+      bentoLabel5: '5. E-Pharmacy',
       securedLabel: 'Secured Access Only',
       locationLabel: 'Authorized Station Location:',
     },
@@ -92,11 +93,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       securityPolicy3: 'Secure na nagsi-sync ang mga sukat sa Pitogo Municipal EHR.',
       headerNote: 'BHW at Medikal na Koponan ng Barangay Balong-balong',
       imgCaption: 'Klinika sa Prenatal at Maternal ng Barangay Midwife',
-      bentoLabel1: '1. Grupo ng Barangay Health Workers',
-      bentoLabel2: '2. Prenatal ng Kumadrona',
-      bentoLabel3: '3. Konsulta sa MHO/Doktor',
-      bentoLabel4: '4. Bakuna mula sa Nars',
-      bentoLabel5: '5. E-Pharmacy na Tindahan',
+      bentoLabel1: '1. Group of BHW',
+      bentoLabel2: '2. Prenatal',
+      bentoLabel3: '3. Konsulta sa MHO/DOCTOR',
+      bentoLabel4: '4. Bakuna',
+      bentoLabel5: '5. E-Pharmacy',
       securedLabel: 'Ligtas na Akses Lamang',
       locationLabel: 'Lokasyon ng Awtorisadong Estasyon:',
     },
@@ -117,17 +118,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       midwifeDesc: 'Maternal care, prenatal checkup, family planning, bakuna alang sa bata (EPI), ug kinatibuk-ang medikal nga checkup.',
       capitanDesc: 'Dashboard view sa ehekutibo, view-only nga stream sa rehistro sa pasyente, ug pagmonitor sa kalusugan sa barangay.',
       adminDesc: 'Mga configuration sa sistema, pag-adjust sa logo, system auditing logs, ug user PIN overrides.',
-      securityTitle: 'Patakaran sa Seguridad sa Workstation:',
+      securityTitle: 'Patakaran sa Seguridad ng Workstation:',
       securityPolicy1: 'Ang mga rehistradong klinikal nga papel ra sa DHRMS ang gitugotan sa pag-sign in.',
       securityPolicy2: 'Awtomatikong mag-lock ang workstation kung adunay manu-mano nga paggawas.',
       securityPolicy3: 'Ang mga metric sa pag-surveillance luwas nga nagsabay sa Pitogo Municipal EHR.',
       headerNote: 'BHW ug Medical nga Grupo sa Barangay Balong-balong',
       imgCaption: 'Klinika sa Prenatal ug Maternal sa Barangay Midwife',
-      bentoLabel1: '1. Grupo sa Barangay Health Workers',
-      bentoLabel2: '2. Prenatal sa Kumadrona',
-      bentoLabel3: '3. Konsulta sa MHO/Doktor',
-      bentoLabel4: '4. Bakuna gikan sa Nars',
-      bentoLabel5: '5. E-Pharmacy nga Tindahan',
+      bentoLabel1: '1. Group of BHW',
+      bentoLabel2: '2. Prenatal',
+      bentoLabel3: '3. Konsulta sa MHO/DOCTOR',
+      bentoLabel4: '4. Bakuna',
+      bentoLabel5: '5. E-Pharmacy',
       securedLabel: 'Kasaligan nga Akses Lamang',
       locationLabel: 'Lokasyon sa Awtorisadong Estasyon:',
     }
@@ -187,6 +188,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
+  // Synchronize active slide image on role selection
+  React.useEffect(() => {
+    if (selectedRole === 'BHW') {
+      setActiveImgIndex(0);
+    } else if (selectedRole === 'MIDWIFE') {
+      setActiveImgIndex(1); // Prenatal is Midwife's primary domain
+    } else if (selectedRole === 'CAPITAN') {
+      setActiveImgIndex(2); // Consultation
+    } else if (selectedRole === 'ADMIN') {
+      setActiveImgIndex(4); // E-pharmacy
+    }
+  }, [selectedRole]);
+
   // Keyboard support for typing PIN directly
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -204,6 +218,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [pin, selectedRole, isSuccessing]);
+
+  const carouselImages = [
+    { src: bhwWorkersLogin, label: currentDict.bentoLabel1 },
+    { src: bhwCheckupPregnant, label: currentDict.bentoLabel2 },
+    { src: bhwDoctorConsult, label: currentDict.bentoLabel3 },
+    { src: bhwNurseImmunize, label: currentDict.bentoLabel4 },
+    { src: bhwPharmacyStock, label: currentDict.bentoLabel5 },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-between p-4 selection:bg-emerald-600 selection:text-white relative overflow-hidden" id="login-screen-outer">
@@ -272,82 +294,92 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             </div>
 
-            {/* Central visual 5-picture bento collage of real community staff */}
-            <div className="my-5 relative z-10 space-y-2.5" id="login-central-image">
-              <p className="text-[9px] uppercase font-black tracking-widest text-emerald-300/90 text-center font-mono">
+            {/* Visual 5-picture layout of real community health services */}
+            <div className="my-5 relative z-10 space-y-3" id="login-central-image">
+              <p className="text-[10px] uppercase font-black tracking-widest text-emerald-300/90 text-center font-mono">
                 {currentDict.headerNote}
               </p>
               
               {/* Feature image (Large BHW staff portrait) */}
               <div className="space-y-1">
-                <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-md aspect-video">
+                <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 shadow-md aspect-video bg-slate-900 group">
                   <img
                     src={bhwWorkersLogin}
-                    alt="BHW Active Heroes"
+                    alt="Group of BHW"
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                </div>
-                <div className="text-center text-[9px] font-bold tracking-wide uppercase text-emerald-200">
-                  {currentDict.bentoLabel1}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-2 pt-5">
+                    <span className="text-[9.5px] font-extrabold tracking-wide uppercase text-white drop-shadow-sm block text-center">
+                      {currentDict.bentoLabel1}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 4-grid smaller images of the active station roles */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="space-y-1">
-                  <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                <div className="space-y-0.5">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 shadow-xs aspect-video bg-slate-900 group">
                     <img
                       src={bhwCheckupPregnant}
-                      alt="Midwife Maternal Checkup"
+                      alt="Prenatal Care"
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
-                  <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                     {currentDict.bentoLabel2}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-1.5 pt-4">
+                      <span className="text-[8.5px] font-bold tracking-tight uppercase text-white drop-shadow-sm block text-center">
+                        {currentDict.bentoLabel2}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
+                <div className="space-y-0.5">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 shadow-xs aspect-video bg-slate-900 group">
                     <img
                       src={bhwDoctorConsult}
-                      alt="Doctor Consultation"
+                      alt="MHO / Doctor Consultation"
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
-                  <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    {currentDict.bentoLabel3}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-1.5 pt-4">
+                      <span className="text-[8.5px] font-bold tracking-tight uppercase text-white drop-shadow-sm block text-center">
+                        {currentDict.bentoLabel3}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
+                <div className="space-y-0.5">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 shadow-xs aspect-video bg-slate-900 group">
                     <img
                       src={bhwNurseImmunize}
-                      alt="Nurse Child Health tracker"
+                      alt="Bakuna (Vaccination)"
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
-                  <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    {currentDict.bentoLabel4}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-1.5 pt-4">
+                      <span className="text-[8.5px] font-bold tracking-tight uppercase text-white drop-shadow-sm block text-center">
+                        {currentDict.bentoLabel4}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="relative rounded-xl overflow-hidden border border-white/20 shadow-xs aspect-square">
+                <div className="space-y-0.5">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 shadow-xs aspect-video bg-slate-900 group">
                     <img
                       src={bhwPharmacyStock}
-                      alt="Pharmacy Inventory management"
+                      alt="E-Pharmacy"
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
-                  <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    {currentDict.bentoLabel5}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-1.5 pt-4">
+                      <span className="text-[8.5px] font-bold tracking-tight uppercase text-white drop-shadow-sm block text-center">
+                        {currentDict.bentoLabel5}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

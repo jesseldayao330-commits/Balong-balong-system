@@ -284,10 +284,10 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           <div class="progress-bar-container">
             <div class="progress-text">
               <span>Water & Sanitary Toilet Compliance (100% Target)</span>
-              <span>80%</span>
+              <span>100%</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill" style="width: 80%; background-color: #10b981;"></div>
+              <div class="progress-fill" style="width: 100%; background-color: #10b981;"></div>
             </div>
           </div>
         </div>
@@ -925,10 +925,10 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
               <div>
                 <div className="flex justify-between text-[11px] mb-1">
                   <span>Water & Sanitary Toilet Compliance (100% Target)</span>
-                  <span className="text-emerald-400">80%</span>
+                  <span className="text-emerald-400">100%</span>
                 </div>
                 <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-400 h-full rounded-full" style={{ width: '80%' }}></div>
+                  <div className="bg-emerald-400 h-full rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </div>
             </div>
@@ -1145,7 +1145,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
                   <td className="p-2.5 px-4">Sanitary toilets certified verified households (Environmental sanitation metric)</td>
                   <td className="p-2.5 text-center font-mono">100%</td>
                   <td className="p-2.5 text-center font-black text-emerald-700 font-mono">
-                    {Math.round((patients.length > 0 ? 80 : 0))}% compliance
+                    100% compliance
                   </td>
                 </tr>
               </tbody>

@@ -233,7 +233,8 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                       <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
                       <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
                     </div>
-                    {activeRole === 'MIDWIFE' || activeRole === 'BHW' ? (
+                    {/* Render extra items depending on role */}
+                    {(activeRole === 'MIDWIFE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                       <>
                         <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
                           <span className="text-[10px] text-slate-500 block">Family Planning</span>
@@ -244,7 +245,9 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                           <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
                         </div>
                       </>
-                    ) : (
+                    )}
+
+                    {(activeRole === 'BHW' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                       <>
                         <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
                           <span className="text-[10px] text-slate-500 block">Senior Citizens</span>

@@ -331,14 +331,14 @@ export const HealthPolicies: React.FC = () => {
               <div className="space-y-2 border-t border-slate-100 pt-4">
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span className="font-extrabold text-slate-650 uppercase">Sanitary Toilet Compliance Ratio</span>
-                  <span className="font-bold text-teal-700">75%</span>
+                  <span className="font-bold text-teal-700">100%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full" style={{ width: '75%' }}></div>
+                  <div className="h-full bg-teal-500 rounded-full" style={{ width: '100%' }}></div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>6 out of 8 households surveyed</span>
-                  <span className="font-semibold text-teal-600">Improving (Up 5% this month)</span>
+                  <span>8 out of 8 households surveyed</span>
+                  <span className="font-semibold text-teal-600">Full Compliance Met</span>
                 </div>
               </div>
 

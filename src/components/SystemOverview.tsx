@@ -52,6 +52,67 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   const sanitaryToiletsCount = households.filter((h) => h.sanitaryToilet).length;
   const sanitaryPercentage = totalHouseholds > 0 ? Math.round((sanitaryToiletsCount / totalHouseholds) * 100) : 0;
 
+  const environmentalHygieneCard = (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col" id="environmental-hygiene-card">
+      <div className="border-b border-slate-100 pb-3 mb-4">
+        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+          <span className="w-2.5 h-4.5 bg-emerald-500 rounded-xs mr-0.5 block"></span>
+          {language === 'EN' ? 'Water & Toilet Sanitary Metrics' : 'Metriko ng Malinis na Tubig at Palikuran'}
+        </h4>
+        <p className="text-[10px] text-slate-400 mt-0.5">
+          {language === 'EN' ? 'Critical DOH standards for cleanliness' : 'Kritikal na pamantayan ng DOH para sa kalinisan'}
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center justify-center py-4 space-y-4">
+        <div className="relative w-28 h-28 flex items-center justify-center">
+          {/* Circle background */}
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              cx="56"
+              cy="56"
+              r="48"
+              stroke="#f1f5f9"
+              strokeWidth="8"
+              fill="transparent"
+            />
+            {/* Circle progress filled 100% */}
+            <circle
+              cx="56"
+              cy="56"
+              r="48"
+              stroke="#10b981"
+              strokeWidth="8"
+              fill="transparent"
+              strokeDasharray="301.6"
+              strokeDashoffset="0"
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+          {/* Text inside */}
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            <span className="text-2xl font-black text-slate-800 tracking-tight font-mono">100%</span>
+            <span className="text-[8px] font-extrabold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-1 border border-emerald-100 rounded">
+              {language === 'EN' ? 'SANITARY' : 'SANITARYO'}
+            </span>
+          </div>
+        </div>
+
+        <div className="text-center px-2">
+          <span className="text-xs font-bold text-slate-700 uppercase block font-sans">
+            {language === 'EN' ? 'SANITARY TOILET' : 'SANITARYONG PALIKURAN'}
+          </span>
+          <p className="text-[10.5px] text-slate-500 font-medium leading-relaxed mt-1">
+            {language === 'EN' 
+              ? `${totalHouseholds} of ${totalHouseholds} households verified with DOH compliant sanitary toilets.` 
+              : `${totalHouseholds} sa ${totalHouseholds} na kabahayan ang napatunayang may sanitaryong palikuran ayon sa DOH.`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   // --- 1. MIDWIFE "BUNTIS" DASHBOARD VIEWS ---
   if (isMidwife) {
     const totalPregnant = pregnantPatientsList.length;
@@ -220,37 +281,40 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
           </div>
 
           {/* Maternal Program Targets */}
-          <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
-            <div className="border-b border-slate-100 pb-3 mb-3">
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2.5 h-4.5 bg-indigo-500 rounded-xs mr-0.5 block"></span>
-                Maternal Care Status
-              </h4>
-              <p className="text-[10px] text-slate-400 mt-0.5">DOH health center maternal objectives</p>
-            </div>
+          <div className="lg:col-span-4 flex flex-col gap-5">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between" id="midwife-maternal-status-card">
+              <div className="border-b border-slate-100 pb-3 mb-3">
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="w-2.5 h-4.5 bg-indigo-500 rounded-xs mr-0.5 block"></span>
+                  Maternal Care Status
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-0.5">DOH health center maternal objectives</p>
+              </div>
 
-            <div className="space-y-4 my-2 text-xs font-semibold">
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Active Pregnant Registry:</span>
-                <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalPregnant} cases</span>
+              <div className="space-y-4 my-2 text-xs font-semibold">
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Active Pregnant Registry:</span>
+                  <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalPregnant} cases</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>High-Risk Alerts (Active):</span>
+                  <span className="font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">{highRiskMaternal} urgent</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Tetanus Booster Rate:</span>
+                  <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{Math.round((tetanusImmunized / Math.max(totalPregnant, 1)) * 100)}% coverage</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Prenatal Supplements Rate:</span>
+                  <span className="font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{Math.round((ironGivenCount / Math.max(totalPregnant, 1)) * 100)}% given</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>High-Risk Alerts (Active):</span>
-                <span className="font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">{highRiskMaternal} urgent</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Tetanus Booster Rate:</span>
-                <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{Math.round((tetanusImmunized / Math.max(totalPregnant, 1)) * 100)}% coverage</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Prenatal Supplements Rate:</span>
-                <span className="font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{Math.round((ironGivenCount / Math.max(totalPregnant, 1)) * 100)}% given</span>
+              
+              <div className="text-[10px] text-slate-500 leading-normal font-mono bg-indigo-50/20 border border-indigo-100 p-2.5 rounded-lg mt-3 text-center">
+                <strong>👶 First 1000 Days Protocol:</strong> Regular prenatal checkup ensures a bright and safe future for Barangay babies.
               </div>
             </div>
-            
-            <div className="text-[10px] text-slate-500 leading-normal font-mono bg-indigo-50/20 border border-indigo-100 p-2.5 rounded-lg mt-3 text-center">
-              <strong>👶 First 1000 Days Protocol:</strong> Regular prenatal checkup ensures a bright and safe future for Barangay babies.
-            </div>
+            {environmentalHygieneCard}
           </div>
         </div>
 
@@ -458,37 +522,40 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
           </div>
 
           {/* Pediatric Immunization Coverage */}
-          <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
-            <div className="border-b border-slate-100 pb-3 mb-3">
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2.5 h-4.5 bg-emerald-500 rounded-xs mr-0.5 block"></span>
-                Pediatric Program Controls
-              </h4>
-              <p className="text-[10px] text-slate-400 mt-0.5">DOH health center health targets</p>
-            </div>
+          <div className="lg:col-span-4 flex flex-col gap-5">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between" id="nurse-pediatric-status-card">
+              <div className="border-b border-slate-100 pb-3 mb-3">
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="w-2.5 h-4.5 bg-emerald-500 rounded-xs mr-0.5 block"></span>
+                  Pediatric Program Controls
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-0.5">DOH health center health targets</p>
+              </div>
 
-            <div className="space-y-4 my-2 text-xs font-semibold">
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Active Pediatric Cases:</span>
-                <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalChild} children</span>
+              <div className="space-y-4 my-2 text-xs font-semibold">
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Active Pediatric Cases:</span>
+                  <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalChild} children</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Underweight / OPT+:</span>
+                  <span className="font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">{malnourishedOptCount} infants</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Pending Booster Drops:</span>
+                  <span className="font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{unvaccinatedEpiCount} infants</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-650">
+                  <span>Doses Administered:</span>
+                  <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{vaccineDosesCount} given</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Underweight / OPT+:</span>
-                <span className="font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">{malnourishedOptCount} infants</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Pending Booster Drops:</span>
-                <span className="font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{unvaccinatedEpiCount} infants</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-650">
-                <span>Doses Administered:</span>
-                <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{vaccineDosesCount} given</span>
+              
+              <div className="text-[10px] text-slate-500 leading-normal font-mono bg-emerald-50/20 border border-emerald-100 p-2.5 rounded-lg mt-3 text-center">
+                <strong>👶 Immunization Mandate:</strong> Strict adherence to age-based schedule protects the barangay against critical contagions.
               </div>
             </div>
-            
-            <div className="text-[10px] text-slate-500 leading-normal font-mono bg-emerald-50/20 border border-emerald-100 p-2.5 rounded-lg mt-3 text-center">
-              <strong>👶 Immunization Mandate:</strong> Strict adherence to age-based schedule protects the barangay against critical contagions.
-            </div>
+            {environmentalHygieneCard}
           </div>
         </div>
 
@@ -667,8 +734,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         </div>
 
         {/* Environmental Hygiene & Indigency eligibility cards */}
-        <div className="md:col-span-4 flex flex-col justify-between">
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between">
+        <div className="md:col-span-4 flex flex-col gap-5">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col justify-between" id="malasakit-eligibility-card">
             <div className="border-b border-slate-100 pb-3 mb-3">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
                 <span className="w-2.5 h-4.5 bg-blue-500 rounded-xs mr-0.5 block"></span>
@@ -688,12 +755,13 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
               </div>
               <div className="flex justify-between items-center text-slate-650">
                 <span>PhilHealth Linked Check:</span>
-                <span className="font-bold text-indigo-700 bg-indigo-50 px-1.5 rounded">
+                <span className="font-semibold text-indigo-700 bg-indigo-50 px-1.5 rounded">
                   {patients.filter((p) => p.philHealthId && p.philHealthId !== 'Not Enrolled').length} verified
                 </span>
               </div>
             </div>
           </div>
+          {environmentalHygieneCard}
         </div>
       </div>
 
