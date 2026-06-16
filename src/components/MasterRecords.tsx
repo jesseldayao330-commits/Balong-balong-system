@@ -57,6 +57,10 @@ interface MasterRecordsProps {
   onEditPatient?: (p: Patient) => void;
   onDeletePatient?: (id: string) => void;
   activeRole?: Role;
+  initialHealthStatusFilter?: string;
+  initialActiveSubTab?: 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
+  initialRiskFilter?: string;
+  onResetFilters?: () => void;
 }
 
 type RecordTab = 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
@@ -77,6 +81,10 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   onEditPatient,
   onDeletePatient,
   activeRole,
+  initialHealthStatusFilter,
+  initialActiveSubTab,
+  initialRiskFilter,
+  onResetFilters,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,11 +99,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const canDelete = false; // Admin is view-only, residents cannot be deleted by unauthorized staff
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
 
+  // Sync health program filters and active sub tab from parent / dashboard links
+  React.useEffect(() => {
+    if (initialActiveSubTab) {
+      setActiveSubTab(initialActiveSubTab);
+    }
+  }, [initialActiveSubTab]);
+
+  React.useEffect(() => {
+    if (initialHealthStatusFilter) {
+      setHealthStatusFilter(initialHealthStatusFilter);
+    }
+  }, [initialHealthStatusFilter]);
+
+  React.useEffect(() => {
+    if (initialRiskFilter) {
+      setRiskFilter(initialRiskFilter);
+    }
+  }, [initialRiskFilter]);
+
   // Redirect roles away from restricted tabs
   React.useEffect(() => {
     if (userActiveRole === 'BHW' && ['prenatals', 'immunizations', 'inventory'].includes(activeSubTab)) {
       setActiveSubTab('residents');
-    } else if (userActiveRole === 'MIDWIFE' && ['households', 'immunizations'].includes(activeSubTab)) {
+    } else if (userActiveRole === 'MIDWIFE' && ['households'].includes(activeSubTab)) {
       setActiveSubTab('residents');
     } else if (userActiveRole === 'NURSE' && ['households', 'prenatals'].includes(activeSubTab)) {
       setActiveSubTab('residents');
@@ -379,7 +406,9 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         p.activePrograms.includes('MCH') || 
         prenatals.some(pr => pr.patientId === p.id)
       );
-      if (!isPregnant) return false;
+      const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+      const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+      if (!isPregnant && !isChild) return false;
     } else if (userActiveRole === 'NURSE') {
       const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
       const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
@@ -505,7 +534,12 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         i.medicineName.toLowerCase().includes('iron') ||
         i.genericName.toLowerCase().includes('ferrous') ||
         i.genericName.toLowerCase().includes('folic');
-      if (!isPrenatal) return false;
+      const isImmunization = 
+        i.category === 'EPI Vaccines' || 
+        i.medicineName.toLowerCase().includes('vaccine') || 
+        i.medicineName.toLowerCase().includes('immuniz') ||
+        i.genericName.toLowerCase().includes('vaccine');
+      if (!isPrenatal && !isImmunization) return false;
     } else if (userActiveRole === 'NURSE') {
       const isImmunization = 
         i.category === 'EPI Vaccines' || 
@@ -633,7 +667,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             activeSubTab === 'residents' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
         >
-          {userActiveRole === 'MIDWIFE' ? '🤰 Patient (Buntis)' : userActiveRole === 'NURSE' ? '👶 Patient (Child/Mga Bata)' : '👤 Resident Records'}
+          {userActiveRole === 'MIDWIFE' ? '🤰 Patient (Buntis at Bata)' : userActiveRole === 'NURSE' ? '👶 Patient (Child/Mga Bata)' : '👤 Resident Records'}
         </button>
 
         {/* Households Tab (hidden for Midwife & Nurse as requested) */}
@@ -680,8 +714,8 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
           </button>
         )}
 
-        {/* Immunizations Tab (not for BHW, and not for Midwife as requested) */}
-        {userActiveRole !== 'BHW' && userActiveRole !== 'MIDWIFE' && (
+        {/* Immunizations Tab (not for BHW as requested, now visible for combined Midwife/Nurse role) */}
+        {userActiveRole !== 'BHW' && (
           <button
             onClick={() => { setActiveSubTab('immunizations'); setSearchQuery(''); }}
             className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
@@ -711,7 +745,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             activeSubTab === 'daily_logs' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
         >
-          🕒 Walk-In Visitors & Reports
+          {userActiveRole === 'BHW' ? '🕒 Walk-In Visitors' : '🕒 Walk-In Visitors & Reports'}
         </button>
       </div>
 
@@ -724,7 +758,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             className="w-full bg-white border border-slate-200 pl-8 pr-4 py-2.5 rounded-lg focus:outline-hidden text-xs font-medium placeholder:text-slate-400 text-slate-800"
             placeholder={
               activeSubTab === 'residents' ? (
-                userActiveRole === 'MIDWIFE' ? 'Maghanap sa Pangalan o Sambahayan ID ng Buntis...' :
+                userActiveRole === 'MIDWIFE' ? 'Maghanap sa Pangalan o Sambahayan ID ng Buntis at Bata...' :
                 userActiveRole === 'NURSE' ? 'Maghanap sa Pangalan o Sambahayan ID ng Bata...' :
                 'Maghanap sa Pangalan, Sambahayan (Household) ID, o Health Status (MCH, EPI, Tb, obeso)...'
               ) :
@@ -779,12 +813,17 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                 </select>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <span className="text-[10px] text-slate-450 uppercase font-mono">Health status / Program:</span>
                 <select
-                  className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-700 font-bold"
+                  className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-700 font-bold text-xs"
                   value={healthStatusFilter}
-                  onChange={(e) => setHealthStatusFilter(e.target.value)}
+                  onChange={(e) => {
+                    setHealthStatusFilter(e.target.value);
+                    if (e.target.value === 'All') {
+                      onResetFilters?.();
+                    }
+                  }}
                 >
                   <option value="All">All Health Statuses</option>
                   <option value="EPI">Vaccine Program (EPI)</option>
@@ -796,6 +835,19 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <option value="FAMILY_PLANNING">Family Planning</option>
                   <option value="Indigent">Indigent Aid Assistance</option>
                 </select>
+                {healthStatusFilter !== 'All' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHealthStatusFilter('All');
+                      onResetFilters?.();
+                    }}
+                    className="px-2 py-1.5 bg-rose-50 hover:bg-rose-150 active:bg-rose-200 text-rose-700 hover:text-rose-800 border border-rose-200 rounded-lg text-[10px] font-black uppercase font-mono tracking-wider transition-all cursor-pointer"
+                    title="Clear dashboard filter"
+                  >
+                    Clear Filter ✕
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -1528,9 +1580,9 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
               
               {/* Daily ledger logs list */}
-              <div className="md:col-span-8 space-y-3">
+              <div className={`${userActiveRole === 'BHW' ? 'md:col-span-12' : 'md:col-span-8'} space-y-3`}>
                 <span className="text-xs font-black text-slate-600 uppercase tracking-wider block font-mono">
-                  📋 Live Walk-In Ledger timeline ({filteredDailyLogs.length} visitoys)
+                  📋 Live Walk-In Ledger timeline ({filteredDailyLogs.length} visitors)
                 </span>
                 
                 <div className="overflow-x-auto border border-slate-150 rounded-xl bg-white">
@@ -1584,46 +1636,48 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
               </div>
 
               {/* Aggregated indicators report sidebar */}
-              <div className="md:col-span-4 p-4 border border-indigo-200/60 bg-indigo-50/15 rounded-xl space-y-4">
-                <span className="text-xs font-black text-indigo-950 uppercase tracking-wider block font-mono border-b border-indigo-100 pb-2 flex items-center gap-1.5">
-                  <CheckCircle size={14} className="text-indigo-600" />
-                  Barangay KPI Reports Summary
-                </span>
+              {userActiveRole !== 'BHW' && (
+                <div className="md:col-span-4 p-4 border border-indigo-200/60 bg-indigo-50/15 rounded-xl space-y-4">
+                  <span className="text-xs font-black text-indigo-950 uppercase tracking-wider block font-mono border-b border-indigo-100 pb-2 flex items-center gap-1.5">
+                    <CheckCircle size={14} className="text-indigo-600" />
+                    Barangay KPI Reports Summary
+                  </span>
 
-                <div className="space-y-3.5 text-xs">
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                    <span className="text-slate-500 font-medium">BHW Survelled Kids (&le; 5yo)</span>
-                    <strong className="text-slate-800 font-mono">{totalKidsCount} infants</strong>
+                  <div className="space-y-3.5 text-xs">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-500 font-medium">BHW Survelled Kids (&le; 5yo)</span>
+                      <strong className="text-slate-800 font-mono">{totalKidsCount} infants</strong>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-500 font-medium">Indigent Households</span>
+                      <strong className="text-slate-800 font-mono">{indigentResidentsCount} residents</strong>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-500 font-medium">FHSIS EPI BCG Completed</span>
+                      <strong className="text-slate-800 font-mono">
+                        {Math.round((vaccinations.filter(v => v.vaccineName === 'BCG').length / (totalKidsCount || 1)) * 100)}%
+                      </strong>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-500 font-medium">FHSIS Pentavalent complete</span>
+                      <strong className="text-slate-800 font-mono">
+                        {vaccinations.filter(v => v.vaccineName.includes('Pentavalent')).length} doses
+                      </strong>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                      <span className="text-slate-500 font-medium font-mono text-[10px] uppercase text-indigo-800">DOH Registry integrity</span>
+                      <strong className="text-emerald-700 font-extrabold uppercase font-mono tracking-wider animate-pulse">
+                        100% compliant
+                      </strong>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                    <span className="text-slate-500 font-medium">Poor/Indigent Households</span>
-                    <strong className="text-slate-800 font-mono">{indigentResidentsCount} residents</strong>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                    <span className="text-slate-500 font-medium">FHSIS EPI BCG Completed</span>
-                    <strong className="text-slate-800 font-mono">
-                      {Math.round((vaccinations.filter(v => v.vaccineName === 'BCG').length / (totalKidsCount || 1)) * 100)}%
-                    </strong>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                    <span className="text-slate-500 font-medium">FHSIS Pentavalent complete</span>
-                    <strong className="text-slate-800 font-mono">
-                      {vaccinations.filter(v => v.vaccineName.includes('Pentavalent')).length} doses
-                    </strong>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                    <span className="text-slate-500 font-medium font-mono text-[10px] uppercase text-indigo-800">DOH Registry integrity</span>
-                    <strong className="text-emerald-700 font-extrabold uppercase font-mono tracking-wider animate-pulse">
-                      100% compliant
-                    </strong>
+
+                  <div className="bg-white border border-slate-200 p-3 rounded-lg text-[11px] text-slate-500 font-mono leading-relaxed shadow-2xs">
+                    <strong className="text-slate-800 block mb-1">💡 Data Assurance</strong>
+                    All logs are safely synchronized locally to browser localStorage under RA 10173 compliant guidelines for Municipal integration.
                   </div>
                 </div>
-
-                <div className="bg-white border border-slate-200 p-3 rounded-lg text-[11px] text-slate-500 font-mono leading-relaxed shadow-2xs">
-                  <strong className="text-slate-800 block mb-1">💡 Data Assurance</strong>
-                  All logs are safely synchronized locally to browser localStorage under RA 10173 compliant guidelines for Municipal integration.
-                </div>
-              </div>
+              )}
 
             </div>
           </div>

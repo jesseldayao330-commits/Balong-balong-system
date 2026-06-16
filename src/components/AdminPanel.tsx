@@ -58,7 +58,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       { id: '1', name: 'Julefe Magwate', role: 'BHW' as Role, username: 'julefe_bhw', pin: '1111', status: 'Active' },
       { id: '2', name: 'Arlene Cagas Dayama, RM', role: 'MIDWIFE' as Role, username: 'arlene_midwife', pin: '3333', status: 'Active' },
       { id: '3', name: 'Yvonne Galang, RN', role: 'NURSE' as Role, username: 'yvonne_nars', pin: '2222', status: 'Active' },
-      { id: '4', name: 'Ericson Padunan', role: 'ADMIN' as Role, username: 'ericson_admin', pin: '1234', status: 'Active' },
+      { id: '4', name: 'Cap. Judeth Pila', role: 'ADMIN' as Role, username: 'judeth_admin', pin: '1234', status: 'Active' },
+      { id: '5', name: 'Cap. Judeth Pila', role: 'CAPITAN' as Role, username: 'judeth_capitan', pin: '7777', status: 'Active' },
     ];
   });
 
@@ -97,7 +98,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         const fallbacks: AuditLog[] = [
           { id: 'LOG-001', timestamp: '2026-06-05 10:45:12', user: 'Julefe Magwate (BHW)', action: 'PATIENT_RECORD_ADDED', details: 'Nagrehistro ng bagong pasyente sa registry book.', severity: 'Info' },
           { id: 'LOG-002', timestamp: '2026-06-05 09:32:04', user: 'Arlene Cagas Dayama, RM', action: 'PRESCRIPTION_ADDED', details: 'Nagdagdag ng medical consultation diagnosis at prescription.', severity: 'Info' },
-          { id: 'LOG-003', timestamp: '2026-06-05 08:15:30', user: 'Ericson Padunan (Admin)', action: 'USER_LOGIN_AUTHENTICATED', details: 'Binuksan ang workstation session sa ilalim ng Administrator PIN.', severity: 'Info' },
+          { id: 'LOG-003', timestamp: '2026-06-05 08:15:30', user: 'Cap. Judeth Pila (Admin)', action: 'USER_LOGIN_AUTHENTICATED', details: 'Binuksan ang workstation session sa ilalim ng Administrator PIN.', severity: 'Info' },
         ];
         localStorage.setItem('bhc_audit_logs', JSON.stringify(fallbacks));
         setAuditLogs(fallbacks);
@@ -147,7 +148,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const newLog: AuditLog = {
       id: `AUD-${Date.now()}`,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      user: 'Ericson Padunan (Admin)',
+      user: 'Cap. Judeth Pila (Admin)',
       action: 'USER_ACCOUNT_CREATED',
       details: `Created new workstation active user account ${newUser.username} (${newUser.role})`,
       severity: 'Critical'
@@ -170,7 +171,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         const newLog: AuditLog = {
           id: `AUD-${Date.now()}`,
           timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          user: 'Ericson Padunan (Admin)',
+          user: 'Cap. Judeth Pila (Admin)',
           action: 'USER_STATUS_TOGGLED',
           details: `Changed user ${u.username} status from ${u.status} to ${nextStatus}`,
           severity: 'Warning'
@@ -242,7 +243,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const newLog: AuditLog = {
       id: `AUD-${Date.now()}`,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      user: 'Ericson Padunan (Admin)',
+      user: 'Cap. Judeth Pila (Admin)',
       action: 'USER_ACCOUNT_DELETED',
       details: `Permanently deleted user account ${name} (id: ${id})`,
       severity: 'Critical'

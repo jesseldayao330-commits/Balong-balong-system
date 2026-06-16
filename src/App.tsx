@@ -58,12 +58,17 @@ export default function App() {
   // Sync states
   const [isOnline, setIsOnline] = useState<boolean>(() => {
     const saved = localStorage.getItem('bhc_online_state');
-    return saved !== null ? JSON.parse(saved) : true;
+    if (saved === null) return true;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return true;
+    }
   });
   const [language, setLanguage] = useState<Language>('TL'); // Filipino/Tagalog is default!
   const [activeRole, setActiveRole] = useState<Role>(() => {
     const saved = localStorage.getItem('bhc_active_role');
-    if (saved === 'BHW' || saved === 'MIDWIFE' || saved === 'NURSE' || saved === 'PHARMACIST' || saved === 'MHO' || saved === 'ADMIN') {
+    if (saved === 'BHW' || saved === 'MIDWIFE' || saved === 'NURSE' || saved === 'PHARMACIST' || saved === 'MHO' || saved === 'ADMIN' || saved === 'CAPITAN') {
       return saved as Role;
     }
     return 'BHW';
@@ -72,6 +77,11 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [patientsTabMode, setPatientsTabMode] = useState<'records' | 'profile'>('records');
   const [selectedPatientIdForEdit, setSelectedPatientIdForEdit] = useState<string | undefined>(undefined);
+
+  // States to pass initial query filter when clicking on dashboard indicators
+  const [initialHealthStatusFilter, setInitialHealthStatusFilter] = useState<string>('All');
+  const [initialActiveSubTab, setInitialActiveSubTab] = useState<'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs'>('residents');
+  const [initialRiskFilter, setInitialRiskFilter] = useState<string>('All');
 
   // PIN lock overlay states for role-switching security
   const [roleToVerify, setRoleToVerify] = useState<Role | null>(null);
@@ -165,62 +175,122 @@ export default function App() {
   // Core Data Collections States linked to localStorage fallback
   const [patients, setPatients] = useState<Patient[]>(() => {
     const saved = localStorage.getItem('bhc_patients');
-    return saved ? JSON.parse(saved) : MOCK_PATIENTS;
+    if (!saved) return MOCK_PATIENTS;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_PATIENTS;
+    }
   });
   
   const [households, setHouseholds] = useState<Household[]>(() => {
     const saved = localStorage.getItem('bhc_households');
-    return saved ? JSON.parse(saved) : MOCK_HOUSEHOLDS;
+    if (!saved) return MOCK_HOUSEHOLDS;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_HOUSEHOLDS;
+    }
   });
 
   const [vitals, setVitals] = useState<VitalSigns[]>(() => {
     const saved = localStorage.getItem('bhc_vitals');
-    return saved ? JSON.parse(saved) : MOCK_VITALS;
+    if (!saved) return MOCK_VITALS;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_VITALS;
+    }
   });
 
   const [consultations, setConsultations] = useState<Consultation[]>(() => {
     const saved = localStorage.getItem('bhc_consultations');
-    return saved ? JSON.parse(saved) : MOCK_CONSULTATIONS;
+    if (!saved) return MOCK_CONSULTATIONS;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_CONSULTATIONS;
+    }
   });
 
   const [inventory, setInventory] = useState<MedicineInventory[]>(() => {
     const saved = localStorage.getItem('bhc_inventory');
-    return saved ? JSON.parse(saved) : MOCK_INVENTORY;
+    if (!saved) return MOCK_INVENTORY;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_INVENTORY;
+    }
   });
 
   const [dispensed, setDispensed] = useState<MedicineDispensed[]>(() => {
     const saved = localStorage.getItem('bhc_dispensed');
-    return saved ? JSON.parse(saved) : MOCK_DISPENSED;
+    if (!saved) return MOCK_DISPENSED;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_DISPENSED;
+    }
   });
 
   const [prenatals, setPrenatals] = useState<PrenatalRecord[]>(() => {
     const saved = localStorage.getItem('bhc_prenatals');
-    return saved ? JSON.parse(saved) : MOCK_PRENATAL;
+    if (!saved) return MOCK_PRENATAL;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_PRENATAL;
+    }
   });
 
   const [vaccinations, setVaccinations] = useState<ImmunizationRecord[]>(() => {
     const saved = localStorage.getItem('bhc_vaccinations');
-    return saved ? JSON.parse(saved) : MOCK_IMMUNIZATION;
+    if (!saved) return MOCK_IMMUNIZATION;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_IMMUNIZATION;
+    }
   });
 
   const [familyPlannings, setFamilyPlannings] = useState<FamilyPlanningRecord[]>(() => {
     const saved = localStorage.getItem('bhc_familyplannings');
-    return saved ? JSON.parse(saved) : MOCK_FAMILYPLANNING;
+    if (!saved) return MOCK_FAMILYPLANNING;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_FAMILYPLANNING;
+    }
   });
 
   const [referrals, setReferrals] = useState<Referral[]>(() => {
     const saved = localStorage.getItem('bhc_referrals');
-    return saved ? JSON.parse(saved) : MOCK_REFERRALS;
+    if (!saved) return MOCK_REFERRALS;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_REFERRALS;
+    }
   });
 
   const [certificates, setCertificates] = useState<HealthCertificate[]>(() => {
     const saved = localStorage.getItem('bhc_certificates');
-    return saved ? JSON.parse(saved) : MOCK_CERTIFICATES;
+    if (!saved) return MOCK_CERTIFICATES;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_CERTIFICATES;
+    }
   });
 
   const [dailyLogs, setDailyLogs] = useState<DailyLogEntry[]>(() => {
     const saved = localStorage.getItem('bhc_dailylogs');
-    return saved ? JSON.parse(saved) : MOCK_DAILY_LOG;
+    if (!saved) return MOCK_DAILY_LOG;
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return MOCK_DAILY_LOG;
+    }
   });
 
   // Persist arrays to Local Storage
@@ -403,11 +473,10 @@ export default function App() {
     const allTabs = [
       { id: 'overview', label: 'E-Dashboard', icon: Activity },
       { id: 'patients', label: 'Patient Register', icon: Users },
-      { id: 'clinical', label: 'Clinical Intake', icon: ClipboardList },
+      { id: 'map', label: 'Surveillance Map', icon: Map },
       { id: 'programs', label: 'DOH Programs', icon: Layers },
       { id: 'pharmacy', label: 'E-Pharmacy', icon: Pill },
       { id: 'clearance', label: 'Referral & Certs', icon: FileText },
-      { id: 'map', label: 'Surveillance Map', icon: Map },
       { id: 'admin_panel', label: 'Admin Panel', icon: Settings },
       { id: 'reports', label: 'FHSIS Reports & Logs', icon: BarChart3 },
       { id: 'policies', label: 'Health Policies', icon: ShieldCheck },
@@ -416,20 +485,23 @@ export default function App() {
     switch (role) {
       case 'BHW':
         // BHW: Patient list view-only, Patient registration add-only, Clinical Vitals encode-only, Surveillance map, and E-Pharmacy (Household Residents).
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'pharmacy', 'map'].includes(t.id));
+        return allTabs.filter((t) => ['overview', 'patients', 'pharmacy', 'map'].includes(t.id));
+      case 'CAPITAN':
+        // Capitan: E-Dashboard, Patient Register (View-only), and Surveillance Map only.
+        return allTabs.filter((t) => ['overview', 'patients', 'map'].includes(t.id));
       case 'NURSE':
-        // Nurse: Has E-Pharmacy (Child/Pediatric), clinical/programs/clearance/map etc.
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
+        // Nurse: Has E-Pharmacy (Child/Pediatric), programs/clearance/map etc.
+        return allTabs.filter((t) => ['overview', 'patients', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
       case 'MIDWIFE':
       case 'PHARMACIST':
       case 'MHO':
         // Midwife/Pharmacist/MHO: Clinical diagnostics, programs, pharmacy, and admin reports.
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
+        return allTabs.filter((t) => ['overview', 'patients', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
       case 'ADMIN':
         // Admin: Patient/vitals view-only details, audits, settings, maps, reports.
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies', 'admin_panel'].includes(t.id));
+        return allTabs.filter((t) => ['overview', 'patients', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies', 'admin_panel'].includes(t.id));
       default:
-        return allTabs.filter((t) => ['overview', 'patients', 'clinical'].includes(t.id));
+        return allTabs.filter((t) => ['overview', 'patients'].includes(t.id));
     }
   };
 
@@ -437,11 +509,12 @@ export default function App() {
   const getStaffNameByRole = (role: Role): string => {
     switch (role) {
       case 'BHW': return 'Julefe Magwate (BHW)';
-      case 'MIDWIFE': return 'Arlene Cagas Dayama, RM (Kumadrona)';
+      case 'MIDWIFE': return 'Arlene Cagas, RM & Yvonne Galang, RN (Midwife & Nurse)';
       case 'NURSE': return 'Yvonne Galang, RN (Nars)';
       case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
       case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
-      case 'ADMIN': return 'Ericson Padunan (Admin)';
+      case 'ADMIN': return 'Cap. Judeth Pila (Admin)';
+      case 'CAPITAN': return 'Cap. Judeth Pila (Kapitan)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -545,11 +618,24 @@ export default function App() {
                 userActiveRole={activeRole}
                 prenatals={prenatals}
                 vaccinations={vaccinations}
+                onKpiClick={(filterType, subTab, riskFilterValue) => {
+                  setInitialHealthStatusFilter(filterType);
+                  if (subTab) {
+                    setInitialActiveSubTab(subTab);
+                  }
+                  if (riskFilterValue) {
+                    setInitialRiskFilter(riskFilterValue);
+                  } else {
+                    setInitialRiskFilter('All');
+                  }
+                  setActiveTab('patients');
+                  setPatientsTabMode('records');
+                }}
               />
             )}
 
             {activeTab === 'map' && (
-              <BarangayHealthMap patients={patients} households={households} />
+              <BarangayHealthMap patients={patients} households={households} activeRole={activeRole} />
             )}
 
             {activeTab === 'patients' && (
@@ -571,19 +657,21 @@ export default function App() {
                     >
                       📁 Electronic Registries
                     </button>
-                    <button
-                      onClick={() => {
-                        setSelectedPatientIdForEdit(undefined);
-                        setPatientsTabMode('profile');
-                      }}
-                      className={`px-3 py-1 text-xs font-extrabold rounded-md cursor-pointer transition-all ${
-                        patientsTabMode === 'profile' 
-                          ? 'bg-white shadow-3xs text-indigo-750 font-black' 
-                          : 'text-slate-500 hover:text-slate-800'
-                      }`}
-                    >
-                      {activeRole === 'ADMIN' ? '👤 View All Patients' : '👤 Add New Patient'}
-                    </button>
+                    {!['ADMIN', 'CAPITAN'].includes(activeRole) && (
+                      <button
+                        onClick={() => {
+                          setSelectedPatientIdForEdit(undefined);
+                          setPatientsTabMode('profile');
+                        }}
+                        className={`px-3 py-1 text-xs font-extrabold rounded-md cursor-pointer transition-all ${
+                          patientsTabMode === 'profile' 
+                            ? 'bg-white shadow-3xs text-indigo-750 font-black' 
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        👤 Add New Patient
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -599,6 +687,14 @@ export default function App() {
                     dailyLogs={dailyLogs}
                     language={language}
                     activeRole={activeRole}
+                    initialHealthStatusFilter={initialHealthStatusFilter}
+                    initialActiveSubTab={initialActiveSubTab}
+                    initialRiskFilter={initialRiskFilter}
+                    onResetFilters={() => {
+                      setInitialHealthStatusFilter('All');
+                      setInitialActiveSubTab('residents');
+                      setInitialRiskFilter('All');
+                    }}
                     onAddHousehold={(newHH) => setHouseholds((prev) => [...prev, newHH])}
                     onUpdateHousehold={(updatedHH) => setHouseholds((prev) => prev.map((h) => h.id === updatedHH.id ? updatedHH : h))}
                     onDeleteHousehold={(id) => setHouseholds((prev) => prev.filter((h) => h.id !== id))}

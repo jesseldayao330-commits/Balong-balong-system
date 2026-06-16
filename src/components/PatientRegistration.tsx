@@ -229,6 +229,16 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
       return;
     }
 
+    const birthYear = parseInt(birthDate.substring(0, 4), 10);
+    if (birthYear > 2026) {
+      alert('Hindi pinahihintulutan ang taon ng kapanganakan na higit sa 2026. (Birth year cannot be more than 2026).');
+      return;
+    }
+    if (birthYear <= 1950) {
+      alert('Hindi pinahihintulutan ang taon ng kapanganakan na 1950 pababa. (Birth year cannot be 1950 or below).');
+      return;
+    }
+
     if (isEditing && selectedPatient) {
       const updatedPat: Patient = {
         ...selectedPatient,
@@ -485,78 +495,6 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 </h3>
               </div>
 
-              {/* Profile Photo Uploader Section */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6" id="patient-photo-uploaded-section">
-                <div 
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  className={`w-28 h-28 shrink-0 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all ${
-                    photo ? 'border-emerald-500 bg-emerald-50/10' : 'border-slate-300 bg-white hover:border-slate-400'
-                  }`}
-                >
-                  {photo ? (
-                    <>
-                      <img src={photo} alt="Patient preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      <button
-                        type="button"
-                        onClick={() => setPhoto('')}
-                        className="absolute bottom-1 right-1 bg-rose-600 text-white px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-md hover:bg-rose-700 cursor-pointer"
-                        title="Remove photo"
-                      >
-                        Bura
-                      </button>
-                    </>
-                  ) : (
-                    <label className="cursor-pointer flex flex-col items-center text-center p-2 h-full justify-center w-full">
-                      <span className="text-slate-400 text-xs font-bold font-mono uppercase block mb-1">Photo</span>
-                      <span className="text-[9px] text-slate-400 font-medium block">Drag & Drop or Click</span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            handlePhotoUpload(e.target.files[0]);
-                          }
-                        }}
-                      />
-                    </label>
-                  )}
-                </div>
-
-                <div className="flex-1 space-y-2 text-center md:text-left">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block font-mono">
-                    Larawan ng Pasyente (Resident Photograph)
-                  </span>
-                  <p className="text-slate-500 text-[11px] leading-relaxed max-w-md font-medium">
-                    Ibahagi o pumili ng larawan ng residente para sa kanilang health file. Maaaring mag-drag ng larawan dito, mag-browse mula sa iyong device, o pumili mula sa mga preset na silhouette sa ibaba.
-                  </p>
-                  
-                  {/* Preset quick avatars */}
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 pt-1">
-                    <span className="text-[9px] font-bold text-slate-400 mr-1 uppercase font-mono">Presets:</span>
-                    {[
-                      { l: 'M1', bg: 'bg-indigo-600', i: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80' },
-                      { l: 'F1', bg: 'bg-pink-600', i: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80' },
-                      { l: 'M2', bg: 'bg-blue-600', i: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80' },
-                      { l: 'F2', bg: 'bg-purple-600', i: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80' },
-                      { l: 'Child', bg: 'bg-teal-650', i: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
-                      { l: 'Senior', bg: 'bg-emerald-650', i: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80' }
-                    ].map((pre) => (
-                      <button
-                        key={pre.l}
-                        type="button"
-                        onClick={() => setPhoto(pre.i)}
-                        className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 hover:scale-105 active:scale-95 cursor-pointer transition-all flex items-center justify-center"
-                        title={`Piliin ang ${pre.l}`}
-                      >
-                        <img src={pre.i} alt={pre.l} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               {/* Patient Basic Profile Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="col-span-1 sm:col-span-1">
@@ -613,6 +551,8 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                   <input
                     type="date"
                     required
+                    min="1951-01-01"
+                    max="2026-12-31"
                     className="w-full border border-slate-200 p-2.5 rounded-lg text-sm focus:outline-hidden font-mono"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
@@ -732,7 +672,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5 font-mono">Indigent/Poor?</label>
+                          <label className="block text-[10px] font-bold text-slate-500 mb-0.5 font-mono">Indigent?</label>
                           <div className="flex gap-2.5 mt-1.5">
                             <label className="flex items-center gap-1 font-medium text-slate-700">
                               <input

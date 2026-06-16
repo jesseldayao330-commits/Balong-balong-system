@@ -91,8 +91,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
 
   const getActiveAudienceFilter = (): 'All' | 'Household Resident' | 'Buntis' | 'Bata' => {
     if (activeRole === 'BHW') return 'Household Resident';
-    if (activeRole === 'MIDWIFE') return 'Buntis';
-    if (activeRole === 'NURSE') return 'Bata';
+    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') return 'Buntis'; // Overridden below
     return audienceTab;
   };
 
@@ -100,6 +99,10 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
 
   // Filter inventory based on audience target
   const filteredInventory = inventory.filter((item) => {
+    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') {
+      const aud = getMedicineAudience(item);
+      return aud === 'Buntis' || aud === 'Bata';
+    }
     if (activeAudience === 'All') return true;
     return getMedicineAudience(item) === activeAudience;
   });
@@ -111,23 +114,20 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
 
   const selectedMed = filteredInventory.find((m) => m.id === safeSelectedMedId);
 
-  // Filter patient selections based on active roles (pregnant for midwife, child for nurse)
+  // Filter patient selections based on active roles (pregnant and child/vaccine patients combined for midwife & nurse)
   const getFilteredPatients = (): Patient[] => {
-    if (activeRole === 'MIDWIFE') {
-      // Buntis only (Female with MCH or FAMILY_PLANNING programs, or listed under prenatals)
+    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') {
+      // Buntis at Bata only
       return patients.filter((p) => {
         const isBuntisProgram = p.activePrograms.includes('MCH') || p.activePrograms.includes('FAMILY_PLANNING');
         const hasPrenatalRecord = prenatals?.some(pr => pr.patientId === p.id);
-        return p.gender === 'Female' && (isBuntisProgram || hasPrenatalRecord);
-      });
-    }
+        const isBuntis = p.gender === 'Female' && (isBuntisProgram || hasPrenatalRecord);
 
-    if (activeRole === 'NURSE') {
-      // Bata only (Age <= 12 or in child EPI/OPT_PLUS programs)
-      return patients.filter((p) => {
         const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
         const isBataProgram = p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
-        return age <= 12 || isBataProgram;
+        const isBata = age <= 12 || isBataProgram;
+
+        return isBuntis || isBata;
       });
     }
 
@@ -360,39 +360,27 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
         </div>
       )}
 
-      {activeRole === 'MIDWIFE' && (
+      {(activeRole === 'MIDWIFE' || activeRole === 'NURSE') && (
         <div className="bg-pink-50/70 border border-pink-200/80 text-pink-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
-          <div className="flex items-center gap-1.5 text-pink-800">
-            <span className="text-base">🤰</span>
-            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Buntis Lamang E-Pharmacy view (Midwife Desk)</strong>
+          <div className="flex items-center gap-1.5 text-pink-850">
+            <span className="text-base">🤰👶</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Buntis at Bata E-Pharmacy view (Midwife & Nurse Workstation)</strong>
           </div>
           <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
-            Naka-log in bilang <strong>Barangay Midwife (Arlene Cagas Dayama, RM)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Prenatal Care** (Pre-natal vitamins, Iron with folic acid, and family planning contraceptives).
+            Naka-log in bilang <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Ang stock ng gamot na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Bata** (Pre-natal vitamins, vaccines tulad ng BCG, pediatric paracetamol drops, at family planning contraceptives).
           </p>
         </div>
       )}
 
-      {activeRole === 'NURSE' && (
-        <div className="bg-emerald-50/60 border border-emerald-200/80 text-emerald-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
-          <div className="flex items-center gap-1.5 text-emerald-850">
-            <span className="text-base">👶</span>
-            <strong className="font-extrabold uppercase tracking-wider text-[11px]">Pang-Bata Lamang E-Pharmacy view (Nurse Desk)</strong>
-          </div>
-          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
-            Naka-log in bilang <strong>Public Health Nurse (Yvonne Galang, RN)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Bata (Pediatric & Baby Vaccines)** tulad ng BCG vaccines at pediatric paracetamol drops.
-          </p>
-        </div>
-      )}
-
-      {activeRole === 'ADMIN' && (
+      {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
         <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1 mb-5">
-          <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
-          <span>Naka-log in bilang Admin (Ericson Padunan). Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.</span>
+          <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
+          <span>Naka-log in bilang Cap. Judeth Pila. Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.</span>
         </div>
       )}
 
       {/* FILTER BUTTON TABS FOR ADMIN, PHARMACIST, AND MHO */}
-      {(activeRole === 'PHARMACIST' || activeRole === 'MHO' || activeRole === 'ADMIN') && (
+      {(activeRole === 'PHARMACIST' || activeRole === 'MHO' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
         <div className="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
           <div className="text-xs">
             <span className="text-slate-400 font-mono font-black block text-[8px] uppercase tracking-widest">E-PHARMACY AUDIENCE FILTER</span>

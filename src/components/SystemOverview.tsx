@@ -14,6 +14,7 @@ interface SystemOverviewProps {
   userActiveRole?: Role;
   prenatals?: PrenatalRecord[];
   vaccinations?: ImmunizationRecord[];
+  onKpiClick?: (filterType: string, subTab?: 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs', additionalFilter?: string) => void;
 }
 
 export const SystemOverview: React.FC<SystemOverviewProps> = ({ 
@@ -22,7 +23,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   language,
   userActiveRole,
   prenatals = [],
-  vaccinations = []
+  vaccinations = [],
+  onKpiClick
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const isMidwife = userActiveRole === 'MIDWIFE';
@@ -75,66 +77,98 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         {/* Pregnant Demography KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="midwife-kpi-grid">
           {/* Total Buntis */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('MCH', 'residents')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="midwife-kpi-pregnant"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Maternal Census</span>
-              <span className="p-1 px-1.5 bg-indigo-100 text-indigo-850 rounded-lg text-[9px] font-black uppercase tracking-wider">BUNTIS</span>
+              <span className="p-1 px-1.5 bg-indigo-100 text-indigo-850 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-indigo-200 transition-colors">BUNTIS</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-indigo-600">{totalPregnant}</span>
+              <span className="text-3xl font-black text-indigo-600 group-hover:text-indigo-700 transition-colors">{totalPregnant}</span>
               <span className="text-xs text-indigo-700 font-bold">registered buntis</span>
             </div>
-            <div className="h-1 w-8 bg-indigo-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Registered under MCH Program</div>
-          </div>
+            <div className="h-1 w-8 bg-indigo-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Registered under MCH Program</span>
+              <span className="text-[9px] text-indigo-650 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* High Risk Pregnancies */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('MCH', 'prenatals', 'High Risk')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-rose-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="midwife-kpi-highrisk"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Alert Classification</span>
-              <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider">HIGH RISK</span>
+              <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-rose-200 transition-colors">HIGH RISK</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-rose-600">{highRiskMaternal}</span>
+              <span className="text-3xl font-black text-rose-600 group-hover:text-rose-700 transition-colors">{highRiskMaternal}</span>
               <span className="text-xs text-rose-700 font-bold">critical alerts</span>
             </div>
-            <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Requires intensive care visits</div>
-          </div>
+            <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Requires intensive care visits</span>
+              <span className="text-[9px] text-rose-650 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* Tetanus Toxoid Program */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('MCH', 'prenatals')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="midwife-kpi-tetanus"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Tetanus Toxoid Immunization</span>
-              <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider">TT BOOSTER</span>
+              <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-emerald-200 transition-colors">TT BOOSTER</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-emerald-600">{tetanusImmunized}</span>
+              <span className="text-3xl font-black text-emerald-600 group-hover:text-emerald-700 transition-colors">{tetanusImmunized}</span>
               <span className="text-xs text-emerald-700 font-bold font-sans">immunized cases</span>
             </div>
-            <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Protected against maternal tetanus</div>
-          </div>
+            <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Protected against maternal tetanus</span>
+              <span className="text-[9px] text-emerald-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* Iron & Folic Acid Supply */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('MCH', 'prenatals')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="midwife-kpi-supplements"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Supplements Distribution</span>
-              <span className="p-1 px-1.5 bg-blue-100 text-blue-800 rounded-lg text-[9px] font-black uppercase tracking-wider">IRON + FOLIC</span>
+              <span className="p-1 px-1.5 bg-blue-100 text-blue-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-blue-200 transition-colors">IRON + FOLIC</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-blue-600">{ironGivenCount}</span>
+              <span className="text-3xl font-black text-blue-600 group-hover:text-blue-700 transition-colors">{ironGivenCount}</span>
               <span className="text-xs text-blue-700 font-bold">mothers given</span>
             </div>
-            <div className="h-1 w-8 bg-blue-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Ensures nutritional compliance</div>
-          </div>
+            <div className="h-1 w-8 bg-blue-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Ensures nutritional compliance</span>
+              <span className="text-[9px] text-blue-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
         </div>
 
         {/* Detailed Stats Graphics (Pregnant Patients Purok distribution & maternal checklist) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5" id="midwife-graphics-grid">
           {/* Buntis Purok distribution */}
-          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
             <div className="border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-sm font-bold text-slate-700 flex items-center">
                 <span className="w-2.5 h-5 bg-indigo-600 rounded-xs mr-2 block"></span>
@@ -152,12 +186,14 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                   <div key={purok} className="flex items-center gap-3">
                     <span className="text-xs font-mono font-bold text-slate-650 w-16">{purok}</span>
                     <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
-                      <div 
-                        className="bg-indigo-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
-                        style={{ width: `${Math.max(widthPercentage, countOfPregnant > 0 ? 10 : 3)}%` }}
-                      >
-                        {countOfPregnant > 0 ? `${countOfPregnant} Buntis` : ''}
-                      </div>
+                      {countOfPregnant > 0 && (
+                        <div 
+                          className="bg-indigo-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
+                          style={{ width: `${Math.max(widthPercentage, 10)}%` }}
+                        >
+                          {`${countOfPregnant} Buntis`}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -263,66 +299,98 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         {/* Child Demography KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="nurse-kpi-grid">
           {/* Total Children */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('EPI', 'residents')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="nurse-kpi-children"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Pediatric Census</span>
-              <span className="p-1 px-1.5 bg-indigo-100 text-indigo-850 rounded-lg text-[9px] font-black uppercase tracking-wider">MGA BATA</span>
+              <span className="p-1 px-1.5 bg-indigo-100 text-indigo-850 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-indigo-200 transition-colors">MGA BATA</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-indigo-600">{totalChild}</span>
+              <span className="text-3xl font-black text-indigo-600 group-hover:text-indigo-700 transition-colors">{totalChild}</span>
               <span className="text-xs text-indigo-700 font-bold">children patients</span>
             </div>
-            <div className="h-1 w-8 bg-indigo-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Aged 0 to 12 years monitored</div>
-          </div>
+            <div className="h-1 w-8 bg-indigo-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Aged 0 to 12 years monitored</span>
+              <span className="text-[9px] text-indigo-650 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* Unvaccinated EPI */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('EPI', 'immunizations')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-amber-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="nurse-kpi-unvaccinated"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Immunization (EPI)</span>
-              <span className="p-1 px-1.5 bg-amber-100 text-amber-800 rounded-lg text-[9px] font-black uppercase tracking-wider">UNVACCINATED</span>
+              <span className="p-1 px-1.5 bg-amber-100 text-amber-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-amber-200 transition-colors">UNVACCINATED</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-amber-600">{unvaccinatedEpiCount}</span>
+              <span className="text-3xl font-black text-amber-600 group-hover:text-amber-700 transition-colors">{unvaccinatedEpiCount}</span>
               <span className="text-xs text-amber-700 font-bold font-sans">infants monitored</span>
             </div>
-            <div className="h-1 w-8 bg-amber-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Requires immediate booster drops</div>
-          </div>
+            <div className="h-1 w-8 bg-amber-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Requires immediate booster drops</span>
+              <span className="text-[9px] text-amber-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* Malnourished OPT+ */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('OPT_PLUS', 'residents')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-rose-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="nurse-kpi-malnourished"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Nutrition Status</span>
-              <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider">OPT+</span>
+              <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-rose-200 transition-colors">OPT+</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-rose-600">{malnourishedOptCount}</span>
+              <span className="text-3xl font-black text-rose-600 group-hover:text-rose-700 transition-colors">{malnourishedOptCount}</span>
               <span className="text-xs text-rose-700 font-bold">underweight / stunted</span>
             </div>
-            <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Active nutrition intervention</div>
-          </div>
+            <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Active nutrition intervention</span>
+              <span className="text-[9px] text-rose-650 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
 
           {/* Immunization Doses given */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => onKpiClick?.('EPI', 'immunizations')}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+            id="nurse-kpi-doses"
+          >
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Vaccinations Recorded</span>
-              <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider">DOSES ADMINISTERED</span>
+              <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-emerald-250 transition-colors">DOSES ADMINISTERED</span>
             </div>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-black text-emerald-600">{vaccineDosesCount}</span>
+              <span className="text-3xl font-black text-emerald-600 group-hover:text-emerald-700 transition-colors">{vaccineDosesCount}</span>
               <span className="text-xs text-emerald-700 font-bold font-sans">vaccine doses</span>
             </div>
-            <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full"></div>
-            <div className="mt-2 text-[10px] text-slate-500 font-mono">Administered BCG, Pentavalent/OPV</div>
-          </div>
+            <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+            <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+              <span>Administered BCG, Pentavalent/OPV</span>
+              <span className="text-[9px] text-emerald-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+            </div>
+          </button>
         </div>
 
         {/* Detailed Stats Graphics (Children Purok distribution & nutritional status) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5" id="nurse-graphics-grid">
           {/* Children Purok distribution */}
-          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
             <div className="border-b border-slate-100 pb-3 mb-4">
               <h3 className="text-sm font-bold text-slate-700 flex items-center">
                 <span className="w-2.5 h-5 bg-emerald-600 rounded-xs mr-2 block"></span>
@@ -340,12 +408,14 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                   <div key={purok} className="flex items-center gap-3">
                     <span className="text-xs font-mono font-bold text-slate-650 w-16">{purok}</span>
                     <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
-                      <div 
-                        className="bg-emerald-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
-                        style={{ width: `${Math.max(widthPercentage, countOfChildren > 0 ? 10 : 3)}%` }}
-                      >
-                        {countOfChildren > 0 ? `${countOfChildren} Bata` : ''}
-                      </div>
+                      {countOfChildren > 0 && (
+                        <div 
+                          className="bg-emerald-600 h-full rounded-lg transition-all duration-550 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
+                          style={{ width: `${Math.max(widthPercentage, 10)}%` }}
+                        >
+                          {`${countOfChildren} Bata`}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -437,65 +507,97 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
       {/* Visual KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-block-grid">
         {/* Active TB surveillance */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm" id="kpi-tb">
+        <button
+          type="button"
+          onClick={() => onKpiClick?.('TB_DOTS', 'residents')}
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-rose-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+          id="kpi-tb"
+        >
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">{text.activeTBCases}</span>
-            <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider">TB DOTS</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1 select-none">{text.activeTBCases}</span>
+            <span className="p-1 px-1.5 bg-rose-100 text-rose-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-rose-200 transition-colors">TB DOTS</span>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-black text-rose-600">{activeTB}</span>
-            <span className="text-xs text-rose-700 font-bold">active contacts</span>
+            <span className="text-3xl font-black text-rose-600 group-hover:text-rose-700 transition-colors">{activeTB}</span>
+            <span className="text-xs text-rose-700 font-bold animate-pulse">active contact</span>
           </div>
-          <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full"></div>
-          <div className="mt-2 text-[10px] text-slate-500 font-mono">2 scheduled Sputum tests tomorrow</div>
-        </div>
+          <div className="h-1 w-8 bg-rose-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+          <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+            <span>2 scheduled tests tomorrow</span>
+            <span className="text-[9px] text-rose-650 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+          </div>
+        </button>
 
         {/* Unvaccinated EPI */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm" id="kpi-epi">
+        <button
+          type="button"
+          onClick={() => onKpiClick?.('EPI', 'residents')}
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-amber-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+          id="kpi-epi"
+        >
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">{text.unvaccinatedInfants}</span>
-            <span className="p-1 px-1.5 bg-amber-100 text-amber-800 rounded-lg text-[9px] font-black uppercase tracking-wider">EPI</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1 select-none">{text.unvaccinatedInfants}</span>
+            <span className="p-1 px-1.5 bg-amber-100 text-amber-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-amber-200 transition-colors">EPI</span>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-black text-amber-600">{unvaccinatedEPI}</span>
+            <span className="text-3xl font-black text-amber-600 group-hover:text-amber-700 transition-colors">{unvaccinatedEPI}</span>
             <span className="text-xs text-amber-700 font-bold font-sans">under observation</span>
           </div>
-          <div className="h-1 w-8 bg-amber-500 mt-2 rounded-full"></div>
-          <div className="mt-2 text-[10px] text-slate-500 font-mono">Requires immediate vaccine drops</div>
-        </div>
+          <div className="h-1 w-8 bg-amber-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+          <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+            <span>Requires booster drops</span>
+            <span className="text-[9px] text-amber-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+          </div>
+        </button>
 
         {/* Nutritional status */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm" id="kpi-opt">
+        <button
+          type="button"
+          onClick={() => onKpiClick?.('OPT_PLUS', 'residents')}
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+          id="kpi-opt"
+        >
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">{text.malnourishedChildren}</span>
-            <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider">OPT+</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1 select-none">{text.malnourishedChildren}</span>
+            <span className="p-1 px-1.5 bg-emerald-100 text-emerald-850 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-emerald-250 transition-colors">OPT+</span>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-black text-emerald-600">{malnourishedOPT}</span>
+            <span className="text-3xl font-black text-emerald-600 group-hover:text-emerald-700 transition-colors">{malnourishedOPT}</span>
             <span className="text-xs text-emerald-700 font-bold">monitored</span>
           </div>
-          <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full"></div>
-          <div className="mt-2 text-[10px] text-slate-500 font-mono font-sans">Nutrition intervention active</div>
-        </div>
+          <div className="h-1 w-8 bg-emerald-600 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+          <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+            <span>Nutrition care active</span>
+            <span className="text-[9px] text-emerald-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+          </div>
+        </button>
 
         {/* High blood pressures */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm" id="kpi-ncd">
+        <button
+          type="button"
+          onClick={() => onKpiClick?.('SENIOR_CITIZEN', 'residents')}
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
+          id="kpi-ncd"
+        >
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">{text.highBPResidents}</span>
-            <span className="p-1 px-1.5 bg-blue-100 text-blue-800 rounded-lg text-[9px] font-black uppercase tracking-wider">NCD</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1 select-none">{text.highBPResidents}</span>
+            <span className="p-1 px-1.5 bg-blue-100 text-blue-800 rounded-lg text-[9px] font-black uppercase tracking-wider group-hover:bg-blue-200 transition-colors">NCD</span>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-black text-blue-600">{hypertensionRiskCount}</span>
+            <span className="text-3xl font-black text-blue-600 group-hover:text-blue-700 transition-colors">{hypertensionRiskCount}</span>
             <span className="text-xs text-blue-700 font-bold font-sans">seniors & NCDs</span>
           </div>
-          <div className="h-1 w-8 bg-blue-500 mt-2 rounded-full"></div>
-          <div className="mt-2 text-[10px] text-slate-500 font-mono">Requires screening & updates</div>
-        </div>
+          <div className="h-1 w-8 bg-blue-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
+          <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
+            <span>Requires screen updates</span>
+            <span className="text-[9px] text-blue-750 font-black tracking-tight opacity-100 md:opacity-0 group-hover:opacity-100 transition-all font-sans uppercase">Suriin ➔</span>
+          </div>
+        </button>
       </div>
 
       {/* Primary stats comparison graphics (Pure Tailwinds) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5" id="stats-graphics-grid">
-        <div className="md:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <div className="md:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
           <div className="border-b border-slate-100 pb-3 mb-4">
             <h3 className="text-sm font-bold text-slate-700 flex items-center">
               <span className="w-2.5 h-5 bg-emerald-600 rounded-xs mr-2 block"></span>
@@ -512,12 +614,14 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                 <div key={purok} className="flex items-center gap-3" id={`purok-bar-${purok.replace(' ', '')}`}>
                   <span className="text-xs font-mono font-bold text-slate-650 w-16">{purok}</span>
                   <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
-                    <div 
-                      className="bg-emerald-600 h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
-                      style={{ width: `${Math.max(widthPercentage, householdCount > 0 ? 8 : 3)}%` }}
-                    >
-                      {householdCount > 0 ? `${householdCount} HH` : ''}
-                    </div>
+                    {householdCount > 0 && (
+                      <div 
+                        className="bg-emerald-600 h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
+                        style={{ width: `${Math.max(widthPercentage, 8)}%` }}
+                      >
+                        {`${householdCount} HH`}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

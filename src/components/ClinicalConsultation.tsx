@@ -38,7 +38,34 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
   activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
-  const [selectedPatId, setSelectedPatId] = useState(patients[0]?.id || '');
+
+  // Filter patients for Midwife and Nurse so only pregnant mothers ("buntis") and children/babies ("bata") appear
+  const filteredPatients = React.useMemo(() => {
+    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') {
+      return patients.filter((p) => {
+        const isBuntis = p.gender === 'Female' && (p.activePrograms.includes('MCH') || p.activePrograms.includes('FAMILY_PLANNING'));
+        const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+        const isBata = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+        return isBuntis || isBata;
+      });
+    }
+    return patients;
+  }, [patients, activeRole]);
+
+  const [selectedPatId, setSelectedPatId] = useState(filteredPatients[0]?.id || '');
+
+  // Auto-correct selectedPatId if it's not in the filtered options
+  useEffect(() => {
+    if (filteredPatients.length > 0) {
+      const isCurrentEligible = filteredPatients.some((p) => p.id === selectedPatId);
+      if (!isCurrentEligible) {
+        setSelectedPatId(filteredPatients[0].id);
+      }
+    } else {
+      setSelectedPatId('');
+    }
+  }, [filteredPatients, selectedPatId]);
+
   const [activeTab, setActiveTab] = useState<'vitals' | 'consultation' | 'history'>('vitals');
 
   // Edit status trackers
@@ -326,7 +353,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
             }}
             id="clinical-patient-selector"
           >
-            {patients.map((pat) => (
+            {filteredPatients.map((pat) => (
               <option key={pat.id} value={pat.id}>
                 {pat.lastName}, {pat.firstName} ({pat.purok})
               </option>
@@ -392,19 +419,19 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1">
               {/* Form & Detail Viewer */}
               <div className="lg:col-span-8 space-y-4">
-                {activeRole === 'ADMIN' && (
+                {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                   <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
                     {editingVitalId ? (
                       <span>Nakasentro sa record ID <strong className="font-mono text-blue-950 font-extrabold">{editingVitalId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon gamit ang button sa ibaba.</span>
                     ) : (
-                      <span>Naka-log in bilang Admin (Ericson Padunan). Pumili ng anumang vital signs record sa listahan sa kanan upang suriin ang bawat parametro ng pasyente sa form view sa ibaba.</span>
+                      <span>Naka-log in bilang Cap. Judeth Pila. Pumili ng anumang vital signs record sa listahan sa kanan upang suriin ang bawat parametro ng pasyente sa form view sa ibaba.</span>
                     )}
                   </div>
                 )}
 
                 <form onSubmit={handleSaveVitals} className="space-y-4 pt-1" id="vitals-entry-form">
-                  <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
+                  <fieldset disabled={activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Blood Pressure (Systolic) *</label>
@@ -669,19 +696,19 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                     <span>Ang pangkalahatang Clinical Consultation / Check-up ay pinamamahalaan ng ating Public Health Nurse (Yvonne Galang, RN). Ang iyong active workstation ngayon ay para sa Barangay Midwife (Arlene Cagas Dayama, RM) na nakatuon sa Maternal at Prenatal. Maaari mo lamang basahin (read-only) ang pangkalahatang konsulta rito.</span>
                   </div>
                 )}
-                {activeRole === 'ADMIN' && (
+                {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
                   <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1">
-                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator View-Only Access Notice:</strong>
+                    <strong className="text-blue-800 font-bold block font-sans">🛡️ Administrator/Kapitan View-Only Access Notice:</strong>
                     {editingConsultId ? (
                       <span>Nakasentro sa consultation ID <strong className="font-mono text-blue-950 font-extrabold">{editingConsultId}</strong>. Pumili ng iba sa listahan sa kanan o i-clear ang seleksyon.</span>
                     ) : (
-                      <span>Naka-log in bilang Admin (Ericson Padunan). Pumili ng anumang consultation record sa listahan sa kanan upang suriin ang mga detalyadong tala at diagnosis ng pasyente rito.</span>
+                      <span>Naka-log in bilang Cap. Judeth Pila. Pumili ng anumang consultation record sa listahan sa kanan upang suriin ang mga detalyadong tala at diagnosis ng pasyente rito.</span>
                     )}
                   </div>
                 )}
 
                 <form onSubmit={handleSaveConsultation} className="space-y-4 pt-1" id="consultation-form-block">
-                  <fieldset disabled={activeRole === 'MIDWIFE' || activeRole === 'ADMIN'} className="space-y-4">
+                  <fieldset disabled={activeRole === 'MIDWIFE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-4">
                     {/* Vitals snapshot box under review */}
                     {patientVitals.length > 0 && (
                       <div className="bg-emerald-50/30 border border-emerald-100 p-3 rounded-lg text-xs text-slate-600 flex items-center justify-between">

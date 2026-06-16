@@ -82,6 +82,381 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
   const [newLogPatId, setNewLogPatId] = useState(patients[0]?.id || '');
   const [logPurpose, setLogPurpose] = useState<DailyLogEntry['purpose']>('Checkup');
 
+  // Print Custom Selection States
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printPrefs, setPrintPrefs] = useState({
+    population: true,
+    clinical: true,
+    dohPrograms: true,
+    pharmacy: true,
+    referrals: true,
+    surveillance: true,
+    progressMetrics: true,
+  });
+
+  const handlePrintSelectedSections = () => {
+    const printWindow = window.open('', '', 'width=900,height=800');
+    if (!printWindow) {
+      alert('Inihaharang ng iyong browser ang popup print dialog. Mangyaring payagan ito para mag-print.');
+      return;
+    }
+
+    let compiledSectionsHtml = '';
+
+    if (printPrefs.population) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">👨‍👩‍👧‍👦 Populasyon at Sambahayan (Census Statistics)</div>
+          <div class="big-value">${totalResidents}</div>
+          <div class="subtitle">Kabuuang Nakarehistrong Residente</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Lalaki (Male):</span>
+              <span class="detail-value">${maleResidents} pasyente</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Babae (Female):</span>
+              <span class="detail-value">${femaleResidents} pasyente</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Sambahayan (Households):</span>
+              <span class="detail-value">${totalHouseholdsCount} census heads</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">May PhilHealth:</span>
+              <span class="detail-value">${philhealthCount} (${philhealthPct}%)</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Indigent Assistance:</span>
+              <span class="detail-value">${indigentCount} citizens</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (printPrefs.clinical) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">📋 Klinikal at Konsultasyon (Clinic Consultations)</div>
+          <div class="big-value">${totalConsultations}</div>
+          <div class="subtitle">Kasong Konsultasyon sa Talaan</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">High Blood Alerts:</span>
+              <span class="detail-value">${highBpAlerts} pasyente</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Ubo, Lagnat o Sipon:</span>
+              <span class="detail-value">${coughFeverAlerts} pasyente</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Waiting Walk-ins:</span>
+              <span class="detail-value">${waitingVisits} pending</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Natapos ngayong araw:</span>
+              <span class="detail-value">${completedVisits} completed</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (printPrefs.dohPrograms) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">🧬 Programa sa DOH Register (Health Programs)</div>
+          <div class="big-value">${tbDotsCount + seniorCitizenCount + maternalCareCount + epiChildrenCount + familyPlanningCount}</div>
+          <div class="subtitle">Pangkalahatang Aktibong Miyembro</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Tuberculosis (TB DOTS):</span>
+              <span class="detail-value">${tbDotsCount} active</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Maternal (Prenatal G1):</span>
+              <span class="detail-value">${maternalCareCount} verified</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">EPI Vaccination Infants:</span>
+              <span class="detail-value">${epiChildrenCount} children</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Welfare (Elderly senior):</span>
+              <span class="detail-value">${seniorCitizenCount} members</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Family Planning:</span>
+              <span class="detail-value">${familyPlanningCount} enrolled</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (printPrefs.pharmacy) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">💊 E-Pharmacy at Balanseng Gamot (Medicine Stocks)</div>
+          <div class="big-value">${totalMeds}</div>
+          <div class="subtitle">Medicine SKU on catalog</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Low stock warnings (Kulang):</span>
+              <span class="detail-value">${lowStockMeds} critical</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Kabuuang naipamahaging gamot:</span>
+              <span class="detail-value">${totalDispensedUnits} units</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (printPrefs.referrals) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">📄 Padalang Liham at Clearance (Issued Documents)</div>
+          <div class="big-value">${totalReferrals + totalCertificates}</div>
+          <div class="subtitle">Inisyu na Legal na Papeles</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Hospital Referrals:</span>
+              <span class="detail-value">${totalReferrals} emergency transfers</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Health Clearances Issued:</span>
+              <span class="detail-value">${totalCertificates} certifications</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (printPrefs.surveillance) {
+      compiledSectionsHtml += `
+        <div class="card">
+          <div class="card-title">🛡️ Surveillance Watch (Outbreak Alerts)</div>
+          <div class="big-value text-emerald-700 font-bold" style="font-size: 20px; color: #047857;">EXCELLENT</div>
+          <div class="subtitle">Community Outbreak Alert Level</div>
+          <div class="details">
+            <div class="detail-row">
+              <span class="detail-label">Water sanitary complies:</span>
+              <span class="detail-value">100% compliant</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Database security:</span>
+              <span class="detail-value">ENCRYPTED BACKUP OK</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    let progressHtml = '';
+    if (printPrefs.progressMetrics) {
+      progressHtml = `
+        <div class="metrics-container">
+          <div class="metric-title">📊 MUNICIPAL PERFORMANCE VS HEALTH TARGET COVERAGE (DOH STANDARD)</div>
+          
+          <div class="progress-bar-container">
+            <div class="progress-text">
+              <span>BCG Vaccination Coverage (97% Target)</span>
+              <span>100%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-text">
+              <span>Maternal Pre-registries Prenatal Care (95% Target)</span>
+              <span>98%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: 98%; background-color: #6366f1;"></div>
+            </div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-text">
+              <span>Water & Sanitary Toilet Compliance (100% Target)</span>
+              <span>80%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: 80%; background-color: #10b981;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>DHRMS Barangay Balong-balong - Custom Statistical Report</title>
+        <style>
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            padding: 35px;
+            line-height: 1.5;
+            background-color: #ffffff;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+          }
+          .header p {
+            margin: 4px 0 0 0;
+            font-size: 9px;
+            color: #64748b;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+          }
+          .card {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+            background: #ffffff;
+            page-break-inside: avoid;
+          }
+          .card-title {
+            font-size: 9px;
+            font-weight: 750;
+            text-transform: uppercase;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            letter-spacing: 0.03em;
+          }
+          .big-value {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 2px;
+            color: #0f172a;
+          }
+          .subtitle {
+            font-size: 8px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+          }
+          .details {
+            font-size: 10px;
+          }
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #f8fafc;
+            padding: 4px 0;
+          }
+          .detail-label {
+            color: #475569;
+          }
+          .detail-value {
+            font-weight: 600;
+            color: #0f172a;
+          }
+          .metrics-container {
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            page-break-inside: avoid;
+          }
+          .metric-title {
+            font-size: 9px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+            text-transform: uppercase;
+          }
+          .progress-bar-container {
+            margin-bottom: 10px;
+          }
+          .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            margin-bottom: 3px;
+            font-weight: 600;
+          }
+          .progress-track {
+            height: 6px;
+            background-color: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+          }
+          .progress-fill {
+            height: 100%;
+            background-color: #10b981;
+            border-radius: 3px;
+          }
+          .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 8px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+          }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>E-Statistical Register & Analysis Report Summary</h1>
+          <p>Barangay Balong-balong DHRMS, Pitogo, ZDS • Generated on ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="grid">
+          ${compiledSectionsHtml}
+        </div>
+        
+        ${progressHtml}
+
+        <div class="footer">
+          Official Health Surveillance System Record Summary • Confidential Information
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setShowPrintModal(false);
+  };
+
   // Compute DOH FHSIS Metrics for Barangay Balong-balong, Pitogo, Zamboanga del Sur
   const totalPregnancyRegistry = prenatals.length;
   const highRiskPregnancy = prenatals.filter((p) => p.riskClassification === 'High Risk').length;
@@ -223,13 +598,117 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
               <p className="text-xs text-slate-500 font-medium">Buod ng mga aktwal na datos mula sa Census, Konsulta, DOH Program, at Botika.</p>
             </div>
             <button
-              onClick={() => window.print()}
+              onClick={() => setShowPrintModal(true)}
               className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-3xs transition-colors self-start sm:self-auto"
             >
               <Printer size={13} />
               Print Visual Report
             </button>
           </div>
+
+          {showPrintModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in text-left">
+              <main className="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl p-5 space-y-4 text-slate-800">
+                <header className="border-b border-slate-100 pb-3">
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight flex items-center gap-1.5">
+                    <Printer size={15} className="text-emerald-700" />
+                    Piliin ang Gustong I-Print (Filter Report)
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Lagyan ng tsek (✓) ang mga partikular na seksyon na nais isama sa opisyal na ulat.</p>
+                </header>
+
+                <div className="space-y-2 text-xs">
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.population}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, population: e.target.checked }))}
+                    />
+                    <span>👨‍👩‍👧‍👦 CENSUS: Populasyon at Sambahayan</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.clinical}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, clinical: e.target.checked }))}
+                    />
+                    <span>📋 KLINIKAL: Talaan ng Konsulta at Walk-ins</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.dohPrograms}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, dohPrograms: e.target.checked }))}
+                    />
+                    <span>🧬 DOH PROGRAMS: Rehistrado sa Programa</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.pharmacy}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, pharmacy: e.target.checked }))}
+                    />
+                    <span>💊 BOTIKA: E-Pharmacy at Gamot</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.referrals}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, referrals: e.target.checked }))}
+                    />
+                    <span>📄 PAPELES: Hospital Referrals at Clearance</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.surveillance}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, surveillance: e.target.checked }))}
+                    />
+                    <span>🛡️ ALERTO: Surveillance Watch & Risk Level</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      checked={printPrefs.progressMetrics}
+                      onChange={(e) => setPrintPrefs(prev => ({ ...prev, progressMetrics: e.target.checked }))}
+                    />
+                    <span>📊 DOH TARGETS: BCG Vaccine & Maternity Progress</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-2 pt-2 text-xs font-bold border-t border-slate-100">
+                  <button 
+                    type="button"
+                    onClick={() => setShowPrintModal(false)}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors cursor-pointer uppercase text-center"
+                  >
+                    Bumalik (Cancel)
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={handlePrintSelectedSections}
+                    className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-colors cursor-pointer uppercase text-center flex items-center justify-center gap-1.5 animate-pulse"
+                  >
+                    <Printer size={13} />
+                    I-print Ngayon
+                  </button>
+                </div>
+              </main>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             

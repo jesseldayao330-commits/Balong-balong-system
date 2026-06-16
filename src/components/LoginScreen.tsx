@@ -47,24 +47,58 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       hint: 'PINs: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife (RM)',
+      midwifeLabel: 'Barangay Midwife & Nurse (RM/RN)',
       nurseLabel: 'Public Health Nurse (RN)',
       capitanLabel: 'Barangay Captain (Capitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
+      bhwDesc: 'Register patients and households, record vital signs, prenatal/vaccine visit data. Read-only records.',
+      midwifeDesc: 'Maternal care, prenatal visits, family planning, child vaccinations (EPI), and general medical checkups.',
+      capitanDesc: 'Executive dashboard view, patient registered records view-only stream, and community health surveillance.',
+      adminDesc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.',
+      securityTitle: 'Workstation Security Policy:',
+      securityPolicy1: 'Only registered DHRMS clinical roles are allowed to sign on.',
+      securityPolicy2: 'Workstation auto-locks session data on manual lockouts.',
+      securityPolicy3: 'Session surveillance metrics synchronize securely with Pitogo Municipal EHR.',
+      headerNote: 'Barangay Balong-balong BHW & Medical Team',
+      imgCaption: 'Barangay Midwife Prenatal & Maternal Clinic',
+      bentoLabel1: '1. Barangay Health Workers Group',
+      bentoLabel2: '2. Midwife Prenatal',
+      bentoLabel3: '3. MHO Consultation',
+      bentoLabel4: '4. Immunization RN',
+      bentoLabel5: '5. E-Pharmacy Store',
+      securedLabel: 'Secured Access Only',
+      locationLabel: 'Authorized Station Location:',
     },
     TL: {
       title: 'Sistema ng Impormasyong Pangkalusugan ng Barangay',
       sub: 'Barangay Balong-balong, Pitogo, Zamboanga del Sur',
-      roleSelect: 'Piliin ang Aktibong Gampanin',
+      roleSelect: 'Piliin ang Aktibong Gampanin sa Workstation',
       passPrompt: 'Ipasok ang 4-Digit Security Passcode',
       btnLogin: 'Buksan ang Registry ng Workstation',
       hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife (RM)',
+      midwifeLabel: 'Barangay Midwife at Pampublikong Nars (RM/RN)',
       nurseLabel: 'Public Health Nurse (RN)',
       capitanLabel: 'Punong Barangay (Kapitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
+      bhwDesc: 'Magrehistro ng mga pasyente at sambahayan, mag-record ng vital signs, prenatal/bakuna. Read-only na mga talaan.',
+      midwifeDesc: 'Maternal care, prenatal checkup, family planning, bakuna para sa bata (EPI), at pangkalahatang medikal na checkup.',
+      capitanDesc: 'Dashboard view ng ehekutibo, view-only na stream sa rehistro ng pasyente, at pagsubaybay sa kalusugan sa barangay.',
+      adminDesc: 'Mga configuration ng system, pagsasaayos ng logo, system auditing logs, at user PIN overrides.',
+      securityTitle: 'Patakaran sa Seguridad ng Workstation:',
+      securityPolicy1: 'Mga awtorisadong klinikal na tungkulin lamang ng DHRMS ang maaaring mag-log in.',
+      securityPolicy2: 'Awtomatikong magla-lock ang workstation kapag may manu-manong paglabas.',
+      securityPolicy3: 'Secure na nagsi-sync ang mga sukat sa Pitogo Municipal EHR.',
+      headerNote: 'BHW at Medikal na Koponan ng Barangay Balong-balong',
+      imgCaption: 'Klinika sa Prenatal at Maternal ng Barangay Midwife',
+      bentoLabel1: '1. Grupo ng Barangay Health Workers',
+      bentoLabel2: '2. Prenatal ng Kumadrona',
+      bentoLabel3: '3. Konsulta sa MHO/Doktor',
+      bentoLabel4: '4. Bakuna mula sa Nars',
+      bentoLabel5: '5. E-Pharmacy na Tindahan',
+      securedLabel: 'Ligtas na Akses Lamang',
+      locationLabel: 'Lokasyon ng Awtorisadong Estasyon:',
     },
     BY: {
       title: 'Sistema sa Impormasyong Panglawas sa Barangay',
@@ -73,25 +107,40 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       passPrompt: 'Ibutang ang 4-Digit Security Passcode',
       btnLogin: 'Ablihan ang Registry sa Workstation',
       hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
-      textCapitan: 'Kapitan sa Barangay (Capitan - View Only)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife (RM)',
+      midwifeLabel: 'Barangay Midwife ug Publikong Nars (RM/RN)',
       nurseLabel: 'Public Health Nurse (RN)',
-      capitanLabel: 'Kapitan sa Barangay (Capitan - View Only)',
+      capitanLabel: 'Kapitan sa Barangay (Kapitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
+      bhwDesc: 'Magparehistro sa mga pasyente ug pamilya, mag-record sa vital signs, prenatal/bakuna. Read-only nga mga listahan.',
+      midwifeDesc: 'Maternal care, prenatal checkup, family planning, bakuna alang sa bata (EPI), ug kinatibuk-ang medikal nga checkup.',
+      capitanDesc: 'Dashboard view sa ehekutibo, view-only nga stream sa rehistro sa pasyente, ug pagmonitor sa kalusugan sa barangay.',
+      adminDesc: 'Mga configuration sa sistema, pag-adjust sa logo, system auditing logs, ug user PIN overrides.',
+      securityTitle: 'Patakaran sa Seguridad sa Workstation:',
+      securityPolicy1: 'Ang mga rehistradong klinikal nga papel ra sa DHRMS ang gitugotan sa pag-sign in.',
+      securityPolicy2: 'Awtomatikong mag-lock ang workstation kung adunay manu-mano nga paggawas.',
+      securityPolicy3: 'Ang mga metric sa pag-surveillance luwas nga nagsabay sa Pitogo Municipal EHR.',
+      headerNote: 'BHW ug Medical nga Grupo sa Barangay Balong-balong',
+      imgCaption: 'Klinika sa Prenatal ug Maternal sa Barangay Midwife',
+      bentoLabel1: '1. Grupo sa Barangay Health Workers',
+      bentoLabel2: '2. Prenatal sa Kumadrona',
+      bentoLabel3: '3. Konsulta sa MHO/Doktor',
+      bentoLabel4: '4. Bakuna gikan sa Nars',
+      bentoLabel5: '5. E-Pharmacy nga Tindahan',
+      securedLabel: 'Kasaligan nga Akses Lamang',
+      locationLabel: 'Lokasyon sa Awtorisadong Estasyon:',
     }
   };
 
   const currentDict = dict[language];
 
-  // Restrict to authorized roles with separate Midwife and Nurse workstation credentials
+  // Restrict to authorized roles with separate Midwife and Nurse workstation credentials combined
   const rolesAllowed = [
-    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: 'Register patients and households, record vital signs, prenatal/vaccine visit data. Read-only records.', color: 'border-emerald-200 text-emerald-800' },
-    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: 'Maternal class prenatal care monitoring, pregnant client risk check, and Family Planning clinical forms.', color: 'border-teal-200 text-teal-800' },
-    { key: 'NURSE' as Role, label: currentDict.nurseLabel, desc: 'Childhood vaccines (EPI/Immunization records), clinical diagnosis & general medical checkups.', color: 'border-blue-200 text-blue-800' },
-    { key: 'CAPITAN' as Role, label: currentDict.capitanLabel, desc: 'Executive dashboard view, patient registered records view-only stream, and community health surveillance. Strictly forbidden from adding or editing.', color: 'border-amber-200 text-amber-800' },
-    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.', color: 'border-purple-200 text-purple-800' },
+    { key: 'BHW' as Role, label: currentDict.bhwLabel, desc: currentDict.bhwDesc, color: 'border-emerald-200 text-emerald-800' },
+    { key: 'MIDWIFE' as Role, label: currentDict.midwifeLabel, desc: currentDict.midwifeDesc, color: 'border-teal-200 text-teal-850' },
+    { key: 'CAPITAN' as Role, label: currentDict.capitanLabel, desc: currentDict.capitanDesc, color: 'border-amber-200 text-amber-800' },
+    { key: 'ADMIN' as Role, label: currentDict.adminLabel, desc: currentDict.adminDesc, color: 'border-purple-200 text-purple-800' },
   ];
 
   const handleKeyPress = (num: string) => {
@@ -118,8 +167,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     // PIN check based on selected role
     let isValid = false;
     if (selectedRole === 'BHW' && pin === '1111') isValid = true;
-    else if (selectedRole === 'NURSE' && pin === '2222') isValid = true;
-    else if (selectedRole === 'MIDWIFE' && pin === '3333') isValid = true;
+    else if (selectedRole === 'MIDWIFE' && (pin === '3333' || pin === '2222')) isValid = true;
     else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
     else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
     else if (selectedRole === 'CAPITAN' && pin === '7777') isValid = true;
@@ -185,14 +233,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <button
                 key={lang}
                 onClick={() => onChangeLanguage(lang)}
-                className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md transition-all cursor-pointer ${
+                className={`px-3 py-1 text-[10px] font-extrabold rounded-md transition-all cursor-pointer ${
                   language === lang
                     ? 'bg-emerald-600 text-white shadow-md'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
                 id={`login-lang-${lang}`}
               >
-                {lang === 'EN' ? 'EN' : lang === 'TL' ? 'TL' : 'BY'}
+                {lang === 'EN' ? 'English' : lang === 'TL' ? 'Tagalog' : 'Bisaya'}
               </button>
             ))}
           </div>
@@ -218,7 +266,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-bold tracking-widest uppercase bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  Secured Access Only
+                  {currentDict.securedLabel}
                 </span>
                 <h1 className="text-xl font-bold mt-2 uppercase tracking-wide leading-snug">{centerName || currentDict.title}</h1>
               </div>
@@ -227,7 +275,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             {/* Central visual 5-picture bento collage of real community staff */}
             <div className="my-5 relative z-10 space-y-2.5" id="login-central-image">
               <p className="text-[9px] uppercase font-black tracking-widest text-emerald-300/90 text-center font-mono">
-                Barangay Balong-balong BHW & Medical Team
+                {currentDict.headerNote}
               </p>
               
               {/* Feature image (Large BHW staff portrait) */}
@@ -241,7 +289,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   />
                 </div>
                 <div className="text-center text-[9px] font-bold tracking-wide uppercase text-emerald-200">
-                  1. Barangay Health Workers Group
+                  {currentDict.bentoLabel1}
                 </div>
               </div>
 
@@ -257,7 +305,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     />
                   </div>
                   <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                     2. Midwife Prenatal
+                     {currentDict.bentoLabel2}
                   </div>
                 </div>
 
@@ -271,7 +319,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     />
                   </div>
                   <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    3. MHO Consultation
+                    {currentDict.bentoLabel3}
                   </div>
                 </div>
 
@@ -285,7 +333,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     />
                   </div>
                   <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    4. Immunization RN
+                    {currentDict.bentoLabel4}
                   </div>
                 </div>
 
@@ -299,7 +347,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     />
                   </div>
                   <div className="text-center text-[8px] font-semibold uppercase tracking-wider text-emerald-200">
-                    5. E-Pharmacy Store
+                    {currentDict.bentoLabel5}
                   </div>
                 </div>
               </div>
@@ -307,19 +355,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             <div className="space-y-6 relative z-10">
               <div className="border-t border-slate-800 pt-4">
-                <span className="text-[9px] text-emerald-400 uppercase tracking-wider block font-mono">Authorized Station Location:</span>
+                <span className="text-[9px] text-emerald-400 uppercase tracking-wider block font-mono">{currentDict.locationLabel}</span>
                 <strong className="text-xs text-white block mt-0.5 font-sans leading-relaxed">{centerAddress || currentDict.sub}</strong>
               </div>
 
               <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 font-sans shadow-inner">
                 <h3 className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
                   <Key size={11} />
-                  Workstation Security Policy:
+                  {currentDict.securityTitle}
                 </h3>
-                <ul className="text-[10px] text-slate-300 space-y-1 list-none mt-2 font-medium">
-                  <li>• Only registered DHRMS clinical roles are allowed to sign on.</li>
-                  <li>• Workstation auto-locks session data on manual lockouts.</li>
-                  <li>• Session surveillance metrics synchronize securely with Pitogo Municipal EHR.</li>
+                <ul className="text-[10px] text-slate-300 space-y-1 list-none mt-2 font-medium font-sans">
+                  <li>• {currentDict.securityPolicy1}</li>
+                  <li>• {currentDict.securityPolicy2}</li>
+                  <li>• {currentDict.securityPolicy3}</li>
                 </ul>
               </div>
             </div>

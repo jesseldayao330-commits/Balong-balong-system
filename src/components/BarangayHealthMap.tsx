@@ -12,9 +12,10 @@ import balongBalongMap from '../assets/images/balong_balong_map_1781075564140.pn
 interface BarangayHealthMapProps {
   patients: Patient[];
   households: Household[];
+  activeRole?: string;
 }
 
-export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, households }) => {
+export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, households, activeRole }) => {
   const [selectedPurok, setSelectedPurok] = useState<Purok>('Purok 1');
   const [mapMode, setMapMode] = useState<'purok' | 'satellite'>('satellite');
 
@@ -30,6 +31,8 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
   const activePrenatal = purokPatients.filter((p) => p.activePrograms.includes('MCH')).length;
   const unvaccinatedEPI = purokPatients.filter((p) => p.activePrograms.includes('EPI')).length; // representative
   const seniorsCount = purokPatients.filter((p) => p.activePrograms.includes('SENIOR_CITIZEN')).length;
+  const activeFP = purokPatients.filter((p) => p.activePrograms.includes('FAMILY_PLANNING')).length;
+  const activeNutrition = purokPatients.filter((p) => p.activePrograms.includes('OPT_PLUS')).length;
 
   const unsanitaryToilets = purokHouseholds.filter((h) => !h.sanitaryToilet).length;
   const unsafeWater = purokHouseholds.filter((h) => h.waterSource === 'Unsanitary/Unprotected').length;
@@ -122,8 +125,6 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               {/* Dynamic Interactive Pin overlays linked to selected Purok */}
               {satellitePins.map((pin) => {
                 const isSelected = selectedPurok === pin.key;
-                const isHotspot = pin.key === 'Purok 5';
-                const isWarning = pin.key === 'Purok 7';
                 
                 return (
                   <button
@@ -134,21 +135,6 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center z-10"
                     title={`Click to analyze ${pin.key}`}
                   >
-                    {/* Ring alerts for warnings or outbreak */}
-                    {isHotspot && (
-                      <span className="absolute flex h-6 w-6">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-6 w-6 bg-rose-500/20"></span>
-                      </span>
-                    )}
-
-                    {isWarning && (
-                      <span className="absolute flex h-6 w-6">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-6 w-6 bg-orange-500/20"></span>
-                      </span>
-                    )}
-
                     <div className={`p-1.5 rounded-full shadow-md border ${
                       isSelected 
                         ? 'bg-slate-950 border-white text-white scale-125 z-20' 
@@ -197,35 +183,11 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     >
                       {p.key}
                     </text>
-                    
-                    {/* Hotspot Alerts for active issues */}
-                    {p.key === 'Purok 5' && (
-                      <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-rose-600 animate-ping" />
-                    )}
-                    {p.key === 'Purok 7' && (
-                      <circle cx={p.labelX + 8} cy={p.labelY + 12} r="4" className="fill-amber-600" />
-                    )}
                   </g>
                 ))}
               </svg>
             </div>
           )}
-          
-          {/* Map Legends */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-5 text-[10px] text-slate-500 font-medium">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse border border-rose-600"></span>
-              <span>High Risk (Purok 5 - Outbreak Cluster)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-400 border border-orange-500"></span>
-              <span>Medium Risk (Purok 7 - Vax Outreach)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-600"></span>
-              <span>Regular Surveillance Monitoring</span>
-            </div>
-          </div>
         </div>
 
         {/* Localized Details Section */}
@@ -258,14 +220,29 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                   <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
                   <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
                 </div>
-                <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
-                  <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
-                  <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
-                </div>
-                <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
-                  <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
-                  <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
-                </div>
+                {activeRole === 'MIDWIFE' || activeRole === 'BHW' ? (
+                  <>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
+                      <span className="text-[10px] text-slate-500 block">Family Planning</span>
+                      <span className="text-base font-extrabold text-indigo-700">{activeFP} active</span>
+                    </div>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
+                      <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
+                      <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
+                      <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
+                      <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
+                    </div>
+                    <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
+                      <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
+                      <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Environmental Metrics (Critical DOH FHSIS standards) */}
@@ -293,12 +270,12 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-400 flex items-center gap-1 bg-amber-50 text-amber-800 p-2 rounded-md">
-            <AlertTriangle size={12} />
+          <div className="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1.5 bg-slate-50 text-slate-705 p-2 rounded-md border border-slate-200">
+            <CheckCircle size={12} className="text-emerald-600" />
             <span>
-              {selectedPurok === 'Purok 5' && 'Alert: Water contamination alert in effect. Educate residents on boiling drinking water.'}
-              {selectedPurok === 'Purok 7' && 'Alert: Under-immunized cluster warning. Scheduled BHW outreach this Friday.'}
-              {selectedPurok !== 'Purok 5' && selectedPurok !== 'Purok 7' && 'Surveillance status optimal. Standard quarterly monitoring ongoing.'}
+              {selectedPurok === 'Purok 5' && 'Assigned wellness monitoring active. Regular health and sanitation outreach conducted by assigned BHWs.'}
+              {selectedPurok === 'Purok 7' && 'Routine immunization scheduler active. Outreach program vaccine updates are supported by BHWs.'}
+              {selectedPurok !== 'Purok 5' && selectedPurok !== 'Purok 7' && 'Surveillance status optimal. Standard primary healthcare checkups ongoing.'}
             </span>
           </div>
         </div>

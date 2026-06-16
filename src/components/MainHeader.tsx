@@ -6,7 +6,7 @@
 import React from 'react';
 import { Role, Language } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Wifi, WifiOff, RefreshCw, Globe, User, ShieldAlert, Clock, LogOut, Lock } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Globe, ShieldAlert, Clock, LogOut, Lock } from 'lucide-react';
 
 interface MainHeaderProps {
   activeRole: Role;
@@ -41,12 +41,11 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 }) => {
   const text = LOCALIZED_TEXTS[language];
   
-  // Six roles are permitted to utilize the workstation
+  // Five roles are permitted to utilize the workstation
   const roles: { key: Role; label: string; bg: string; text: string }[] = [
     { key: 'BHW', label: language === 'EN' ? 'BHW' : 'BHW', bg: 'bg-emerald-50 dark:bg-emerald-950/20 shadow-xs', text: 'text-emerald-700' },
-    { key: 'MIDWIFE', label: language === 'EN' ? 'Midwife (RM)' : 'Midwife (RM)', bg: 'bg-teal-50 dark:bg-teal-950/20 shadow-xs', text: 'text-teal-700' },
-    { key: 'NURSE', label: language === 'EN' ? 'Nurse (RN)' : 'Nars (RN)', bg: 'bg-blue-50 dark:bg-blue-950/20 shadow-xs', text: 'text-blue-705' },
-    { key: 'PHARMACIST', label: language === 'EN' ? 'Pharmacist' : 'Farmasista', bg: 'bg-amber-50 dark:bg-amber-950/20 shadow-xs', text: 'text-amber-707' },
+    { key: 'MIDWIFE', label: language === 'EN' ? 'Midwife & Nurse (RM/RN)' : 'Midwife at Nars (RM/RN)', bg: 'bg-teal-50 dark:bg-teal-950/20 shadow-xs', text: 'text-teal-700' },
+    { key: 'PHARMACIST', label: language === 'EN' ? 'Pharmacist' : 'Farmasista', bg: 'bg-amber-50 dark:bg-amber-950/20 shadow-xs', text: 'text-amber-700' },
     { key: 'MHO', label: language === 'EN' ? 'MHO / Doctor' : 'MHO / Doktor', bg: 'bg-rose-50 dark:bg-rose-950/20 shadow-xs', text: 'text-rose-700' },
     { key: 'ADMIN', label: language === 'EN' ? 'Admin / Captain' : 'Admin / Kapitan', bg: 'bg-purple-50 dark:bg-purple-950/20 shadow-xs', text: 'text-purple-700' },
   ];
@@ -58,9 +57,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <ShieldAlert size={14} className="text-amber-400" />
-            <span className="font-mono tracking-wide">RA 10173 PRIVACY ENCRYPTED</span>
+            <span className="font-mono tracking-wide text-amber-200">RA 10173 PRIVACY ENCRYPTED</span>
           </div>
-          <span className="text-slate-400">|</span>
+          <span className="text-slate-500">|</span>
           <div className="flex items-center gap-1.5 text-slate-300">
             <Clock size={12} />
             <span>PST (Philippine Standard Time): 2026-06-01 15:45 (GMT+8)</span>
@@ -103,8 +102,6 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Main header block */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="bhc-branding">
         <div>
           <div className="flex items-center gap-2">
@@ -184,10 +181,11 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   {activeRole === 'BHW' ? 'Julefe Magwate' :
                    activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' :
                    activeRole === 'NURSE' ? 'Yvonne Galang, RN' :
-                   'Ericson Padunan'}
+                   'Cap. Judeth Pila'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${
                   activeRole === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                  activeRole === 'CAPITAN' ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' :
                   activeRole === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border-teal-200' :
                   activeRole === 'NURSE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                   'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -195,6 +193,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   {activeRole === 'BHW' ? 'BHW' :
                    activeRole === 'MIDWIFE' ? 'Midwife' :
                    activeRole === 'NURSE' ? 'Nurse' :
+                   activeRole === 'CAPITAN' ? 'Kapitan' :
                    'Administrator'}
                 </span>
               </div>
