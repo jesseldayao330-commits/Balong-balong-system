@@ -87,6 +87,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   onResetFilters,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
+  const [forceSubTab, setForceSubTab] = useState<RecordTab | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Checking active user role to prevent unauthorized roles from editing/deleting residents
@@ -120,6 +121,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
   // Redirect roles away from restricted tabs
   React.useEffect(() => {
+    if (forceSubTab === activeSubTab) return;
     if (userActiveRole === 'BHW' && ['prenatals', 'immunizations', 'inventory'].includes(activeSubTab)) {
       setActiveSubTab('residents');
     } else if (userActiveRole === 'MIDWIFE' && ['households'].includes(activeSubTab)) {
@@ -127,7 +129,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
     } else if (userActiveRole === 'NURSE' && ['households', 'prenatals'].includes(activeSubTab)) {
       setActiveSubTab('residents');
     }
-  }, [userActiveRole, activeSubTab]);
+  }, [userActiveRole, activeSubTab, forceSubTab]);
   
   // Filtering states
   const [purokFilter, setPurokFilter] = useState<string>('All');
@@ -617,52 +619,113 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
       {/* Metrics Bento Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="records-bento-metrics">
-        <div className="p-3 bg-slate-50 border border-slate-200/50 rounded-xl flex items-center gap-2.5">
-          <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
-            <Users size={16} />
+        {/* Card 1: Registered */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveSubTab('residents');
+            setForceSubTab('residents');
+            setHealthStatusFilter('All');
+            setPurokFilter('All');
+            setGenderFilter('All');
+            setSearchQuery('');
+          }}
+          className="p-3 bg-slate-50 border border-slate-200/50 hover:border-indigo-400 hover:bg-indigo-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-indigo-100/70 text-indigo-700 rounded-lg group-hover:scale-105 transition-transform">
+              <Users size={16} />
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase font-mono block">Registered</span>
+              <span className="text-sm font-extrabold text-slate-800 font-mono">{patients.length} Residents</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">Registered</span>
-            <span className="text-sm font-extrabold text-slate-800 font-mono">{patients.length} Residents</span>
-          </div>
-        </div>
+          <span className="text-[9px] font-extrabold text-indigo-700 bg-indigo-50/50 border border-indigo-100/60 px-1.5 py-0.5 rounded uppercase tracking-wider shadow-3xs opacity-80 group-hover:opacity-100 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-500 transition-all flex items-center gap-0.5">
+            <Eye size={10} /> View
+          </span>
+        </button>
 
-        <div className="p-3 bg-slate-50 border border-slate-200/50 rounded-xl flex items-center gap-2.5">
-          <div className="p-2 bg-indigo-100 text-amber-700 rounded-lg">
-            <Pill size={16} />
+        {/* Card 2: Low Stock */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveSubTab('inventory');
+            setForceSubTab('inventory');
+            setStockLevelFilter('Low');
+            setSearchQuery('');
+          }}
+          className="p-3 bg-slate-50 border border-slate-200/50 hover:border-amber-400 hover:bg-amber-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-amber-100/70 text-amber-700 rounded-lg group-hover:scale-105 transition-transform">
+              <Pill size={16} />
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase font-mono block">Low Stock</span>
+              <span className="text-sm font-extrabold text-slate-800 font-mono">{lowStockMedsCount} critical</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">Low Stock</span>
-            <span className="text-sm font-extrabold text-slate-800 font-mono">{lowStockMedsCount} critical</span>
-          </div>
-        </div>
+          <span className="text-[9px] font-extrabold text-amber-755 bg-amber-50/50 border border-amber-100/60 px-1.5 py-0.5 rounded uppercase tracking-wider shadow-3xs opacity-80 group-hover:opacity-100 group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-500 transition-all flex items-center gap-0.5">
+            <Eye size={10} /> View
+          </span>
+        </button>
 
-        <div className="p-3 bg-slate-50 border border-slate-200/50 rounded-xl flex items-center gap-2.5">
-          <div className="p-2 bg-rose-100 text-rose-700 rounded-lg">
-            <ShieldAlert size={16} />
+        {/* Card 3: High-Risk Prenatal */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveSubTab('prenatals');
+            setForceSubTab('prenatals');
+            setRiskFilter('High Risk');
+            setSearchQuery('');
+          }}
+          className="p-3 bg-slate-50 border border-slate-200/50 hover:border-rose-400 hover:bg-rose-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-rose-100/70 text-rose-700 rounded-lg group-hover:scale-105 transition-transform">
+              <ShieldAlert size={16} />
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase font-mono block">High-Risk Prenatal</span>
+              <span className="text-sm font-extrabold text-rose-700 font-mono">{highRiskPregnantCount} alerts</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">High-Risk Prenatal</span>
-            <span className="text-sm font-extrabold text-rose-700 font-mono">{highRiskPregnantCount} alerts</span>
-          </div>
-        </div>
+          <span className="text-[9px] font-extrabold text-rose-700 bg-rose-50/50 border border-rose-100/60 px-1.5 py-0.5 rounded uppercase tracking-wider shadow-3xs opacity-80 group-hover:opacity-100 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-500 transition-all flex items-center gap-0.5">
+            <Eye size={10} /> View
+          </span>
+        </button>
 
-        <div className="p-3 bg-slate-50 border border-slate-200/50 rounded-xl flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
-            <Sparkles size={16} />
+        {/* Card 4: BHW Audited */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveSubTab('daily_logs');
+            setForceSubTab('daily_logs');
+            setSearchQuery('');
+          }}
+          className="p-3 bg-slate-50 border border-slate-200/50 hover:border-emerald-400 hover:bg-emerald-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-emerald-100/70 text-emerald-700 rounded-lg group-hover:scale-105 transition-transform">
+              <Sparkles size={16} />
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase font-mono block">BHW Audited</span>
+              <span className="text-sm font-extrabold text-emerald-700 font-mono">100% Locked</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase font-mono block">BHW Audited</span>
-            <span className="text-sm font-extrabold text-emerald-700 font-mono">100% Locked</span>
-          </div>
-        </div>
+          <span className="text-[9px] font-extrabold text-emerald-755 bg-emerald-50/50 border border-emerald-100/60 px-1.5 py-0.5 rounded uppercase tracking-wider shadow-3xs opacity-80 group-hover:opacity-100 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-500 transition-all flex items-center gap-0.5">
+            <Eye size={10} /> View
+          </span>
+        </button>
       </div>
 
       {/* Sub-tab navigation directory */}
       <div className="flex border-b border-slate-100 pb-0.5 gap-1.5 overflow-x-auto scroller-hidden mb-4" id="master-subtabs-strip">
         {/* Patient / Resident Records Tab */}
         <button
-          onClick={() => { setActiveSubTab('residents'); setSearchQuery(''); }}
+          onClick={() => { setActiveSubTab('residents'); setSearchQuery(''); setForceSubTab(null); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
             activeSubTab === 'residents' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
@@ -673,7 +736,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         {/* Households Tab (hidden for Midwife & Nurse as requested) */}
         {userActiveRole !== 'MIDWIFE' && userActiveRole !== 'NURSE' && (
           <button
-            onClick={() => { setActiveSubTab('households'); setSearchQuery(''); }}
+            onClick={() => { setActiveSubTab('households'); setSearchQuery(''); setForceSubTab(null); }}
             className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
               activeSubTab === 'households' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
             }`}
@@ -684,7 +747,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
         {/* Consultations Tab */}
         <button
-          onClick={() => { setActiveSubTab('consultations'); setSearchQuery(''); }}
+          onClick={() => { setActiveSubTab('consultations'); setSearchQuery(''); setForceSubTab(null); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
             activeSubTab === 'consultations' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
@@ -694,7 +757,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
         {/* Vital Signs Tab */}
         <button
-          onClick={() => { setActiveSubTab('vitals'); setSearchQuery(''); }}
+          onClick={() => { setActiveSubTab('vitals'); setSearchQuery(''); setForceSubTab(null); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
             activeSubTab === 'vitals' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
@@ -705,7 +768,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         {/* Prenatal MCH Tab (not for BHW, and not for Nurse as requested) */}
         {userActiveRole !== 'BHW' && userActiveRole !== 'NURSE' && (
           <button
-            onClick={() => { setActiveSubTab('prenatals'); setSearchQuery(''); }}
+            onClick={() => { setActiveSubTab('prenatals'); setSearchQuery(''); setForceSubTab(null); }}
             className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
               activeSubTab === 'prenatals' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
             }`}
@@ -717,7 +780,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         {/* Immunizations Tab (not for BHW as requested, now visible for combined Midwife/Nurse role) */}
         {userActiveRole !== 'BHW' && (
           <button
-            onClick={() => { setActiveSubTab('immunizations'); setSearchQuery(''); }}
+            onClick={() => { setActiveSubTab('immunizations'); setSearchQuery(''); setForceSubTab(null); }}
             className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
               activeSubTab === 'immunizations' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
             }`}
@@ -729,7 +792,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
         {/* Medicine Stock Tab (not for BHW) */}
         {userActiveRole !== 'BHW' && (
           <button
-            onClick={() => { setActiveSubTab('inventory'); setSearchQuery(''); }}
+            onClick={() => { setActiveSubTab('inventory'); setSearchQuery(''); setForceSubTab(null); }}
             className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
               activeSubTab === 'inventory' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
             }`}
@@ -740,7 +803,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
 
         {/* Walk-In Visitors & Reports Tab */}
         <button
-          onClick={() => { setActiveSubTab('daily_logs'); setSearchQuery(''); }}
+          onClick={() => { setActiveSubTab('daily_logs'); setSearchQuery(''); setForceSubTab(null); }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
             activeSubTab === 'daily_logs' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
