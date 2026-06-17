@@ -5,16 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UserCheck, Settings, Database, Edit3, Trash2, Plus, Monitor, ShieldAlert, KeyRound, Wifi, RefreshCw, Users, Search, ClipboardList } from 'lucide-react';
-import { Role, Patient } from '../types';
-
-interface UserAccount {
-  id: string;
-  name: string;
-  role: Role;
-  username: string;
-  pin: string;
-  status: 'Active' | 'Inactive';
-}
+import { Role, Patient, UserAccount } from '../types';
 
 interface AuditLog {
   id: string;
@@ -34,6 +25,8 @@ interface AdminPanelProps {
   setCenterLogo: (logo: string) => void;
   onAddAuditLog?: (action: string, details: string, severity?: 'Info' | 'Warning' | 'Critical') => void;
   patients?: Patient[];
+  users: UserAccount[];
+  setUsers: React.Dispatch<React.SetStateAction<UserAccount[]>>;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -44,29 +37,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   centerLogo,
   setCenterLogo,
   onAddAuditLog,
-  patients = []
+  patients = [],
+  users,
+  setUsers
 }) => {
   // States to filter patients registered under different roles
   const [selectedWorkerFilter, setSelectedWorkerFilter] = useState<'ALL' | 'BHW' | 'MIDWIFE' | 'NURSE'>('ALL');
   const [patientSearch, setPatientSearch] = useState('');
-
-  // Workstation Accounts state - tailored to the authorized BHW, Midwife, Nurse, and Admin roles
-  const [users, setUsers] = useState<UserAccount[]>(() => {
-    const saved = localStorage.getItem('bhc_admin_users');
-    if (saved) return JSON.parse(saved);
-    return [
-      { id: '1', name: 'Julefe Magwate', role: 'BHW' as Role, username: 'julefe_bhw', pin: '1111', status: 'Active' },
-      { id: '2', name: 'Arlene Cagas Dayama, RM', role: 'MIDWIFE' as Role, username: 'arlene_midwife', pin: '3333', status: 'Active' },
-      { id: '3', name: 'Yvonne Galang, RN', role: 'NURSE' as Role, username: 'yvonne_nars', pin: '2222', status: 'Active' },
-      { id: '4', name: 'Ericson Padunan', role: 'ADMIN' as Role, username: 'ericson_admin', pin: '1234', status: 'Active' },
-      { id: '5', name: 'Ericson Padunan', role: 'CAPITAN' as Role, username: 'ericson_capitan', pin: '7777', status: 'Active' },
-    ];
-  });
-
-  // Save users automatically
-  useEffect(() => {
-    localStorage.setItem('bhc_admin_users', JSON.stringify(users));
-  }, [users]);
 
   // System Configuration States
   const [ehrEndpoint, setEhrEndpoint] = useState(() => localStorage.getItem('bhc_config_ehr') || 'https://pitogo.zambo.gov.ph/ehr/api/v1');

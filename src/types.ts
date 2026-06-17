@@ -5,6 +5,15 @@
 
 export type Role = 'BHW' | 'MIDWIFE' | 'NURSE' | 'PHARMACIST' | 'MHO' | 'ADMIN' | 'CAPITAN';
 
+export interface UserAccount {
+  id: string;
+  name: string;
+  role: Role;
+  username: string;
+  pin: string;
+  status: 'Active' | 'Inactive';
+}
+
 export type Language = 'EN' | 'TL' | 'BY'; // English, Tagalog, Bisaya
 
 export type Purok = 'Purok 1' | 'Purok 2' | 'Purok 3' | 'Purok 4' | 'Purok 5' | 'Purok 6' | 'Purok 7';

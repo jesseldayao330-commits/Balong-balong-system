@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Role, Language, Patient, Household, VitalSigns, Consultation, MedicineInventory, MedicineDispensed, PrenatalRecord, ImmunizationRecord, FamilyPlanningRecord, Referral, HealthCertificate, DailyLogEntry } from './types';
+import { Role, Language, Patient, Household, VitalSigns, Consultation, MedicineInventory, MedicineDispensed, PrenatalRecord, ImmunizationRecord, FamilyPlanningRecord, Referral, HealthCertificate, DailyLogEntry, UserAccount } from './types';
 import { MainHeader } from './components/MainHeader';
 import { SystemOverview } from './components/SystemOverview';
 import { BarangayHealthMap } from './components/BarangayHealthMap';
@@ -73,6 +73,26 @@ export default function App() {
     }
     return 'BHW';
   });
+
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    const saved = localStorage.getItem('bhc_admin_users');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return [
+      { id: '1', name: 'Julefe Magwate', role: 'BHW' as Role, username: 'julefe_bhw', pin: '1111', status: 'Active' },
+      { id: '2', name: 'Arlene Cagas Dayama, RM', role: 'MIDWIFE' as Role, username: 'arlene_midwife', pin: '3333', status: 'Active' },
+      { id: '3', name: 'Yvonne Galang, RN', role: 'NURSE' as Role, username: 'yvonne_nars', pin: '2222', status: 'Active' },
+      { id: '4', name: 'Ericson Padunan', role: 'ADMIN' as Role, username: 'ericson_admin', pin: '1234', status: 'Active' },
+      { id: '5', name: 'Ericson Padunan', role: 'CAPITAN' as Role, username: 'ericson_capitan', pin: '7777', status: 'Active' },
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bhc_admin_users', JSON.stringify(users));
+  }, [users]);
   const [lastSynced, setLastSynced] = useState<string>('Just Now');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [patientsTabMode, setPatientsTabMode] = useState<'records' | 'profile'>('records');
@@ -507,6 +527,21 @@ export default function App() {
 
   // Map active staff name for registries tracking
   const getStaffNameByRole = (role: Role): string => {
+    const matchedUser = users.find((u) => u.role === role);
+    if (matchedUser && matchedUser.name) {
+      if (role === 'BHW') return `${matchedUser.name} (BHW)`;
+      if (role === 'MIDWIFE') {
+        const hasSuffix = matchedUser.name.toLowerCase().includes('rm') || matchedUser.name.toLowerCase().includes('midwife');
+        return `${matchedUser.name}${hasSuffix ? '' : ', RM'} (Midwife)`;
+      }
+      if (role === 'NURSE') {
+        const hasSuffix = matchedUser.name.toLowerCase().includes('rn') || matchedUser.name.toLowerCase().includes('nars') || matchedUser.name.toLowerCase().includes('nurse');
+        return `${matchedUser.name}${hasSuffix ? '' : ', RN'} (Nars)`;
+      }
+      if (role === 'ADMIN') return `${matchedUser.name} (Admin)`;
+      if (role === 'CAPITAN') return `${matchedUser.name} (Kapitan)`;
+      return `${matchedUser.name} (${role})`;
+    }
     switch (role) {
       case 'BHW': return 'Julefe Magwate (BHW)';
       case 'MIDWIFE': return 'Arlene Cagas Dayama, RM (Midwife)';
@@ -818,6 +853,8 @@ export default function App() {
                 setCenterLogo={setCenterLogo}
                 onAddAuditLog={addAuditLog}
                 patients={patients}
+                users={users}
+                setUsers={setUsers}
               />
             )}
 

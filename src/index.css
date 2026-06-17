@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@keyframes blink-hazard {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.1));
+  }
+}
+
+.animate-blink-hazard {
+  animation: blink-hazard 1s infinite ease-in-out;
+}
+
+@keyframes fill-danger {
+  0%, 100% {
+    fill: rgb(254, 226, 226); /* bg-red-100 */
+    stroke: rgb(220, 38, 38); /* stroke-red-600 */
+  }
+  50% {
+    fill: rgb(239, 68, 68); /* solid high-alert red */
+    stroke: rgb(153, 27, 27); /* dark red stroke */
+  }
+}
+
+.animate-svg-hazard {
+  animation: fill-danger 1.5s infinite ease-in-out;
+}

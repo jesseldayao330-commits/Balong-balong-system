@@ -95,8 +95,8 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const isMidwifeOrNurse = userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE';
   const isAdmin = userActiveRole === 'ADMIN';
 
-  const canEdit = userActiveRole === 'BHW'; // Only BHW can edit resident/patient profiles
-  const canDelete = userActiveRole === 'BHW' || userActiveRole === 'ADMIN' || userActiveRole === 'CAPITAN'; // Enable deletion for BHW and Admin/Capitan roles
+  const canEdit = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN', 'CAPITAN'].includes(userActiveRole); // Everyone can edit resident/patient profiles
+  const canDelete = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN', 'CAPITAN'].includes(userActiveRole); // Everyone can delete resident/patient profiles
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
 
   // Sync health program filters and active sub tab from parent / dashboard links

@@ -99,6 +99,27 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
         </div>
       </div>
 
+      {/* High-visibility active TB warning banner */}
+      {patients.some((p) => p.activePrograms.includes('TB_DOTS')) && (
+        <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between shadow-xs animate-pulse">
+          <div className="flex items-center gap-3">
+            <span className="flex h-3 w-3 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+            </span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5">
+              <span className="text-[10px] font-black text-red-700 uppercase tracking-wider bg-red-100 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                AKTIBONG SURVEILLANCE
+              </span>
+              <p className="text-xs font-semibold text-red-800">
+                May natukoy na aktibong kaso ng TB (Tuberculosis). Awtomatikong dumederep/kumukurap (blinking) ang mga apektadong Purok sa mapa.
+              </p>
+            </div>
+          </div>
+          <AlertTriangle className="text-red-600 hidden md:block shrink-0 animate-bounce" size={18} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* SVG/Image Map Section */}
         <div className="col-span-1 lg:col-span-7 flex flex-col items-center border border-slate-200/60 rounded-2xl p-4 bg-slate-50 justify-center">
@@ -125,6 +146,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               {/* Dynamic Interactive Pin overlays linked to selected Purok */}
               {satellitePins.map((pin) => {
                 const isSelected = selectedPurok === pin.key;
+                const hasTB = patients.some((p) => p.purok === pin.key && p.activePrograms.includes('TB_DOTS'));
                 
                 return (
                   <button
@@ -132,23 +154,43 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     type="button"
                     onClick={() => setSelectedPurok(pin.key)}
                     style={{ left: pin.left, top: pin.top }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center z-10"
-                    title={`Click to analyze ${pin.key}`}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center ${
+                      hasTB ? 'z-30' : 'z-10'
+                    }`}
+                    title={`Click to analyze ${pin.key}${hasTB ? ' - WARNING: Active TB surveillance' : ''}`}
                   >
-                    <div className={`p-1.5 rounded-full shadow-md border ${
-                      isSelected 
-                        ? 'bg-slate-950 border-white text-white scale-125 z-20' 
-                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-                    } transition-all`}>
-                      <MapPin size={isSelected ? 14 : 11} className={isSelected ? 'text-white' : 'text-emerald-600'} />
+                    {/* Blinking Hazard Glow Ring behind the pin */}
+                    {hasTB && (
+                      <div className="absolute inset-0 bg-red-500 rounded-full blur-xs opacity-50 animate-ping" style={{ transform: 'scale(1.8)' }}></div>
+                    )}
+                    
+                    <div className={`p-1.5 rounded-full shadow-md border relative transition-all ${
+                      hasTB
+                        ? 'bg-red-600 text-white border-white animate-blink-hazard scale-110 z-20'
+                        : isSelected 
+                          ? 'bg-slate-950 border-white text-white scale-125 z-20' 
+                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                    }`}>
+                      <MapPin size={(isSelected || hasTB) ? 14 : 11} className={(isSelected || hasTB) ? 'text-white' : 'text-emerald-600'} />
+                      
+                      {/* Warning micro-dot */}
+                      {hasTB && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 bg-red-800 border border-white text-[8px] font-black items-center justify-center rounded-full">
+                          !
+                        </span>
+                      )}
                     </div>
                     
-                    <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs ${
-                      isSelected 
-                        ? 'bg-slate-950 text-white border border-slate-800' 
-                        : 'bg-white/90 text-slate-800 border border-slate-200'
-                    } whitespace-nowrap`}>
-                      {pin.key}
+                    <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs whitespace-nowrap flex items-center gap-1 ${
+                      hasTB
+                        ? 'bg-red-600 text-white border border-red-700 font-extrabold shadow-md'
+                        : isSelected 
+                          ? 'bg-slate-950 text-white border border-slate-800' 
+                          : 'bg-white/90 text-slate-800 border border-slate-200'
+                    }`}>
+                      {hasTB && <AlertTriangle size={8} className="text-white animate-pulse" />}
+                      <span>{pin.key}</span>
+                      {hasTB && <span className="text-[7.5px] bg-red-900 border border-red-500 px-0.5 rounded-xs text-white">TB</span>}
                     </span>
                   </button>
                 );
@@ -159,32 +201,41 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             <div className="w-full flex flex-col items-center">
               <span className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Click to Investigate Purok Clusters</span>
               <svg viewBox="0 0 460 350" className="w-full max-w-[550px] drop-shadow-md">
-                {purokSpecs.map((p) => (
-                  <g 
-                    key={p.key} 
-                    className="cursor-pointer transition-all" 
-                    onClick={() => setSelectedPurok(p.key)}
-                  >
-                    <path
-                      d={p.d}
-                      className={`${p.color} stroke-2 transition-colors duration-150 ${
-                        selectedPurok === p.key ? 'fill-opacity-100 stroke-[3px] filter drop-shadow-lg scale-[1.01]' : 'fill-opacity-65'
-                      }`}
-                    />
-                    
-                    {/* Labels indicating numbers of residents */}
-                    <text
-                      x={p.labelX}
-                      y={p.labelY}
-                      textAnchor="middle"
-                      className={`font-semibold text-[11px] pointer-events-none select-none transition-colors ${
-                        selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
-                      }`}
+                {purokSpecs.map((p) => {
+                  const hasTB = patients.some((pat) => pat.purok === p.key && pat.activePrograms.includes('TB_DOTS'));
+                  return (
+                    <g 
+                      key={p.key} 
+                      className="cursor-pointer transition-all" 
+                      onClick={() => setSelectedPurok(p.key)}
                     >
-                      {p.key}
-                    </text>
-                  </g>
-                ))}
+                      <path
+                        d={p.d}
+                        className={`${
+                          hasTB 
+                            ? 'animate-svg-hazard stroke-red-700' 
+                            : p.color
+                        } stroke-2 transition-colors duration-150 ${
+                          selectedPurok === p.key ? 'fill-opacity-100 stroke-[3px] filter drop-shadow-lg scale-[1.01]' : 'fill-opacity-65'
+                        }`}
+                      />
+                      
+                      {/* Labels indicating numbers of residents */}
+                      <text
+                        x={p.labelX}
+                        y={p.labelY}
+                        textAnchor="middle"
+                        className={`font-semibold text-[11px] pointer-events-none select-none transition-colors ${
+                          hasTB
+                            ? 'fill-red-950 font-black'
+                            : selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
+                        }`}
+                      >
+                        {p.key} {hasTB ? '⚠️' : ''}
+                      </text>
+                    </g>
+                  );
+                })}
               </svg>
             </div>
           )}
