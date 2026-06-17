@@ -36,7 +36,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   activeRole,
 }) => {
   const text = LOCALIZED_TEXTS[language];
-  const isEPharmacyViewOnly = activeRole === 'BHW' || activeRole === 'MIDWIFE' || activeRole === 'NURSE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN';
+  const isEPharmacyViewOnly = activeRole === 'ADMIN' || activeRole === 'CAPITAN';
   
   // Categorize medicine audience helper to separate Household, Pregnant (Buntis), and Child (Bata)
   const getMedicineAudience = (item: MedicineInventory): 'Household Resident' | 'Buntis' | 'Bata' => {
@@ -609,7 +609,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                 E-Pharmacy System (View-Only)
               </h3>
               <p className="text-[11px] text-slate-500 max-w-sm">
-                Naka-lock ang pamamahagi ng gamot at pamamahala ng imbentaryo para sa <strong>{activeRole}</strong>. Ang pamamahagi (dispensing) ay pinangangasiwaan ng Capitán.
+                Naka-lock ang pamamahagi ng gamot at pamamahala ng imbentaryo para sa <strong>{activeRole}</strong>. Ang pamamahagi (dispensing) ay pinangangasiwaan ng mga BHW, midwife, o nars.
               </p>
             </div>
             <div className="w-full bg-indigo-50/50 p-2.5 rounded border border-indigo-100 text-[10px] text-indigo-900 font-mono">

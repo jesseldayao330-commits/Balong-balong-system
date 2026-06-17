@@ -487,8 +487,8 @@ export default function App() {
         // BHW: Patient list view-only, Patient registration add-only, Clinical Vitals encode-only, Surveillance map, and E-Pharmacy (Household Residents).
         return allTabs.filter((t) => ['overview', 'patients', 'pharmacy', 'map'].includes(t.id));
       case 'CAPITAN':
-        // Capitan: E-Dashboard, Patient Register (View-only), and Surveillance Map only.
-        return allTabs.filter((t) => ['overview', 'patients', 'map'].includes(t.id));
+        // Capitan: E-Dashboard, Patient Register (View-only), E-Pharmacy (View-only), and Surveillance Map only.
+        return allTabs.filter((t) => ['overview', 'patients', 'pharmacy', 'map'].includes(t.id));
       case 'NURSE':
         // Nurse: Has E-Pharmacy (Child/Pediatric), programs/clearance/map etc.
         return allTabs.filter((t) => ['overview', 'patients', 'programs', 'pharmacy', 'clearance', 'map', 'reports', 'policies'].includes(t.id));
