@@ -7,11 +7,11 @@ import React, { useState } from 'react';
 import { Role, Language } from '../types';
 import { ShieldCheck, Lock, User, Key, Globe, EyeOff, Eye, CheckCircle2, Users } from 'lucide-react';
 
-import bhwWorkersLogin from '../assets/images/bhw_workers_login_1781077540359.png';
-import bhwCheckupPregnant from '../assets/images/bhw_checkup_pregnant_1781077672362.png';
-import bhwDoctorConsult from '../assets/images/bhw_doctor_consult_1781077692389.png';
-import bhwNurseImmunize from '../assets/images/bhw_nurse_immunize_1781077708993.png';
-import bhwPharmacyStock from '../assets/images/bhw_pharmacy_stock_1781077723656.png';
+import bhwWorkersLogin from '../assets/images/local_bhw_group_1781661403040.jpg';
+import bhwCheckupPregnant from '../assets/images/local_prenatal_doppler_1781661422330.jpg';
+import bhwDoctorConsult from '../assets/images/local_doctor_consult_1781661440347.jpg';
+import bhwNurseImmunize from '../assets/images/local_vaccination_rn_1781661453718.jpg';
+import bhwPharmacyStock from '../assets/images/local_pharmacy_store_1781661466592.jpg';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: Role) => void;
