@@ -131,6 +131,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   {activeRole === 'BHW' ? 'Julefe Magwate' :
                    activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' :
                    activeRole === 'NURSE' ? 'Yvonne Galang, RN' :
+                   activeRole === 'CAPITAN' ? 'Judith Pila' :
                    'Ericson Padunan'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${

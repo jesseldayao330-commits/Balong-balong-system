@@ -407,7 +407,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-3xl font-black text-indigo-600 group-hover:text-indigo-700 transition-colors">{totalChild}</span>
-              <span className="text-xs text-indigo-700 font-bold">children patients</span>
+              <span className="text-xs text-indigo-700 font-bold">{totalChild === 1 ? 'child patient' : 'childs patients'}</span>
             </div>
             <div className="h-1 w-8 bg-indigo-500 mt-2 rounded-full group-hover:w-12 transition-all"></div>
             <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
@@ -535,7 +535,7 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
               <div className="space-y-4 my-2 text-xs font-semibold">
                 <div className="flex justify-between items-center text-slate-650">
                   <span>Active Pediatric Cases:</span>
-                  <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalChild} children</span>
+                  <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{totalChild} {totalChild === 1 ? 'child' : 'childs'}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-650">
                   <span>Underweight / OPT+:</span>
@@ -632,7 +632,10 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
         {/* Unvaccinated EPI */}
         <button
           type="button"
-          onClick={() => onKpiClick?.('EPI', 'residents')}
+          onClick={() => {
+            const isRestricted = userActiveRole === 'BHW' || userActiveRole === 'CAPITAN';
+            onKpiClick?.('EPI', isRestricted ? 'residents' : 'immunizations');
+          }}
           className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-amber-300 hover:shadow-md transition-all duration-200 cursor-pointer select-none text-left w-full block group"
           id="kpi-epi"
         >

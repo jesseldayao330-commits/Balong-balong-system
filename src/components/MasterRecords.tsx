@@ -61,6 +61,7 @@ interface MasterRecordsProps {
   initialActiveSubTab?: 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
   initialRiskFilter?: string;
   onResetFilters?: () => void;
+  dashboardClickId?: number;
 }
 
 type RecordTab = 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
@@ -85,6 +86,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   initialActiveSubTab,
   initialRiskFilter,
   onResetFilters,
+  dashboardClickId,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<RecordTab>('residents');
   const [forceSubTab, setForceSubTab] = useState<RecordTab | null>(null);
@@ -95,29 +97,29 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const isBhw = userActiveRole === 'BHW';
   const isMidwifeOrNurse = userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE';
   const isAdmin = userActiveRole === 'ADMIN';
-
-  const canEdit = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN', 'CAPITAN'].includes(userActiveRole); // Everyone can edit resident/patient profiles
-  const canDelete = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN', 'CAPITAN'].includes(userActiveRole); // Everyone can delete resident/patient profiles
+  const canEdit = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN'].includes(userActiveRole); // Everyone except CAPITAN and other view-only roles can edit resident/patient profiles
+  const canDelete = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN'].includes(userActiveRole); // Everyone except CAPITAN and other view-only roles can delete resident/patient profiles
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
+  const [showAllResidentsOverride, setShowAllResidentsOverride] = useState(false);
 
   // Sync health program filters and active sub tab from parent / dashboard links
   React.useEffect(() => {
     if (initialActiveSubTab) {
       setActiveSubTab(initialActiveSubTab);
     }
-  }, [initialActiveSubTab]);
+  }, [initialActiveSubTab, dashboardClickId]);
 
   React.useEffect(() => {
     if (initialHealthStatusFilter) {
       setHealthStatusFilter(initialHealthStatusFilter);
     }
-  }, [initialHealthStatusFilter]);
+  }, [initialHealthStatusFilter, dashboardClickId]);
 
   React.useEffect(() => {
     if (initialRiskFilter) {
       setRiskFilter(initialRiskFilter);
     }
-  }, [initialRiskFilter]);
+  }, [initialRiskFilter, dashboardClickId]);
 
   // Redirect roles away from restricted tabs
   React.useEffect(() => {
@@ -403,18 +405,20 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   // Filtering Logic
   const filteredResidents = patients.filter(p => {
     // Role-based custom views requested by user
-    if (userActiveRole === 'MIDWIFE') {
-      const isPregnant = p.gender === 'Female' && (
-        p.activePrograms.includes('MCH') || 
-        prenatals.some(pr => pr.patientId === p.id)
-      );
-      const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
-      const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
-      if (!isPregnant && !isChild) return false;
-    } else if (userActiveRole === 'NURSE') {
-      const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
-      const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
-      if (!isChild) return false;
+    if (!showAllResidentsOverride) {
+      if (userActiveRole === 'MIDWIFE') {
+        const isPregnant = p.gender === 'Female' && (
+          p.activePrograms.includes('MCH') || 
+          prenatals.some(pr => pr.patientId === p.id)
+        );
+        const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+        const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+        if (!isPregnant && !isChild) return false;
+      } else if (userActiveRole === 'NURSE') {
+        const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+        const isChild = age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+        if (!isChild) return false;
+      }
     }
 
     const query = searchQuery.toLowerCase();
@@ -629,6 +633,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             setPurokFilter('All');
             setGenderFilter('All');
             setSearchQuery('');
+            setShowAllResidentsOverride(true);
           }}
           className="p-3 bg-slate-50 border border-slate-200/50 hover:border-indigo-400 hover:bg-indigo-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
         >
@@ -654,6 +659,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             setForceSubTab('inventory');
             setStockLevelFilter('Low');
             setSearchQuery('');
+            setShowAllResidentsOverride(false);
           }}
           className="p-3 bg-slate-50 border border-slate-200/50 hover:border-amber-400 hover:bg-amber-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
         >
@@ -679,6 +685,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             setForceSubTab('prenatals');
             setRiskFilter('High Risk');
             setSearchQuery('');
+            setShowAllResidentsOverride(false);
           }}
           className="p-3 bg-slate-50 border border-slate-200/50 hover:border-rose-400 hover:bg-rose-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
         >
@@ -703,6 +710,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             setActiveSubTab('daily_logs');
             setForceSubTab('daily_logs');
             setSearchQuery('');
+            setShowAllResidentsOverride(false);
           }}
           className="p-3 bg-slate-50 border border-slate-200/50 hover:border-emerald-400 hover:bg-emerald-50/10 text-left rounded-xl flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98] outline-none"
         >
@@ -725,13 +733,38 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
       <div className="flex border-b border-slate-100 pb-0.5 gap-1.5 overflow-x-auto scroller-hidden mb-4" id="master-subtabs-strip">
         {/* Patient / Resident Records Tab */}
         <button
-          onClick={() => { setActiveSubTab('residents'); setSearchQuery(''); setForceSubTab(null); }}
+          onClick={() => { 
+            setActiveSubTab('residents'); 
+            setSearchQuery(''); 
+            setForceSubTab(null); 
+            setShowAllResidentsOverride(false);
+          }}
           className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
-            activeSubTab === 'residents' ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            activeSubTab === 'residents' && (!isMidwifeOrNurse || !showAllResidentsOverride) ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
         >
-          {userActiveRole === 'MIDWIFE' ? '🤰 Patient (Buntis at Bata)' : userActiveRole === 'NURSE' ? '👶 Patient (Child/Mga Bata)' : '👤 Resident Records'}
+          {userActiveRole === 'MIDWIFE' ? '🤰 Patient (Buntis at Bata)' : userActiveRole === 'NURSE' ? `👶 Patient (${(patients.filter(p => {
+            const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+            return age <= 12 || p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+          }).length === 1) ? 'Child' : 'Childs'}/Mga Bata)` : '👤 Resident Records'}
         </button>
+
+        {/* All Residents Tab (visible for MIDWIFE and NURSE as requested) */}
+        {(userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE') && (
+          <button
+            onClick={() => { 
+              setActiveSubTab('residents'); 
+              setSearchQuery(''); 
+              setForceSubTab(null); 
+              setShowAllResidentsOverride(true); 
+            }}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-all rounded-t-lg border-b-2 cursor-pointer ${
+              activeSubTab === 'residents' && showAllResidentsOverride ? 'border-indigo-600 text-indigo-700 bg-indigo-50/20 font-extrabold' : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            👥 Residents (Lahat)
+          </button>
+        )}
 
         {/* Households Tab (hidden for Midwife & Nurse as requested) */}
         {userActiveRole !== 'MIDWIFE' && userActiveRole !== 'NURSE' && (
@@ -912,6 +945,23 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   </button>
                 )}
               </div>
+
+              {/* Nurse and Midwife Toggle Override */}
+              {(userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE') && (
+                <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2">
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showAllResidentsOverride}
+                      onChange={(e) => setShowAllResidentsOverride(e.target.checked)}
+                      className="rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 w-3.5 h-3.5 cursor-pointer"
+                    />
+                    <span className="text-[10.5px] font-black uppercase text-indigo-700 bg-indigo-50 border border-indigo-150 px-2 py-1 rounded inline-block font-sans hover:bg-indigo-100 transition-colors">
+                      Tingnan ang Lahat ng Resident (Show All)
+                    </span>
+                  </label>
+                </div>
+              )}
             </>
           )}
 

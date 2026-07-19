@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { MedicineInventory, MedicineDispensed, Patient, Language, Role, PrenatalRecord } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X, Lock } from 'lucide-react';
+import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X, Lock, Printer } from 'lucide-react';
 
 interface PharmacyDispenserProps {
   inventory: MedicineInventory[];
@@ -86,6 +86,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   const [selectedPatId, setSelectedPatId] = useState(patients[0]?.id || '');
   const [qty, setQty] = useState(10);
   const [useTranslationHelp, setUseTranslationHelp] = useState(true);
+  const [prescriptionToPrint, setPrescriptionToPrint] = useState<MedicineDispensed | null>(null);
 
   // Audience view filters based on roles
   const [audienceTab, setAudienceTab] = useState<'All' | 'Household Resident' | 'Buntis' | 'Bata'>('All');
@@ -148,6 +149,43 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
     if (role === 'MIDWIFE') return 'Arlene Cagas Dayama, RM';
     if (role === 'NURSE') return 'Yvonne Galang, RN';
     return 'Lorna Cruz, RPh';
+  };
+
+  const getProfessionalDetails = (dispenserName: string) => {
+    const nameLower = dispenserName.toLowerCase();
+    if (nameLower.includes('arlene') || nameLower.includes('midwife')) {
+      return {
+        title: 'Registered Midwife (RM)',
+        license: 'PRC Reg No: 0081745',
+        ptr: 'PTR No. 9283741B',
+        clinic: 'Barangay Health Station (BHS) Pitogo',
+        signature: 'Arlene C. Dayama, RM'
+      };
+    } else if (nameLower.includes('yvonne') || nameLower.includes('nars') || nameLower.includes('nurse')) {
+      return {
+        title: 'Public Health Nurse (RN)',
+        license: 'PRC Reg No: 0045231',
+        ptr: 'PTR No. 1048572A',
+        clinic: 'Municipal Health Office (MHO) Pitogo',
+        signature: 'Yvonne Galang, RN'
+      };
+    } else if (nameLower.includes('co') || nameLower.includes('dr.') || nameLower.includes('doctor') || nameLower.includes('mho')) {
+      return {
+        title: 'Municipal Health Officer (MD)',
+        license: 'PRC Reg No: 0098453',
+        ptr: 'PTR No. 7485910C',
+        clinic: 'Pitogo Rural Health Unit (RHU)',
+        signature: 'Manuel Co, MD'
+      };
+    } else {
+      return {
+        title: 'Municipal Health Officer & Physician (MD / RPh)',
+        license: 'PRC Reg No: 0098453 / RHS-FDA',
+        ptr: 'PTR No. 7485910C',
+        clinic: 'Pitogo Rural Health Unit (RHU)',
+        signature: 'Manuel Co, MD'
+      };
+    }
   };
 
   // Common dosage options to auto-generate Philippine instructions
@@ -335,7 +373,8 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
     // Deduct inventory stock manually
     selectedMed.currentStock -= qty;
 
-    alert('Matagumpay na naipamahagi ang gamot! (Medicine dispensed successfully).');
+    alert('Matagumpay na naipamahagi ang gamot! (Medicine dispensed successfully). Magbubukas ang Printable Prescription Receipt.');
+    setPrescriptionToPrint(newDisp);
   };
 
   return (
@@ -822,7 +861,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                   <th className="p-3">Gamot</th>
                   <th className="p-3">Dami</th>
                   <th className="p-3">Instructions & Dispenser</th>
-                  {!isEPharmacyViewOnly && <th className="p-3 text-right">Actions</th>}
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -843,28 +882,39 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                         <p className="font-medium text-slate-700 italic">"{rec.instructions}"</p>
                         <span className="text-[9px] block text-slate-400 mt-1">Dispenser: {rec.pharmacistDispenser}</span>
                       </td>
-                      {!isEPharmacyViewOnly && (
-                        <td className="p-3 text-right">
-                          <div className="flex items-center justify-end gap-1 text-slate-400">
-                            <button
-                              type="button"
-                              onClick={() => startEditingDispensed(rec)}
-                              className="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                              title="Edit dispensing record"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDispensedClick(rec.id)}
-                              className="p-1.5 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
-                              title="Delete dispensing record"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-slate-450">
+                          <button
+                            type="button"
+                            onClick={() => setPrescriptionToPrint(rec)}
+                            className="p-1.5 text-indigo-600 hover:text-indigo-850 hover:bg-indigo-50 rounded cursor-pointer transition-colors"
+                            title="I-print ang Reseta (Print Prescription)"
+                          >
+                            <Printer size={13} />
+                          </button>
+                          
+                          {!isEPharmacyViewOnly && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEditingDispensed(rec)}
+                                className="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                title="Edit dispensing record"
+                              >
+                                <Edit3 size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDispensedClick(rec.id)}
+                                className="p-1.5 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                title="Delete dispensing record"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -873,6 +923,211 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
           </div>
         )}
       </div>
+
+      {/* PROFESSIONAL RX PRESCRIPTION MODAL (RESETANG MEDIKAL) */}
+      {prescriptionToPrint && (() => {
+        const patientObj = patients.find(p => p.id === prescriptionToPrint.patientId);
+        const medObj = inventory.find(i => i.medicineName === prescriptionToPrint.medicineName);
+        const genericName = medObj?.genericName || '';
+        const category = medObj?.category || 'General';
+        const age = patientObj ? new Date().getFullYear() - new Date(patientObj.birthDate).getFullYear() : 'N/A';
+        const professional = getProfessionalDetails(prescriptionToPrint.pharmacistDispenser);
+
+        return (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden text-slate-800 flex flex-col max-h-[90vh]">
+              
+              {/* Modal header (Non-print UI) */}
+              <div className="bg-gradient-to-r from-indigo-800 to-indigo-950 px-5 py-4 text-white flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Printer size={16} className="text-indigo-300 animate-pulse" />
+                  <span className="font-mono text-xs font-black uppercase tracking-wider text-indigo-200">System Generator</span>
+                </div>
+                <h3 className="text-sm font-black font-sans uppercase">Prescription Receipt & Rx Label</h3>
+                <button 
+                  onClick={() => setPrescriptionToPrint(null)}
+                  className="p-1 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Printable Prescription Form */}
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-white" id="printable-prescription">
+                <div className="border-[3px] border-double border-slate-400 p-5 md:p-6 bg-white relative max-w-lg mx-auto">
+                  
+                  {/* Decorative corner cutmarks */}
+                  <div className="absolute top-2 left-2 text-[10px] text-slate-300 font-mono">✂️ PRINT FORM</div>
+                  
+                  {/* Clinic Header */}
+                  <div className="text-center font-sans pb-4 border-b border-slate-300 mb-5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Republika ng Pilipinas</span>
+                    <h2 className="text-md font-black text-slate-900 tracking-tight uppercase">Barangay Pitogo Health Station</h2>
+                    <p className="text-[10px] text-slate-650 font-medium">Municipality of Pitogo • Health Program Service & Pharmacy Depot</p>
+                    <span className="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-mono text-slate-500 border border-slate-200 uppercase font-black">
+                      Official E-Prescription Form (FDA Pitogo)
+                    </span>
+                  </div>
+
+                  {/* Patient Info Block */}
+                  <div className="grid grid-cols-12 gap-x-3 gap-y-1.5 text-xs pb-4 border-b border-dashed border-slate-200 mb-5 text-left">
+                    <div className="col-span-8">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PATIENT NAME (Pangalan)</span>
+                      <strong className="text-sm font-black text-slate-900 uppercase">
+                        {patientObj ? `${patientObj.lastName}, ${patientObj.firstName} ${patientObj.middleName || ''}` : prescriptionToPrint.patientId}
+                      </strong>
+                    </div>
+                    <div className="col-span-4 text-right">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">DATE (Petsa)</span>
+                      <strong className="text-slate-800 font-bold">{prescriptionToPrint.date}</strong>
+                    </div>
+
+                    <div className="col-span-4">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">AGE / GENDER</span>
+                      <strong className="text-slate-850 font-bold">{age} y.o. / {patientObj?.gender || 'N/A'}</strong>
+                    </div>
+                    <div className="col-span-4">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PATIENT ID</span>
+                      <strong className="text-slate-850 font-mono font-bold text-[10px] bg-slate-100 px-1 py-0.5 rounded border border-slate-150">{prescriptionToPrint.patientId}</strong>
+                    </div>
+                    <div className="col-span-4 text-right">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PRESCRIPTION ID</span>
+                      <strong className="text-slate-850 font-mono font-bold text-[10px]">{prescriptionToPrint.id}</strong>
+                    </div>
+                  </div>
+
+                  {/* Standard RX Symbol */}
+                  <div className="my-1 select-none text-left">
+                    <span className="font-serif text-5xl font-black text-slate-900 leading-none">℞</span>
+                  </div>
+
+                  {/* Prescribed Drug Info (Centered aesthetic style) */}
+                  <div className="pl-6 space-y-4 mb-6 text-left">
+                    <div>
+                      <span className="text-[9px] uppercase font-black tracking-wider text-indigo-500 block font-mono">MEDICINE BRAND / GENERIC NAME</span>
+                      <h3 className="text-lg font-black text-slate-950 uppercase leading-none tracking-tight">
+                        {prescriptionToPrint.medicineName}
+                      </h3>
+                      {genericName && (
+                        <p className="text-xs font-mono font-bold italic text-slate-500 mt-1">
+                          ({genericName}) • {category}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pb-1">
+                      <div>
+                        <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">DISPENSED QUANTITY (Bilang)</span>
+                        <strong className="text-md font-black text-emerald-700 font-mono">
+                          {prescriptionToPrint.quantityDispensed} {medObj?.unit || 'tablets (pcs)'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 font-medium text-xs leading-relaxed text-slate-800">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-indigo-900 block mb-1 font-mono">DOSAGE & INSTRUCTIONS (Mga Tagubilin)</span>
+                      <p className="font-bold text-slate-900 font-sans italic text-[12.5px] leading-relaxed">
+                        "{prescriptionToPrint.instructions}"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Signature Section */}
+                  <div className="mt-8 pt-5 border-t border-slate-300 flex justify-between items-end gap-4 text-left">
+                    <div className="text-[9px] text-slate-500 font-mono space-y-0.5 leading-tight max-w-[200px]">
+                      <p className="font-bold text-slate-700">PITOGO HEALTH STATION</p>
+                      <p>{professional.clinic}</p>
+                      <p>{professional.license}</p>
+                      <p>{professional.ptr}</p>
+                      <p className="text-[8px] text-emerald-600 font-bold flex items-center gap-0.5 mt-1.5 uppercase font-sans">
+                        ✅ SEALED & VERIFIED BY PHARMACY
+                      </p>
+                    </div>
+
+                    <div className="text-center relative min-w-[180px]">
+                      {/* Signature simulation */}
+                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-28 h-8 opacity-45 pointer-events-none select-none overflow-hidden">
+                        <svg className="w-full h-full text-indigo-650 animate-pulse" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M10,25 C30,10 40,35 60,15 C75,5 85,30 95,20 C95,20 100,20 90,30 C75,40 55,10 40,30 C25,45 10,25 20,20 Z" />
+                        </svg>
+                      </div>
+                      
+                      <div className="border-b border-slate-400 pb-1 font-black text-xs text-slate-900 tracking-wide uppercase font-sans">
+                        {professional.signature}
+                      </div>
+                      <div className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-wider font-mono">
+                        {professional.title}
+                      </div>
+                      <div className="text-[8px] text-slate-400 font-mono font-bold">Authorized Pitogo Reseta Officer</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="bg-slate-50 border-t border-slate-200 px-5 py-4 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPrescriptionToPrint(null)}
+                  className="px-4 py-2 border border-slate-250 rounded-lg text-xs font-bold font-mono text-slate-600 hover:bg-slate-100 transition-colors uppercase cursor-pointer"
+                >
+                  Close (Isara)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const printContent = document.getElementById('printable-prescription');
+                    if (!printContent) return;
+                    
+                    const printWindow = window.open('', '', 'width=800,height=900');
+                    if (printWindow) {
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Prescription Receipt - ${prescriptionToPrint.id}</title>
+                            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet font-sans">
+                            <style>
+                              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; background: white; }
+                              @media print {
+                                .no-print { display: none; }
+                                body { padding: 0; }
+                              }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="max-w-lg mx-auto">
+                              ${printContent.innerHTML}
+                            </div>
+                            <div class="no-print mt-12 text-center">
+                              <button onclick="window.print();" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
+                                PRINT NOW (I-print ang Reseta)
+                              </button>
+                            </div>
+                            <script>
+                              window.onload = function() {
+                                setTimeout(function() {
+                                  window.print();
+                                }, 400);
+                              };
+                            </script>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                    }
+                  }}
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm transition-all hover:scale-[1.01] active:translate-y-px cursor-pointer animate-pulse"
+                >
+                  <Printer size={13} />
+                  Print Prescription (I-print ang Reseta)
+                </button>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

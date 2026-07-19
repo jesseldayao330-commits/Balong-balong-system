@@ -84,6 +84,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
 
   // Print Custom Selection States
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [selectedPrintYear, setSelectedPrintYear] = useState<string>('All');
   const [printPrefs, setPrintPrefs] = useState({
     population: true,
     clinical: true,
@@ -95,6 +96,57 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
   });
 
   const handlePrintSelectedSections = () => {
+    const pFiltered = selectedPrintYear === 'All' ? patients : patients.filter(p => p.createdAt?.substring(0, 4) === selectedPrintYear);
+    const cFiltered = selectedPrintYear === 'All' ? consultations : consultations.filter(c => c.date?.substring(0, 4) === selectedPrintYear);
+    const vFiltered = selectedPrintYear === 'All' ? vaccinations : vaccinations.filter(v => v.dateGiven?.substring(0, 4) === selectedPrintYear);
+    const dFiltered = selectedPrintYear === 'All' ? dailyLogs : dailyLogs.filter(l => l.timestamp?.substring(0, 4) === selectedPrintYear);
+    const rFiltered = selectedPrintYear === 'All' ? referrals : referrals.filter(r => r.date?.substring(0, 4) === selectedPrintYear);
+    const certsFiltered = selectedPrintYear === 'All' ? certificates : certificates.filter(c => c.date?.substring(0, 4) === selectedPrintYear);
+    const sFiltered = selectedPrintYear === 'All' ? dispensed : dispensed.filter(d => d.date?.substring(0, 4) === selectedPrintYear);
+
+    const totalResidents = pFiltered.length;
+    const maleResidents = pFiltered.filter(p => p.gender === 'Male').length;
+    const femaleResidents = pFiltered.filter(p => p.gender === 'Female').length;
+    const totalHouseholdsCount = Array.from(new Set(pFiltered.map(p => p.householdId || '').filter(Boolean))).length;
+    const philhealthCount = pFiltered.filter(p => p.philHealthId && p.philHealthId !== '').length;
+    const philhealthPct = Math.round((philhealthCount / (totalResidents || 1)) * 100);
+    const indigentCount = pFiltered.filter(p => p.isIndigent).length;
+
+    const totalConsultations = cFiltered.length;
+    const highBpAlerts = cFiltered.filter(c => {
+      const textStr = (
+        (c.assessmentDiagnoses || []).join(' ') + ' ' + 
+        (c.planTreatment || '') + ' ' + 
+        (c.chiefComplaint || '')
+      ).toLowerCase();
+      return textStr.includes('bp') || textStr.includes('hyper') || textStr.includes('tension') || textStr.includes('high') || textStr.includes('presyon');
+    }).length;
+
+    const coughFeverAlerts = cFiltered.filter(c => {
+      const textStr = (
+        (c.assessmentDiagnoses || []).join(' ') + ' ' + 
+        (c.planTreatment || '') + ' ' + 
+        (c.chiefComplaint || '')
+      ).toLowerCase();
+      return textStr.includes('ubo') || textStr.includes('lagnat') || textStr.includes('sipon') || textStr.includes('cough') || textStr.includes('fever') || textStr.includes('flu') || textStr.includes('trankaso');
+    }).length;
+
+    const waitingVisits = dFiltered.filter(l => l.status === 'Waiting').length;
+    const completedVisits = dFiltered.filter(l => l.status === 'Completed').length;
+
+    const tbDotsCount = pFiltered.filter(p => p.activePrograms.includes('TB_DOTS')).length;
+    const seniorCitizenCount = pFiltered.filter(p => p.activePrograms.includes('SENIOR_CITIZEN')).length;
+    const maternalCareCount = pFiltered.filter(p => p.activePrograms.includes('MCH')).length;
+    const epiChildrenCount = pFiltered.filter(p => p.activePrograms.includes('EPI')).length;
+    const familyPlanningCount = pFiltered.filter(p => p.activePrograms.includes('FAMILY_PLANNING')).length;
+
+    const totalMeds = inventory.length;
+    const lowStockMeds = inventory.filter(m => m.currentStock <= m.reorderLevel).length;
+    const totalDispensedUnits = sFiltered.reduce((acc, curr) => acc + curr.quantityDispensed, 0);
+
+    const totalReferrals = rFiltered.length;
+    const totalCertificates = certsFiltered.length;
+
     const printWindow = window.open('', '', 'width=900,height=800');
     if (!printWindow) {
       alert('Inihaharang ng iyong browser ang popup print dialog. Mangyaring payagan ito para mag-print.');
@@ -431,7 +483,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
       <body>
         <div class="header">
           <h1>E-Statistical Register & Analysis Report Summary</h1>
-          <p>Barangay Balong-balong DHRMS, Pitogo, ZDS • Generated on ${new Date().toLocaleDateString()}</p>
+          <p>Barangay Balong-balong DHRMS, Pitogo, ZDS • Generated on ${new Date().toLocaleDateString()}${selectedPrintYear === 'All' ? '' : ` • Report Year: ${selectedPrintYear}`}</p>
         </div>
         
         <div class="grid">
@@ -549,6 +601,18 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
   const waitingVisits = (dailyLogs || []).filter(l => l.status === 'Waiting').length;
   const completedVisits = (dailyLogs || []).filter(l => l.status === 'Completed').length;
 
+  // Dynamic extraction of unique record years
+  const availableYearsList = Array.from(new Set([
+    ...(patients || []).map(p => p.createdAt?.substring(0, 4)),
+    ...(consultations || []).map(c => c.date?.substring(0, 4)),
+    ...(vaccinations || []).map(v => v.dateGiven?.substring(0, 4)),
+    ...(referrals || []).map(r => r.date?.substring(0, 4)),
+    ...(certificates || []).map(c => c.date?.substring(0, 4)),
+    ...(dispensed || []).map(d => d.date?.substring(0, 4)),
+  ].filter(y => y && y.length === 4 && !isNaN(Number(y))))).sort((a, b) => b.localeCompare(a));
+
+  const printYears = availableYearsList.length > 0 ? availableYearsList : ['2026', '2025', '2024'];
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" id="doh-fhsis-logs-panel">
       {/* Tab controls */}
@@ -616,6 +680,23 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
                   </h3>
                   <p className="text-[11px] text-slate-500 font-medium">Lagyan ng tsek (✓) ang mga partikular na seksyon na nais isama sa opisyal na ulat.</p>
                 </header>
+
+                <div className="bg-emerald-50/50 border border-emerald-100 p-3 rounded-xl space-y-1.5" id="print-year-select-area">
+                  <label htmlFor="select-print-year-dropdown" className="block text-[10px] font-black tracking-widest text-emerald-800 uppercase font-mono">
+                    📅 Piliin ang Taon na I-Print (Report Year)
+                  </label>
+                  <select
+                    id="select-print-year-dropdown"
+                    value={selectedPrintYear}
+                    onChange={(e) => setSelectedPrintYear(e.target.value)}
+                    className="w-full text-xs font-bold p-2 bg-white border border-emerald-200 text-slate-800 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer transition-all"
+                  >
+                    <option value="All">Lahat ng Taon (All Years)</option>
+                    {printYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
 
                 <div className="space-y-2 text-xs">
                   <label className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-bold">

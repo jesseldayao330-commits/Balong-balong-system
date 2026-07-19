@@ -86,7 +86,7 @@ export default function App() {
       { id: '2', name: 'Arlene Cagas Dayama, RM', role: 'MIDWIFE' as Role, username: 'arlene_midwife', pin: '3333', status: 'Active' },
       { id: '3', name: 'Yvonne Galang, RN', role: 'NURSE' as Role, username: 'yvonne_nars', pin: '2222', status: 'Active' },
       { id: '4', name: 'Ericson Padunan', role: 'ADMIN' as Role, username: 'ericson_admin', pin: '1234', status: 'Active' },
-      { id: '5', name: 'Ericson Padunan', role: 'CAPITAN' as Role, username: 'ericson_capitan', pin: '7777', status: 'Active' },
+      { id: '5', name: 'Judith Pila', role: 'CAPITAN' as Role, username: 'judith_capitan', pin: '7777', status: 'Active' },
     ];
   });
 
@@ -102,6 +102,7 @@ export default function App() {
   const [initialHealthStatusFilter, setInitialHealthStatusFilter] = useState<string>('All');
   const [initialActiveSubTab, setInitialActiveSubTab] = useState<'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs'>('residents');
   const [initialRiskFilter, setInitialRiskFilter] = useState<string>('All');
+  const [dashboardClickId, setDashboardClickId] = useState<number>(0);
 
   // PIN lock overlay states for role-switching security
   const [roleToVerify, setRoleToVerify] = useState<Role | null>(null);
@@ -549,7 +550,7 @@ export default function App() {
       case 'PHARMACIST': return 'Lorna Cruz, RPh (Pharmacist)';
       case 'MHO': return 'Dr. Arthur Sotto, MD (Municipal Health Officer)';
       case 'ADMIN': return 'Ericson Padunan (Admin)';
-      case 'CAPITAN': return 'Ericson Padunan (Kapitan)';
+      case 'CAPITAN': return 'Judith Pila (Kapitan)';
       default: return 'Barangay Health Care Desk';
     }
   };
@@ -669,6 +670,7 @@ export default function App() {
                   } else {
                     setInitialRiskFilter('All');
                   }
+                  setDashboardClickId((prev) => prev + 1);
                   setActiveTab('patients');
                   setPatientsTabMode('records');
                 }}
@@ -731,6 +733,7 @@ export default function App() {
                     initialHealthStatusFilter={initialHealthStatusFilter}
                     initialActiveSubTab={initialActiveSubTab}
                     initialRiskFilter={initialRiskFilter}
+                    dashboardClickId={dashboardClickId}
                     onResetFilters={() => {
                       setInitialHealthStatusFilter('All');
                       setInitialActiveSubTab('residents');

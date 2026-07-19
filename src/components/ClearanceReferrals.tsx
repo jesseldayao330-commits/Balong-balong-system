@@ -82,7 +82,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
     if (activeRole === 'NURSE') return 'Yvonne Galang, RN';
     if (activeRole === 'MIDWIFE') return 'Arlene Cagas Dayama, RM';
     if (activeRole === 'ADMIN') return 'Ericson Padunan, LGU Admin';
-    if (activeRole === 'CAPITAN') return 'Ericson Padunan, Punong Barangay';
+    if (activeRole === 'CAPITAN') return 'Judith Pila, Punong Barangay';
     return 'Julefe Magwate, BHW';
   });
   const [signatoryRole, setSignatoryRole] = useState(() => {
@@ -113,7 +113,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
       setSignatory('Ericson Padunan, LGU Admin');
       setSignatoryRole('Health Center Administrator');
     } else if (activeRole === 'CAPITAN') {
-      setSignatory('Ericson Padunan, Punong Barangay');
+      setSignatory('Judith Pila, Punong Barangay');
       setSignatoryRole('Punong Barangay (Kapitan)');
     }
   }, [activeRole]);
@@ -744,42 +744,131 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
                 (() => {
                   const pat = patients.find((p) => p.id === printedCert.patientId);
                   return (
-                    <div className="bg-white border-2 border-slate-300 p-6 rounded-lg text-xs space-y-4 max-w-[420px] mx-auto shadow-sm" id="certificate-printout-card">
-                      <div className="text-center space-y-1 pb-3 border-b border-double border-slate-200">
-                        <h4 className="font-extrabold uppercase text-[10px] tracking-wider text-slate-800">Republic of the Philippines</h4>
-                        <span className="block text-[10px] text-slate-500 uppercase">Municipality of Pitogo • Zamboanga del Sur</span>
-                        <strong className="block text-[11px] text-emerald-700 font-bold uppercase tracking-widest text-center">BARANGAY BALONG-BALONG DHRMS</strong>
-                      </div>
-
-                      <div className="text-center py-2">
-                        <span className="font-mono text-xs underline font-extrabold block text-slate-900 uppercase">
-                          {printedCert.certificateType}
-                        </span>
-                        <span className="text-[8px] text-slate-400 font-mono font-bold block mt-0.5">Control No: BB-2026-CERT-{printedCert.id}</span>
-                      </div>
-
-                      <div className="space-y-2 text-slate-700 text-[11px] leading-relaxed">
-                        <p>
-                          THIS IS TO CERTIFY that, <strong>{pat ? `${pat.firstName} ${pat.lastName}` : 'Eligible Resident'}</strong>, 
-                          of legal age, is a registered resident of <strong>{pat?.purok || 'Purok 1'}</strong>, Barangay Balong-balong, Pitogo, Zamboanga del Sur, 
-                          whose health monitoring indicators under standard Barangay Health records show:
-                        </p>
-                        
-                        <div className="border border-dashed border-slate-200 p-2 rounded bg-slate-50 font-mono text-[10px]">
-                          <strong>Clinical Findings:</strong> {printedCert.findings}
+                    <div className="space-y-4 w-full max-w-[420px] mx-auto">
+                      <div className="bg-white border-2 border-slate-300 p-6 rounded-lg text-xs space-y-4 shadow-sm" id="certificate-printout-card">
+                        <div className="text-center space-y-1 pb-3 border-b border-double border-slate-200">
+                          <h4 className="font-extrabold uppercase text-[10px] tracking-wider text-slate-800">Republic of the Philippines</h4>
+                          <span className="block text-[10px] text-slate-500 uppercase">Municipality of Pitogo • Zamboanga del Sur</span>
+                          <strong className="block text-[11px] text-emerald-700 font-bold uppercase tracking-widest text-center">BARANGAY BALONG-BALONG DHRMS</strong>
                         </div>
 
-                        <p>
-                          This certification is being issued upon request of the above-named person for the purpose of: 
-                          <span className="italic underline underline-offset-2 font-semibold text-slate-800"> {printedCert.purpose}</span>.
-                        </p>
+                        <div className="text-center py-2">
+                          <span className="font-mono text-xs underline font-extrabold block text-slate-900 uppercase">
+                            {printedCert.certificateType}
+                          </span>
+                          <span className="text-[8px] text-slate-400 font-mono font-bold block mt-0.5">Control No: BB-2026-CERT-{printedCert.id}</span>
+                        </div>
+
+                        <div className="space-y-2 text-slate-700 text-[11px] leading-relaxed">
+                          <p>
+                            THIS IS TO CERTIFY that, <strong>{pat ? `${pat.firstName} ${pat.lastName}` : 'Eligible Resident'}</strong>, 
+                            of legal age, is a registered resident of <strong>{pat?.purok || 'Purok 1'}</strong>, Barangay Balong-balong, Pitogo, Zamboanga del Sur, 
+                            whose health monitoring indicators under standard Barangay Health records show:
+                          </p>
+                          
+                          <div className="border border-dashed border-slate-200 p-2 rounded bg-slate-50 font-mono text-[10px]">
+                            <strong>Clinical Findings:</strong> {printedCert.findings}
+                          </div>
+
+                          <p>
+                            This certification is being issued upon request of the above-named person for the purpose of: 
+                            <span className="italic underline underline-offset-2 font-semibold text-slate-800"> {printedCert.purpose}</span>.
+                          </p>
+                        </div>
+
+                        <div className="text-right pt-6 space-y-1">
+                          <span className="text-[10px] text-slate-400 font-mono block">Attested & Autographs by:</span>
+                          <strong className="font-black block text-slate-800 underline uppercase">{printedCert.signatoryName}</strong>
+                          <span className="block text-[9px] text-slate-500 uppercase">{printedCert.signatoryTitle}</span>
+                        </div>
                       </div>
 
-                      <div className="text-right pt-6 space-y-1">
-                        <span className="text-[10px] text-slate-400 font-mono block">Attested & Autographs by:</span>
-                        <strong className="font-black block text-slate-800 underline uppercase">{printedCert.signatoryName}</strong>
-                        <span className="block text-[9px] text-slate-500 uppercase">{printedCert.signatoryTitle}</span>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const printArea = document.getElementById("certificate-printout-card");
+                          if (printArea) {
+                            const printWindow = window.open('', '', 'width=800,height=600');
+                            if (printWindow) {
+                              printWindow.document.write(`
+                                <html>
+                                  <head>
+                                    <title>${printedCert.certificateType} - BB-2026-${printedCert.id}</title>
+                                    <style>
+                                      body {
+                                        font-family: system-ui, -apple-system, sans-serif;
+                                        padding: 40px;
+                                        color: #334155;
+                                        background-color: #ffffff;
+                                      }
+                                      .print-card {
+                                        border: 2px solid #cbd5e1;
+                                        padding: 30px;
+                                        border-radius: 12px;
+                                        max-width: 550px;
+                                        margin: 0 auto;
+                                        background: white;
+                                      }
+                                      .text-center { text-align: center !important; }
+                                      .space-y-1 > * + * { margin-top: 4px !important; }
+                                      .space-y-2 > * + * { margin-top: 8px !important; }
+                                      .space-y-4 > * + * { margin-top: 16px !important; }
+                                      .pb-3 { padding-bottom: 12px !important; }
+                                      .border-b { border-bottom: 1px solid #e2e8f0 !important; }
+                                      .border-double { border-bottom-style: double !important; }
+                                      .font-extrabold { font-weight: 800 !important; }
+                                      .font-black { font-weight: 900 !important; }
+                                      .font-bold { font-weight: 700 !important; }
+                                      .font-semibold { font-weight: 600 !important; }
+                                      .uppercase { text-transform: uppercase !important; }
+                                      .tracking-wider { letter-spacing: 0.05em !important; }
+                                      .tracking-widest { letter-spacing: 0.1em !important; }
+                                      .text-slate-800 { color: #1e293b !important; }
+                                      .text-slate-700 { color: #334155 !important; }
+                                      .text-slate-500 { color: #64748b !important; }
+                                      .text-slate-400 { color: #94a3b8 !important; }
+                                      .text-slate-900 { color: #0f172a !important; }
+                                      .text-emerald-700 { color: #047857 !important; }
+                                      .font-mono { font-family: monospace !important; }
+                                      .underline { text-transform: none; text-decoration: underline !important; }
+                                      .underline-offset-2 { text-underline-offset: 2px !important; }
+                                      .italic { font-style: italic !important; }
+                                      .border { border: 1px solid #e2e8f0 !important; }
+                                      .border-dashed { border-style: dashed !important; }
+                                      .p-2 { padding: 8px !important; }
+                                      .p-6 { padding: 24px !important; }
+                                      .rounded { border-radius: 4px !important; }
+                                      .rounded-lg { border-radius: 8px !important; }
+                                      .bg-slate-50 { background-color: #f8fafc !important; }
+                                      .text-right { text-align: right !important; }
+                                      .pt-6 { padding-top: 24px !important; }
+                                      .block { display: block !important; }
+                                    </style>
+                                  </head>
+                                  <body>
+                                    <div class="print-card">
+                                      ${printArea.innerHTML}
+                                    </div>
+                                    <script>
+                                      window.onload = function() {
+                                        window.print();
+                                        setTimeout(function() { window.close(); }, 500);
+                                      };
+                                    </script>
+                                  </body>
+                                </html>
+                              `);
+                              printWindow.document.close();
+                            } else {
+                              window.print();
+                            }
+                          }
+                        }}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer text-xs uppercase shadow-sm transition-all"
+                      >
+                        <Printer size={13} />
+                        I-print ang Sertipiko / Clearance
+                      </button>
                     </div>
                   );
                 })()

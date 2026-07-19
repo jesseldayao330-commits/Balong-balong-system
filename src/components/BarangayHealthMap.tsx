@@ -97,11 +97,9 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             <span>Interactive Puroks</span>
           </button>
         </div>
-      </div>
-
-      {/* High-visibility active TB warning banner */}
+      </div>      {/* High-visibility active TB warning banner */}
       {patients.some((p) => p.activePrograms.includes('TB_DOTS')) && (
-        <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between shadow-xs animate-pulse">
+        <div className="mb-3 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between shadow-xs animate-pulse">
           <div className="flex items-center gap-3">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -119,6 +117,32 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
           <AlertTriangle className="text-red-600 hidden md:block shrink-0 animate-bounce" size={18} />
         </div>
       )}
+
+      {/* Modern Filipino Health Sektor / Monitoring Legend Bar */}
+      <div className="mb-5 p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-1.5 font-bold text-slate-600 uppercase tracking-wide">
+          <span className="w-1.5 h-3 bg-indigo-600 rounded"></span>
+          <span>Sektor / Monitoring Map Legend:</span>
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse border border-red-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">TB Outbreak (Red Blink)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse border border-amber-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">Senior Citizens (Yellow Blink)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse border border-blue-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">Family Planning (Blue Blink)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping border border-blue-300 inline-block"></span>
+            <span className="font-semibold text-slate-800 font-mono text-[10px]">Dual/Mixed Blink</span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* SVG/Image Map Section */}
@@ -146,8 +170,27 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               {/* Dynamic Interactive Pin overlays linked to selected Purok */}
               {satellitePins.map((pin) => {
                 const isSelected = selectedPurok === pin.key;
-                const hasTB = patients.some((p) => p.purok === pin.key && p.activePrograms.includes('TB_DOTS'));
+                const matchesPatients = patients.filter((p) => p.purok === pin.key);
+                const hasTB = matchesPatients.some((p) => p.activePrograms.includes('TB_DOTS'));
+                const hasSenior = matchesPatients.some((p) => p.activePrograms.includes('SENIOR_CITIZEN'));
+                const hasFP = matchesPatients.some((p) => p.activePrograms.includes('FAMILY_PLANNING'));
                 
+                // Color decision logic based on warning / health status priority requests
+                let blinkClass = '';
+                if (hasTB) {
+                  blinkClass = 'bg-red-600 text-white border-white animate-blink-hazard scale-110 z-20';
+                } else if (hasSenior && hasFP) {
+                  blinkClass = 'animate-blink-senior-fp text-white border-white scale-110 z-20';
+                } else if (hasSenior) {
+                  blinkClass = 'animate-blink-senior text-white border-white scale-110 z-20';
+                } else if (hasFP) {
+                  blinkClass = 'animate-blink-fp text-white border-white scale-110 z-20';
+                } else if (isSelected) {
+                  blinkClass = 'bg-slate-950 border-white text-white scale-125 z-20';
+                } else {
+                  blinkClass = 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50';
+                }
+
                 return (
                   <button
                     key={pin.key}
@@ -155,54 +198,80 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     onClick={() => setSelectedPurok(pin.key)}
                     style={{ left: pin.left, top: pin.top }}
                     className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center ${
-                      hasTB ? 'z-30' : 'z-10'
+                      hasTB || hasSenior || hasFP ? 'z-30' : 'z-10'
                     }`}
-                    title={`Click to analyze ${pin.key}${hasTB ? ' - WARNING: Active TB surveillance' : ''}`}
+                    title={`Click to analyze ${pin.key}${hasTB ? ' - Active TB' : ''}${hasSenior ? ' - Senior Residents' : ''}${hasFP ? ' - Family Planning' : ''}`}
                   >
-                    {/* Blinking Hazard Glow Ring behind the pin */}
+                    {/* Ring glow active anims */}
                     {hasTB && (
                       <div className="absolute inset-0 bg-red-500 rounded-full blur-xs opacity-50 animate-ping" style={{ transform: 'scale(1.8)' }}></div>
                     )}
+                    {!hasTB && hasSenior && hasFP && (
+                      <div className="absolute inset-0 bg-amber-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
+                    )}
+                    {!hasTB && !hasSenior && hasFP && (
+                      <div className="absolute inset-0 bg-blue-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
+                    )}
+                    {!hasTB && hasSenior && !hasFP && (
+                      <div className="absolute inset-0 bg-amber-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
+                    )}
                     
-                    <div className={`p-1.5 rounded-full shadow-md border relative transition-all ${
-                      hasTB
-                        ? 'bg-red-600 text-white border-white animate-blink-hazard scale-110 z-20'
-                        : isSelected 
-                          ? 'bg-slate-950 border-white text-white scale-125 z-20' 
-                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-                    }`}>
-                      <MapPin size={(isSelected || hasTB) ? 14 : 11} className={(isSelected || hasTB) ? 'text-white' : 'text-emerald-600'} />
+                    <div className={`p-1.5 rounded-full shadow-md border relative transition-all ${blinkClass}`}>
+                      <MapPin size={(isSelected || hasTB || hasSenior || hasFP) ? 14 : 11} className={(isSelected || hasTB || hasSenior || hasFP) ? 'text-white' : 'text-emerald-600'} />
                       
-                      {/* Warning micro-dot */}
+                      {/* Warning micro-badge alert dot */}
                       {hasTB && (
-                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 bg-red-800 border border-white text-[8px] font-black items-center justify-center rounded-full">
+                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 bg-red-800 border border-white text-[8px] font-black items-center justify-center rounded-full text-white">
                           !
                         </span>
                       )}
                     </div>
                     
-                    <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs whitespace-nowrap flex items-center gap-1 ${
+                    <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs whitespace-nowrap flex flex-wrap items-center gap-1 justify-center ${
                       hasTB
                         ? 'bg-red-600 text-white border border-red-700 font-extrabold shadow-md'
-                        : isSelected 
-                          ? 'bg-slate-950 text-white border border-slate-800' 
-                          : 'bg-white/90 text-slate-800 border border-slate-200'
+                        : hasSenior && hasFP
+                          ? 'bg-amber-600 text-white border border-amber-700 font-extrabold shadow-md'
+                          : hasSenior
+                            ? 'bg-amber-500 text-white border border-amber-600 font-bold shadow-xs'
+                            : hasFP
+                              ? 'bg-blue-600 text-white border border-blue-700 font-bold shadow-xs'
+                              : isSelected 
+                                ? 'bg-slate-950 text-white border border-slate-800' 
+                                : 'bg-white/90 text-slate-800 border border-slate-200'
                     }`}>
                       {hasTB && <AlertTriangle size={8} className="text-white animate-pulse" />}
                       <span>{pin.key}</span>
-                      {hasTB && <span className="text-[7.5px] bg-red-900 border border-red-500 px-0.5 rounded-xs text-white">TB</span>}
+                      {hasTB && <span className="text-[7.5px] bg-red-900 border border-red-550 px-0.5 rounded-xs text-white">TB</span>}
+                      {!hasTB && hasSenior && <span className="text-[7px] bg-amber-800 border border-amber-400 px-0.5 rounded-xs text-white">SR</span>}
+                      {!hasTB && hasFP && <span className="text-[7px] bg-blue-800 border border-blue-400 px-0.5 rounded-xs text-white">FP</span>}
                     </span>
                   </button>
                 );
               })}
             </div>
           ) : (
-            /* VECTOR SVG CLUSTER LAYOUT MAP */
+            /* VECTOR SVG CLUSTER LAYOUT MAP WITH SENIOR + FP INDICATOR BLINK SHAPES */
             <div className="w-full flex flex-col items-center">
               <span className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Click to Investigate Purok Clusters</span>
               <svg viewBox="0 0 460 350" className="w-full max-w-[550px] drop-shadow-md">
                 {purokSpecs.map((p) => {
-                  const hasTB = patients.some((pat) => pat.purok === p.key && pat.activePrograms.includes('TB_DOTS'));
+                  const matchesPatients = patients.filter((pat) => pat.purok === p.key);
+                  const hasTB = matchesPatients.some((pat) => pat.activePrograms.includes('TB_DOTS'));
+                  const hasSenior = matchesPatients.some((pat) => pat.activePrograms.includes('SENIOR_CITIZEN'));
+                  const hasFP = matchesPatients.some((pat) => pat.activePrograms.includes('FAMILY_PLANNING'));
+                  
+                  let fillPathClass = p.color;
+                  if (hasTB) {
+                    fillPathClass = 'animate-svg-hazard stroke-red-700';
+                  } else if (hasSenior && hasFP) {
+                    fillPathClass = 'animate-svg-senior-fp stroke-amber-600';
+                  } else if (hasSenior) {
+                    fillPathClass = 'animate-svg-senior stroke-amber-500';
+                  } else if (hasFP) {
+                    fillPathClass = 'animate-svg-fp stroke-blue-600';
+                  }
+
                   return (
                     <g 
                       key={p.key} 
@@ -211,16 +280,12 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     >
                       <path
                         d={p.d}
-                        className={`${
-                          hasTB 
-                            ? 'animate-svg-hazard stroke-red-700' 
-                            : p.color
-                        } stroke-2 transition-colors duration-150 ${
+                        className={`${fillPathClass} stroke-2 transition-colors duration-150 ${
                           selectedPurok === p.key ? 'fill-opacity-100 stroke-[3px] filter drop-shadow-lg scale-[1.01]' : 'fill-opacity-65'
                         }`}
                       />
                       
-                      {/* Labels indicating numbers of residents */}
+                      {/* Labels indicating numbers of residents, including program micro-flags */}
                       <text
                         x={p.labelX}
                         y={p.labelY}
@@ -228,10 +293,12 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                         className={`font-semibold text-[11px] pointer-events-none select-none transition-colors ${
                           hasTB
                             ? 'fill-red-950 font-black'
-                            : selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
+                            : hasSenior || hasFP
+                              ? 'fill-slate-900 font-extrabold'
+                              : selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
                         }`}
                       >
-                        {p.key} {hasTB ? '⚠️' : ''}
+                        {p.key} {hasTB ? '⚠️' : ''} {!hasTB && hasSenior ? '👴' : ''} {!hasTB && hasFP ? '🍼' : ''}
                       </text>
                     </g>
                   );
@@ -263,55 +330,30 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Health Program Demographics</h3>
               
               <div className="grid grid-cols-2 gap-2">
-                {activeRole === 'NURSE' ? (
-                  <>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
-                      <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
-                      <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
-                    </div>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
-                      <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
-                      <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-emerald-50/50">
-                      <span className="text-[10px] text-slate-500 block">Prenatal (MCH)</span>
-                      <span className="text-base font-extrabold text-emerald-700">{activePrenatal} active</span>
-                    </div>
-                    <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
-                      <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
-                      <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
-                    </div>
-                    {/* Render extra items depending on role */}
-                    {(activeRole === 'MIDWIFE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
-                      <>
-                        <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
-                          <span className="text-[10px] text-slate-500 block">Family Planning</span>
-                          <span className="text-base font-extrabold text-indigo-700">{activeFP} active</span>
-                        </div>
-                        <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
-                          <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
-                          <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
-                        </div>
-                      </>
-                    )}
-
-                    {(activeRole === 'BHW' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
-                      <>
-                        <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
-                          <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
-                          <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
-                        </div>
-                        <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
-                          <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
-                          <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
+                <div className="p-2 border border-slate-100 rounded-lg bg-emerald-50/50">
+                  <span className="text-[10px] text-slate-500 block">Prenatal (MCH)</span>
+                  <span className="text-base font-extrabold text-emerald-700">{activePrenatal} active</span>
+                </div>
+                <div className="p-2 border border-slate-100 rounded-lg bg-teal-50/50">
+                  <span className="text-[10px] text-slate-500 block">Infants in EPI</span>
+                  <span className="text-base font-extrabold text-teal-700">{unvaccinatedEPI} active</span>
+                </div>
+                <div className="p-2 border border-slate-100 rounded-lg bg-indigo-50/50">
+                  <span className="text-[10px] text-slate-500 block">Family Planning</span>
+                  <span className="text-base font-extrabold text-indigo-700">{activeFP} active</span>
+                </div>
+                <div className="p-2 border border-slate-100 rounded-lg bg-purple-50/50">
+                  <span className="text-[10px] text-slate-500 block">Child Nutrition (OPT+)</span>
+                  <span className="text-base font-extrabold text-purple-700">{activeNutrition} monitored</span>
+                </div>
+                <div className="p-2 border border-slate-100 rounded-lg bg-amber-50/50">
+                  <span className="text-[10px] text-slate-500 block">Senior Citizens</span>
+                  <span className="text-base font-extrabold text-amber-700">{seniorsCount} registered</span>
+                </div>
+                <div className="p-2 border border-slate-100 rounded-lg bg-rose-50/50">
+                  <span className="text-[10px] text-slate-500 block">TB Presumptives</span>
+                  <span className="text-base font-extrabold text-rose-700">{activeTB} monitoring</span>
+                </div>
               </div>
 
               {/* Environmental Metrics (Critical DOH FHSIS standards) */}
