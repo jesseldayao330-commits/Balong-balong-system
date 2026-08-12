@@ -219,8 +219,8 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
     e.preventDefault();
     if (!selectedPatId) return;
 
-    if (activeRole === 'ADMIN') {
-      alert('Access Denied: Read-only access for Administrator.');
+    if (activeRole === 'ADMIN' || activeRole === 'CAPITAN') {
+      alert('Access Denied: Read-only access for Administrator / Kapitan.');
       return;
     }
 
@@ -273,8 +273,8 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
     e.preventDefault();
     if (!selectedPatId) return;
 
-    if (activeRole === 'ADMIN') {
-      alert('Access Denied: Read-only access for Administrator.');
+    if (activeRole === 'ADMIN' || activeRole === 'CAPITAN') {
+      alert('Access Denied: Read-only access for Administrator / Kapitan.');
       return;
     }
 
@@ -587,7 +587,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                     </div>
                   </fieldset>
 
-                  {activeRole !== 'ADMIN' && (
+                  {activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                     <div className="flex justify-end gap-3 pt-3">
                       {editingVitalId && (
                         <button
@@ -608,7 +608,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                     </div>
                   )}
 
-                  {activeRole === 'ADMIN' && editingVitalId && (
+                  {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && editingVitalId && (
                     <div className="flex justify-end pt-3">
                       <button
                         type="button"
@@ -676,7 +676,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                               {editingVitalId === vit.id ? '👁️ Selected' : '👁️ View In Form'}
                             </button>
                             
-                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                               <button
                                 type="button"
                                 onClick={() => handleDeleteVitalClick(vit.id)}
@@ -901,7 +901,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                     </div>
                   </fieldset>
 
-                  {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                  {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                     <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
                       {editingConsultId && (
                         <button
@@ -922,7 +922,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                     </div>
                   )}
 
-                  {activeRole === 'ADMIN' && editingConsultId && (
+                  {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && editingConsultId && (
                     <div className="flex justify-end pt-3 border-t border-slate-100">
                       <button
                         type="button"
@@ -986,7 +986,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                               {editingConsultId === con.id ? '👁️ Selected' : '👁️ View In Form'}
                             </button>
 
-                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                               <button
                                 type="button"
                                 onClick={() => handleDeleteConsultClick(con.id)}
@@ -1025,7 +1025,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                       <div key={vit.id} className="border border-slate-200 rounded-lg p-3 bg-white shadow-xs">
                         <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-2">
                           <span className="text-[10px] font-bold text-slate-400 font-mono">ID: {vit.id} • Petsa: {vit.date}</span>
-                          {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                          {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                             <div className="flex gap-1 text-slate-500">
                               <button
                                 type="button"
@@ -1082,7 +1082,7 @@ export const ClinicalConsultation: React.FC<ClinicalConsultationProps> = ({
                         <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
                           <span className="text-xs font-bold text-slate-400 font-mono">ID: {con.id} • Petsa: {con.date}</span>
                           <div className="flex items-center gap-3">
-                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && (
+                            {activeRole !== 'MIDWIFE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                               <div className="flex gap-0.5">
                                 <button
                                   type="button"

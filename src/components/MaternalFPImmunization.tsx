@@ -526,7 +526,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               />
             </div>
 
-              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
+              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                 <div className="flex justify-end gap-3">
                   {editingPrenatalId && (
                     <button
@@ -568,7 +568,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                       }`}>
                         {pr.riskClassification}
                       </span>
-                      {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
+                      {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                         <>
                           <button
                             type="button"
@@ -853,7 +853,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               </select>
             </div>
 
-              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
+              {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                 <div className="flex justify-end gap-3">
                   {editingFpId && (
                     <button
@@ -889,7 +889,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
                         Living Children: {fp.numberOfLivingChildren} • Desired Family Size: {fp.desiredFamilySize} • Next Service: {fp.nextServiceDate || 'N/A'}
                       </div>
                     </div>
-                    {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && (
+                    {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <button
                           type="button"

@@ -28,6 +28,7 @@ interface AdminPanelProps {
   patients?: Patient[];
   users: UserAccount[];
   setUsers: React.Dispatch<React.SetStateAction<UserAccount[]>>;
+  activeRole?: Role;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -40,7 +41,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddAuditLog,
   patients = [],
   users,
-  setUsers
+  setUsers,
+  activeRole
 }) => {
   // States to filter patients registered under different roles
   const [selectedWorkerFilter, setSelectedWorkerFilter] = useState<'ALL' | 'BHW' | 'MIDWIFE' | 'NURSE'>('ALL');
@@ -53,6 +55,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [emergencyAlerts, setEmergencyAlerts] = useState(() => localStorage.getItem('bhc_config_emergency') === 'true');
 
   const saveConfigs = () => {
+    if (activeRole === 'CAPITAN') {
+      alert('Access Denied: Read-only view for Kapitan.');
+      return;
+    }
     localStorage.setItem('bhc_config_ehr', ehrEndpoint);
     localStorage.setItem('bhc_config_autosync', String(autoSync));
     localStorage.setItem('bhc_config_audit', String(auditPersistence));

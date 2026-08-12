@@ -16,7 +16,8 @@ import {
   MedicineInventory,
   Referral,
   HealthCertificate,
-  MedicineDispensed
+  MedicineDispensed,
+  Role
 } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { 
@@ -57,6 +58,7 @@ interface DOHReportsProps {
   referrals?: Referral[];
   certificates?: HealthCertificate[];
   dispensed?: MedicineDispensed[];
+  activeRole?: Role;
 }
 
 export const DOHReports: React.FC<DOHReportsProps> = ({
@@ -73,6 +75,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
   referrals = [],
   certificates = [],
   dispensed = [],
+  activeRole
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const [activeTab, setActiveTab] = useState<'log' | 'fhsis' | 'dashboard_analytics'>('dashboard_analytics');
@@ -1030,6 +1033,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
               </h3>
 
               <form onSubmit={handleCreateLog} className="space-y-3.5 text-xs">
+                <fieldset disabled={activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-3.5">
                 <div>
                   <label className="block text-[10px] text-slate-400 uppercase mb-1">Select Patient</label>
                   <select
@@ -1062,13 +1066,16 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
                   </select>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase"
-                  id="walk-in-log-submit-button"
-                >
-                  Confirm Walk-in check-in
-                </button>
+                {activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
+                  <button
+                    type="submit"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs uppercase cursor-pointer"
+                    id="walk-in-log-submit-button"
+                  >
+                    Confirm Walk-in check-in
+                  </button>
+                )}
+                </fieldset>
               </form>
             </div>
 
@@ -1108,6 +1115,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
 
                     <div className="flex items-center gap-2.5">
                       <select
+                        disabled={activeRole === 'ADMIN' || activeRole === 'CAPITAN'}
                         className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded border ${
                           log.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
                           log.status === 'In Progress' ? 'bg-indigo-100 text-indigo-800 border-indigo-200 animate-pulse' :

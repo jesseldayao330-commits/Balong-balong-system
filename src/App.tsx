@@ -872,6 +872,7 @@ export default function App() {
                 patients={patients}
                 users={users}
                 setUsers={setUsers}
+                activeRole={activeRole}
               />
             )}
 
@@ -898,6 +899,7 @@ export default function App() {
                 referrals={referrals}
                 certificates={certificates}
                 dispensed={dispensed}
+                activeRole={activeRole}
               />
             )}
           </div>

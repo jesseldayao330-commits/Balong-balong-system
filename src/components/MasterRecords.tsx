@@ -121,8 +121,9 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const isBhw = userActiveRole === 'BHW';
   const isMidwifeOrNurse = userActiveRole === 'MIDWIFE' || userActiveRole === 'NURSE';
   const isAdmin = userActiveRole === 'ADMIN';
-  const canEdit = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN'].includes(userActiveRole); // Everyone except CAPITAN and other view-only roles can edit resident/patient profiles
-  const canDelete = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN'].includes(userActiveRole); // Everyone except CAPITAN and other view-only roles can delete resident/patient profiles
+  const isViewOnlyRole = userActiveRole === 'ADMIN' || userActiveRole === 'CAPITAN';
+  const canEdit = !isViewOnlyRole; // ADMIN and CAPITAN are view-only; BHW, Midwife, and Nurse can edit
+  const canDelete = !isViewOnlyRole; // ADMIN and CAPITAN are view-only; BHW, Midwife, and Nurse can delete
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
   const [showAllResidentsOverride, setShowAllResidentsOverride] = useState(false);
 
@@ -1498,28 +1499,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             <Eye size={12} />
                             <span>View</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingConsultation({ ...c })}
-                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                            title="I-edit ang consultation"
-                          >
-                            <Edit size={12} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${c.id})?`)) {
-                                if (onDeleteConsultation) onDeleteConsultation(c.id);
-                              }
-                            }}
-                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                            title="Burahin ang consultation"
-                          >
-                            <Trash2 size={12} />
-                            <span>Delete</span>
-                          </button>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingConsultation({ ...c })}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                              title="I-edit ang consultation"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${c.id})?`)) {
+                                  if (onDeleteConsultation) onDeleteConsultation(c.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                              title="Burahin ang consultation"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1602,28 +1607,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                               <Eye size={12} />
                               <span>View</span>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingVital({ ...v })}
-                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                              title="I-edit ang vitals"
-                            >
-                              <Edit size={12} />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${v.id})?`)) {
-                                  if (onDeleteVitalSigns) onDeleteVitalSigns(v.id);
-                                }
-                              }}
-                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                              title="Burahin ang vitals"
-                            >
-                              <Trash2 size={12} />
-                              <span>Delete</span>
-                            </button>
+                            {canEdit && (
+                              <button
+                                type="button"
+                                onClick={() => setEditingVital({ ...v })}
+                                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                                title="I-edit ang vitals"
+                              >
+                                <Edit size={12} />
+                                <span>Edit</span>
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${v.id})?`)) {
+                                    if (onDeleteVitalSigns) onDeleteVitalSigns(v.id);
+                                  }
+                                }}
+                                className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                                title="Burahin ang vitals"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1700,28 +1709,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             <Eye size={12} />
                             <span>View</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingPrenatal({ ...p })}
-                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                            title="I-edit ang prenatal record"
-                          >
-                            <Edit size={12} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${p.id})?`)) {
-                                if (onDeletePrenatal) onDeletePrenatal(p.id);
-                              }
-                            }}
-                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                            title="Burahin ang prenatal record"
-                          >
-                            <Trash2 size={12} />
-                            <span>Delete</span>
-                          </button>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingPrenatal({ ...p })}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                              title="I-edit ang prenatal record"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${p.id})?`)) {
+                                  if (onDeletePrenatal) onDeletePrenatal(p.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                              title="Burahin ang prenatal record"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1782,28 +1795,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             <Eye size={12} />
                             <span>View</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingVaccination({ ...v })}
-                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                            title="I-edit ang bakuna record"
-                          >
-                            <Edit size={12} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${v.id})?`)) {
-                                if (onDeleteVaccination) onDeleteVaccination(v.id);
-                              }
-                            }}
-                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                            title="Burahin ang bakuna record"
-                          >
-                            <Trash2 size={12} />
-                            <span>Delete</span>
-                          </button>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingVaccination({ ...v })}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                              title="I-edit ang bakuna record"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${v.id})?`)) {
+                                  if (onDeleteVaccination) onDeleteVaccination(v.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                              title="Burahin ang bakuna record"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1877,28 +1894,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                               <Eye size={12} />
                               <span>View</span>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingInventory({ ...i })}
-                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                              title="I-edit ang gamot"
-                            >
-                              <Edit size={12} />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm(`Sigurado ka bang nais mong burahin ang "${i.medicineName}" (${i.id})?`)) {
-                                  if (onDeleteInventory) onDeleteInventory(i.id);
-                                }
-                              }}
-                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                              title="Burahin ang gamot"
-                            >
-                              <Trash2 size={12} />
-                              <span>Delete</span>
-                            </button>
+                            {canEdit && (
+                              <button
+                                type="button"
+                                onClick={() => setEditingInventory({ ...i })}
+                                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                                title="I-edit ang gamot"
+                              >
+                                <Edit size={12} />
+                                <span>Edit</span>
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Sigurado ka bang nais mong burahin ang "${i.medicineName}" (${i.id})?`)) {
+                                    if (onDeleteInventory) onDeleteInventory(i.id);
+                                  }
+                                }}
+                                className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                                title="Burahin ang gamot"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1975,28 +1996,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                                   <Eye size={12} />
                                   <span>View</span>
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingDailyLog({ ...l })}
-                                  className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
-                                  title="I-edit ang log"
-                                >
-                                  <Edit size={12} />
-                                  <span>Edit</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${l.id})?`)) {
-                                      if (onDeleteDailyLog) onDeleteDailyLog(l.id);
-                                    }
-                                  }}
-                                  className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
-                                  title="Burahin ang log"
-                                >
-                                  <Trash2 size={12} />
-                                  <span>Delete</span>
-                                </button>
+                                {canEdit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingDailyLog({ ...l })}
+                                    className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                                    title="I-edit ang log"
+                                  >
+                                    <Edit size={12} />
+                                    <span>Edit</span>
+                                  </button>
+                                )}
+                                {canDelete && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${l.id})?`)) {
+                                        if (onDeleteDailyLog) onDeleteDailyLog(l.id);
+                                      }
+                                    }}
+                                    className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                                    title="Burahin ang log"
+                                  >
+                                    <Trash2 size={12} />
+                                    <span>Delete</span>
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -2538,26 +2563,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingConsultation({ ...viewingConsultation });
-                    setViewingConsultation(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${viewingConsultation.id})?`)) {
-                      if (onDeleteConsultation) onDeleteConsultation(viewingConsultation.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingConsultation({ ...viewingConsultation });
                       setViewingConsultation(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${viewingConsultation.id})?`)) {
+                        if (onDeleteConsultation) onDeleteConsultation(viewingConsultation.id);
+                        setViewingConsultation(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingConsultation(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close
@@ -2756,26 +2785,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingVital({ ...viewingVital });
-                    setViewingVital(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${viewingVital.id})?`)) {
-                      if (onDeleteVitalSigns) onDeleteVitalSigns(viewingVital.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingVital({ ...viewingVital });
                       setViewingVital(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${viewingVital.id})?`)) {
+                        if (onDeleteVitalSigns) onDeleteVitalSigns(viewingVital.id);
+                        setViewingVital(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingVital(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close
@@ -2995,26 +3028,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingPrenatal({ ...viewingPrenatal });
-                    setViewingPrenatal(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${viewingPrenatal.id})?`)) {
-                      if (onDeletePrenatal) onDeletePrenatal(viewingPrenatal.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingPrenatal({ ...viewingPrenatal });
                       setViewingPrenatal(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${viewingPrenatal.id})?`)) {
+                        if (onDeletePrenatal) onDeletePrenatal(viewingPrenatal.id);
+                        setViewingPrenatal(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingPrenatal(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close
@@ -3212,26 +3249,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingVaccination({ ...viewingVaccination });
-                    setViewingVaccination(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${viewingVaccination.id})?`)) {
-                      if (onDeleteVaccination) onDeleteVaccination(viewingVaccination.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingVaccination({ ...viewingVaccination });
                       setViewingVaccination(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${viewingVaccination.id})?`)) {
+                        if (onDeleteVaccination) onDeleteVaccination(viewingVaccination.id);
+                        setViewingVaccination(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingVaccination(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close
@@ -3379,26 +3420,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingInventory({ ...viewingInventory });
-                    setViewingInventory(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang "${viewingInventory.medicineName}" (${viewingInventory.id})?`)) {
-                      if (onDeleteInventory) onDeleteInventory(viewingInventory.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingInventory({ ...viewingInventory });
                       setViewingInventory(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang "${viewingInventory.medicineName}" (${viewingInventory.id})?`)) {
+                        if (onDeleteInventory) onDeleteInventory(viewingInventory.id);
+                        setViewingInventory(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingInventory(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close
@@ -3560,26 +3605,30 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
             </div>
             <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingDailyLog({ ...viewingDailyLog });
-                    setViewingDailyLog(null);
-                  }}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Edit size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${viewingDailyLog.id})?`)) {
-                      if (onDeleteDailyLog) onDeleteDailyLog(viewingDailyLog.id);
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setEditingDailyLog({ ...viewingDailyLog });
                       setViewingDailyLog(null);
-                    }
-                  }}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
+                    }}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit size={13} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${viewingDailyLog.id})?`)) {
+                        if (onDeleteDailyLog) onDeleteDailyLog(viewingDailyLog.id);
+                        setViewingDailyLog(null);
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                )}
               </div>
               <button onClick={() => setViewingDailyLog(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
                 Close

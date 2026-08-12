@@ -662,7 +662,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                 Dispense Medication Intake
               </h3>
 
-              <fieldset disabled={activeRole === 'ADMIN'} className="space-y-4">
+              <fieldset disabled={isEPharmacyViewOnly} className="space-y-4">
                 {/* Choose receiver */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
                   <div>
@@ -771,7 +771,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
                 </div>
               </fieldset>
 
-              {activeRole !== 'ADMIN' && (
+              {!isEPharmacyViewOnly && (
                 <button
                   type="submit"
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
