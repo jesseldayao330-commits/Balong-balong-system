@@ -7,7 +7,7 @@ import React from 'react';
 import { Role, Language } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { Wifi, WifiOff, RefreshCw, Globe, ShieldAlert, Clock, LogOut, Lock } from 'lucide-react';
-import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
+import { RHU_PITOGO_LOGO_BASE64 } from '../assets/logoBase64';
 
 interface MainHeaderProps {
   activeRole: Role;
@@ -59,7 +59,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
             <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2.5 flex-wrap">
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-600 shadow-xs bg-white flex-shrink-0 flex items-center justify-center p-0.5">
                 <img
-                  src={rhuPitogoLogo}
+                  src={RHU_PITOGO_LOGO_BASE64}
                   alt="RHU Pitogo Official Logo"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover rounded-full"

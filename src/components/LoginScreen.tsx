@@ -12,7 +12,7 @@ import bhwCheckupPregnant from '../assets/images/local_prenatal_doppler_17816614
 import bhwDoctorConsult from '../assets/images/local_doctor_consult_1781661440347.jpg';
 import bhwNurseImmunize from '../assets/images/local_vaccination_rn_1781661453718.jpg';
 import bhwPharmacyStock from '../assets/images/local_pharmacy_store_1781661466592.jpg';
-import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
+import { RHU_PITOGO_LOGO_BASE64 } from '../assets/logoBase64';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: Role) => void;
@@ -330,7 +330,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div className="space-y-4 relative z-10">
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center bg-white p-0.5 flex-shrink-0" id="login-people-logo-badge">
                 <img
-                  src={rhuPitogoLogo}
+                  src={RHU_PITOGO_LOGO_BASE64}
                   alt="RHU Pitogo Official Logo"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover rounded-full"

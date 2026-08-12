@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, UserCheck, Settings, Database, Edit3, Trash2, Plus, Monitor, ShieldAlert, KeyRound, Wifi, RefreshCw, Users, Search, ClipboardList } from 'lucide-react';
 import { Role, Patient, UserAccount } from '../types';
-import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
+import { RHU_PITOGO_LOGO_BASE64 } from '../assets/logoBase64';
 
 interface AuditLog {
   id: string;
@@ -426,7 +426,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       >
                         {theme === 'pitogo' ? (
                           <>
-                            <img src={rhuPitogoLogo} alt="RHU Pitogo Seal" className="w-4 h-4 rounded-full object-cover" />
+                            <img
+                              src={RHU_PITOGO_LOGO_BASE64}
+                              alt="RHU Pitogo Seal"
+                              className="w-4 h-4 rounded-full object-cover"
+                            />
                             <span>RHU Pitogo Official Seal</span>
                           </>
                         ) : theme === 'heart' ? '❤️ Pula na Puso' :
