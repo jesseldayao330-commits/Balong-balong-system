@@ -46,7 +46,7 @@ export default function App() {
     return localStorage.getItem('bhc_config_center_address') || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur';
   });
   const [centerLogo, setCenterLogo] = useState<string>(() => {
-    return localStorage.getItem('bhc_config_center_logo') || 'heart'; // 'heart' | 'shield' | 'activity' | 'cross'
+    return localStorage.getItem('bhc_config_center_logo') || 'pitogo'; // 'pitogo' | 'heart' | 'shield' | 'activity' | 'cross'
   });
 
   // Authentication Workstation Session Lockout Guard State
@@ -163,7 +163,8 @@ export default function App() {
       'MIDWIFE': '3333',
       'PHARMACIST': '4444',
       'MHO': '5555',
-      'ADMIN': '1234'
+      'ADMIN': '1234',
+      'CAPITAN': '7777'
     };
 
     const isMatch = !!match || verifyPin === defaultPins[roleToVerify] || verifyPin === '0000' || verifyPin === '9999';
@@ -580,6 +581,7 @@ export default function App() {
         centerName={centerName}
         centerAddress={centerAddress}
         centerLogo={centerLogo}
+        users={users}
       />
     );
   }
@@ -747,6 +749,18 @@ export default function App() {
                       setPatientsTabMode('profile');
                     }}
                     onDeletePatient={handleDeletePatient}
+                    onUpdateConsultation={(c) => setConsultations((prev) => prev.map((item) => item.id === c.id ? c : item))}
+                    onDeleteConsultation={(id) => setConsultations((prev) => prev.filter((item) => item.id !== id))}
+                    onUpdateVitalSigns={(v) => setVitals((prev) => prev.map((item) => item.id === v.id ? v : item))}
+                    onDeleteVitalSigns={(id) => setVitals((prev) => prev.filter((item) => item.id !== id))}
+                    onUpdatePrenatal={(p) => setPrenatals((prev) => prev.map((item) => item.id === p.id ? p : item))}
+                    onDeletePrenatal={(id) => setPrenatals((prev) => prev.filter((item) => item.id !== id))}
+                    onUpdateVaccination={(v) => setVaccinations((prev) => prev.map((item) => item.id === v.id ? v : item))}
+                    onDeleteVaccination={(id) => setVaccinations((prev) => prev.filter((item) => item.id !== id))}
+                    onUpdateInventory={(i) => setInventory((prev) => prev.map((item) => item.id === i.id ? i : item))}
+                    onDeleteInventory={(id) => setInventory((prev) => prev.filter((item) => item.id !== id))}
+                    onUpdateDailyLog={(d) => setDailyLogs((prev) => prev.map((item) => item.id === d.id ? d : item))}
+                    onDeleteDailyLog={(id) => setDailyLogs((prev) => prev.filter((item) => item.id !== id))}
                   />
                 ) : (
                   <PatientRegistration

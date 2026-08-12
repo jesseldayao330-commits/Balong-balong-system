@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Role, Language } from '../types';
+import { Role, Language, UserAccount } from '../types';
 import { ShieldCheck, Lock, User, Key, Globe, EyeOff, Eye, CheckCircle2, Users } from 'lucide-react';
 
 import bhwWorkersLogin from '../assets/images/local_bhw_group_1781661403040.jpg';
@@ -12,6 +12,7 @@ import bhwCheckupPregnant from '../assets/images/local_prenatal_doppler_17816614
 import bhwDoctorConsult from '../assets/images/local_doctor_consult_1781661440347.jpg';
 import bhwNurseImmunize from '../assets/images/local_vaccination_rn_1781661453718.jpg';
 import bhwPharmacyStock from '../assets/images/local_pharmacy_store_1781661466592.jpg';
+import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: Role) => void;
@@ -20,6 +21,7 @@ interface LoginScreenProps {
   centerName?: string;
   centerAddress?: string;
   centerLogo?: string;
+  users?: UserAccount[];
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
@@ -29,6 +31,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   centerName,
   centerAddress,
   centerLogo,
+  users,
 }) => {
   const [selectedRole, setSelectedRole] = useState<Role>('BHW');
   const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
@@ -48,12 +51,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       hint: 'PINs: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Incorrect PIN credential. Please verify authorization key.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife & Nurse (RM/RN)',
+      midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doctor',
       capitanLabel: 'Barangay Captain (Capitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
       bhwDesc: 'Register patients and households, record vital signs, prenatal/vaccine visit data. Read-only records.',
       midwifeDesc: 'Maternal care, prenatal visits, family planning, child vaccinations (EPI), and general medical checkups.',
+      nurseDesc: 'Child/Pediatric care, public health programs, immunization tracking, and DOH reporting.',
+      pharmacistDesc: 'E-Pharmacy medicine inventory management, dispensing records, and stock tracking.',
+      mhoDesc: 'Clinical diagnostic approvals, medication validation, and medical health outcomes.',
       capitanDesc: 'Executive dashboard view, patient registered records view-only stream, and community health surveillance.',
       adminDesc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.',
       securityTitle: 'Workstation Security Policy:',
@@ -79,12 +87,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Maling PIN. Pakisuri ang iyong susi ng awtorisasyon.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife at Pampublikong Nars (RM/RN)',
+      midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
       capitanLabel: 'Punong Barangay (Kapitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
       bhwDesc: 'Magrehistro ng mga pasyente at sambahayan, mag-record ng vital signs, prenatal/bakuna. Read-only na mga talaan.',
       midwifeDesc: 'Maternal care, prenatal checkup, family planning, bakuna para sa bata (EPI), at pangkalahatang medikal na checkup.',
+      nurseDesc: 'Pangangalaga sa bata, mga programang pangkalusugan, pagsubaybay sa bakuna, at pag-uulat sa DOH.',
+      pharmacistDesc: 'Pamamahala ng imbentaryo ng gamot sa E-Pharmacy, pagpapanatili ng talaan ng pamamahagi, at pagsubaybay ng stock.',
+      mhoDesc: 'Pagsusuri at pag-apruba ng clinical diagnosis, pagpapatunay ng gamot, at resulta ng kalusugan.',
       capitanDesc: 'Dashboard view ng ehekutibo, view-only na stream sa rehistro ng pasyente, at pagsubaybay sa kalusugan sa barangay.',
       adminDesc: 'Mga configuration ng system, pagsasaayos ng logo, system auditing logs, at user PIN overrides.',
       securityTitle: 'Patakaran sa Seguridad ng Workstation:',
@@ -110,12 +123,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       hint: 'Mga PIN: BHW (1111) • MIDWIFE (3333) • NURSE (2222) • CAPITAN (7777) • ADMIN (1234)',
       error: 'Sayop nga PIN. Palihug susi-a pag-usab ang imong yawe.',
       bhwLabel: 'Barangay Health Worker (BHW)',
-      midwifeLabel: 'Barangay Midwife ug Publikong Nars (RM/RN)',
+      midwifeLabel: 'Barangay Midwife (RM)',
       nurseLabel: 'Public Health Nurse (RN)',
+      pharmacistLabel: 'Barangay Pharmacist (RPh)',
+      mhoLabel: 'Municipal Health Officer (MHO) / Doktor',
       capitanLabel: 'Kapitan sa Barangay (Kapitan - View Only)',
       adminLabel: 'Admin (Head Midwife / Staff-in-charge)',
       bhwDesc: 'Magparehistro sa mga pasyente ug pamilya, mag-record sa vital signs, prenatal/bakuna. Read-only nga mga listahan.',
       midwifeDesc: 'Maternal care, prenatal checkup, family planning, bakuna alang sa bata (EPI), ug kinatibuk-ang medikal nga checkup.',
+      nurseDesc: 'Pag-atiman sa bata, mga programa sa panglawas, pag-surveillance sa bakuna, ug pagreport sa DOH.',
+      pharmacistDesc: 'Pagdumala sa imbentaryo sa tambal sa E-Pharmacy, pag-apod-apod, ug pag-monitor sa stock.',
+      mhoDesc: 'Klinikal nga pagdayagnos, pagbalida sa tambal, ug mga sangputanan sa panglawas.',
       capitanDesc: 'Dashboard view sa ehekutibo, view-only nga stream sa rehistro sa pasyente, ug pagmonitor sa kalusugan sa barangay.',
       adminDesc: 'Mga configuration sa sistema, pag-adjust sa logo, system auditing logs, ug user PIN overrides.',
       securityTitle: 'Patakaran sa Seguridad ng Workstation:',
@@ -167,12 +185,36 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     // PIN check based on selected role
     let isValid = false;
-    if (selectedRole === 'BHW' && pin === '1111') isValid = true;
-    else if (selectedRole === 'MIDWIFE' && (pin === '3333' || pin === '2222')) isValid = true;
-    else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
-    else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
-    else if (selectedRole === 'CAPITAN' && pin === '7777') isValid = true;
-    else if (selectedRole === 'ADMIN' && pin === '1234') isValid = true;
+
+    // Check active custom accounts
+    const activeUsers = users || (() => {
+      const saved = localStorage.getItem('bhc_admin_users');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (err) {}
+      }
+      return [];
+    })();
+
+    if (activeUsers && activeUsers.length > 0) {
+      const match = activeUsers.find(
+        (u: any) => u.role === selectedRole && u.pin === pin && u.status === 'Active'
+      );
+      if (match) {
+        isValid = true;
+      }
+    }
+
+    // Fallback static secure codes
+    if (!isValid) {
+      if (selectedRole === 'BHW' && pin === '1111') isValid = true;
+      else if (selectedRole === 'MIDWIFE' && (pin === '3333' || pin === '2222')) isValid = true;
+      else if (selectedRole === 'PHARMACIST' && pin === '4444') isValid = true;
+      else if (selectedRole === 'MHO' && pin === '5555') isValid = true;
+      else if (selectedRole === 'CAPITAN' && pin === '7777') isValid = true;
+      else if (selectedRole === 'ADMIN' && pin === '1234') isValid = true;
+    }
     
     // Also support fallback universal unlocking for a smooth local check
     if (pin === '0000' || pin === '9999') isValid = true;
@@ -194,6 +236,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       setActiveImgIndex(0);
     } else if (selectedRole === 'MIDWIFE') {
       setActiveImgIndex(1); // Prenatal is Midwife's primary domain
+    } else if (selectedRole === 'NURSE') {
+      setActiveImgIndex(3); // Immunization
+    } else if (selectedRole === 'PHARMACIST') {
+      setActiveImgIndex(4); // E-pharmacy
+    } else if (selectedRole === 'MHO') {
+      setActiveImgIndex(2); // Consultation
     } else if (selectedRole === 'CAPITAN') {
       setActiveImgIndex(2); // Consultation
     } else if (selectedRole === 'ADMIN') {
@@ -280,11 +328,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-teal-500/15 rounded-full blur-[90px] pointer-events-none"></div>
             
             <div className="space-y-4 relative z-10">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center border border-emerald-400/30 shadow-[0_0_15px_rgba(16,185,129,0.35)] text-xl" id="login-people-logo-badge">
-                {centerLogo === 'heart' ? '❤️' :
-                 centerLogo === 'shield' ? '🛡️' :
-                 centerLogo === 'activity' ? '⚡' :
-                 '🏥'}
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center bg-white p-0.5 flex-shrink-0" id="login-people-logo-badge">
+                <img
+                  src={rhuPitogoLogo}
+                  alt="RHU Pitogo Official Logo"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
               <div>
                 <span className="text-[10px] font-bold tracking-widest uppercase bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20">
@@ -433,7 +483,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   <label className="block text-[10px] text-slate-400 font-black uppercase tracking-wider mb-2.5 font-mono">
                     1. {currentDict.roleSelect}
                   </label>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-[290px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
                     {rolesAllowed.map((role) => (
                       <button
                         key={role.key}

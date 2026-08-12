@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, UserCheck, Settings, Database, Edit3, Trash2, Plus, Monitor, ShieldAlert, KeyRound, Wifi, RefreshCw, Users, Search, ClipboardList } from 'lucide-react';
 import { Role, Patient, UserAccount } from '../types';
+import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
 
 interface AuditLog {
   id: string;
@@ -64,23 +65,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Local state for audit logs that stays in sync with localStorage updates
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
+  const loadLogs = useCallback(() => {
+    const saved = localStorage.getItem('bhc_audit_logs');
+    if (saved) {
+      try {
+        setAuditLogs(JSON.parse(saved));
+      } catch (e) {}
+    } else {
+      const fallbacks: AuditLog[] = [
+        { id: 'LOG-001', timestamp: '2026-06-05 10:45:12', user: 'Julefe Magwate (BHW)', action: 'PATIENT_RECORD_ADDED', details: 'Nagrehistro ng bagong pasyente sa registry book.', severity: 'Info' },
+        { id: 'LOG-002', timestamp: '2026-06-05 09:32:04', user: 'Arlene Cagas Dayama, RM', action: 'PRESCRIPTION_ADDED', details: 'Nagdagdag ng medical consultation diagnosis at prescription.', severity: 'Info' },
+        { id: 'LOG-003', timestamp: '2026-06-05 08:15:30', user: 'Ericson Padunan (Admin)', action: 'USER_LOGIN_AUTHENTICATED', details: 'Binuksan ang workstation session sa ilalim ng Administrator PIN.', severity: 'Info' },
+      ];
+      localStorage.setItem('bhc_audit_logs', JSON.stringify(fallbacks));
+      setAuditLogs(fallbacks);
+    }
+  }, []);
+
   useEffect(() => {
-    const loadLogs = () => {
-      const saved = localStorage.getItem('bhc_audit_logs');
-      if (saved) {
-        try {
-          setAuditLogs(JSON.parse(saved));
-        } catch (e) {}
-      } else {
-        const fallbacks: AuditLog[] = [
-          { id: 'LOG-001', timestamp: '2026-06-05 10:45:12', user: 'Julefe Magwate (BHW)', action: 'PATIENT_RECORD_ADDED', details: 'Nagrehistro ng bagong pasyente sa registry book.', severity: 'Info' },
-          { id: 'LOG-002', timestamp: '2026-06-05 09:32:04', user: 'Arlene Cagas Dayama, RM', action: 'PRESCRIPTION_ADDED', details: 'Nagdagdag ng medical consultation diagnosis at prescription.', severity: 'Info' },
-          { id: 'LOG-003', timestamp: '2026-06-05 08:15:30', user: 'Ericson Padunan (Admin)', action: 'USER_LOGIN_AUTHENTICATED', details: 'Binuksan ang workstation session sa ilalim ng Administrator PIN.', severity: 'Info' },
-        ];
-        localStorage.setItem('bhc_audit_logs', JSON.stringify(fallbacks));
-        setAuditLogs(fallbacks);
-      }
-    };
     loadLogs();
     
     window.addEventListener('storage', loadLogs);
@@ -89,147 +91,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       window.removeEventListener('storage', loadLogs);
       clearInterval(interval);
     };
-  }, []);
-
-  // Account creation state
-  const [isAddingUser, setIsAddingUser] = useState(false);
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserRole, setNewUserRole] = useState<Role>('BHW');
-  const [newUserUsername, setNewUserUsername] = useState('');
-  const [newUserPin, setNewUserPin] = useState('');
-
-  // Account editing states
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editUserName, setEditUserName] = useState('');
-  const [editUserRole, setEditUserRole] = useState<Role>('BHW');
-  const [editUserUsername, setEditUserUsername] = useState('');
-
-  const handleCreateUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUserName || !newUserUsername || newUserPin.length !== 4) {
-      alert('Tiyakin na napunan ang lahat ng impormasyon at ang PIN ay eksaktong 4-digit. (Please complete all inputs and secure a 4-digit passcode).');
-      return;
-    }
-
-    const newUser: UserAccount = {
-      id: `USR-${Date.now()}`,
-      name: newUserName,
-      role: newUserRole,
-      username: newUserUsername.toLowerCase().trim(),
-      pin: newUserPin,
-      status: 'Active',
-    };
-
-    setUsers(prev => [...prev, newUser]);
-    
-    const newLog: AuditLog = {
-      id: `AUD-${Date.now()}`,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      user: 'Ericson Padunan (Admin)',
-      action: 'USER_ACCOUNT_CREATED',
-      details: `Created new workstation active user account ${newUser.username} (${newUser.role})`,
-      severity: 'Critical'
-    };
-    setAuditLogs(prev => [newLog, ...prev]);
-
-    setIsAddingUser(false);
-    setNewUserName('');
-    setNewUserUsername('');
-    setNewUserPin('');
-    alert(`Matagumpay na naidagdag si ${newUser.name} bilang ${newUser.role}!`);
-  };
-
-  const toggleUserStatus = (id: string) => {
-    setUsers(prev => prev.map(u => {
-      if (u.id === id) {
-        const nextStatus = u.status === 'Active' ? 'Inactive' : 'Active';
-        
-        // Add audit trail log
-        const newLog: AuditLog = {
-          id: `AUD-${Date.now()}`,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          user: 'Ericson Padunan (Admin)',
-          action: 'USER_STATUS_TOGGLED',
-          details: `Changed user ${u.username} status from ${u.status} to ${nextStatus}`,
-          severity: 'Warning'
-        };
-        setAuditLogs(prev => [newLog, ...prev]);
-
-        return { ...u, status: nextStatus };
-      }
-      return u;
-    }));
-  };
-
-  const handleResetPin = (id: string) => {
-    const newPin = window.prompt('Ipasok ang bagong 4-digit security PIN para sa account na ito:');
-    if (newPin === null) return;
-    if (!/^\d{4}$/.test(newPin)) {
-      alert('Maling format! Ang PIN ay dapat may eksaktong 4-digit na numero.');
-      return;
-    }
-    setUsers(prev => prev.map(u => {
-      if (u.id === id) {
-        onAddAuditLog?.('USER_PIN_RESET', `Pinalitan ang workstation passcode PIN para kay ${u.name} (${u.role})`, 'Critical');
-        return { ...u, pin: newPin };
-      }
-      return u;
-    }));
-    alert('Matagumpay na nabago ang PIN!');
-  };
-
-  const startEditingUser = (u: UserAccount) => {
-    setEditingUserId(u.id);
-    setEditUserName(u.name);
-    setEditUserRole(u.role);
-    setEditUserUsername(u.username);
-  };
-
-  const handleSaveEditUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editUserName || !editUserUsername) {
-      alert('Tiyaking napunan ang pangalan at username.');
-      return;
-    }
-    setUsers(prev => prev.map(u => {
-      if (u.id === editingUserId) {
-        onAddAuditLog?.('USER_ACCOUNT_UPDATED', `In-update ang account ni ${u.name} (${u.role}) -> ${editUserName} (${editUserRole})`, 'Warning');
-        return {
-          ...u,
-          name: editUserName,
-          role: editUserRole,
-          username: editUserUsername.toLowerCase().trim()
-        };
-      }
-      return u;
-    }));
-    setEditingUserId(null);
-    alert('Matagumpay na na-update ang user account!');
-  };
-
-  const handleDeleteUser = (id: string, name: string) => {
-    if (users.length <= 1) {
-      alert('Hindi maaaring burahin ang nag-iisang account sa system.');
-      return;
-    }
-    if (!window.confirm(`Sigurado ka bang nais mong tuluyang burahin ang account ni ${name}? Ang aksyong ito ay hindi na maibabalik.`)) {
-      return;
-    }
-    setUsers(prev => prev.filter(u => u.id !== id));
-    
-    const newLog: AuditLog = {
-      id: `AUD-${Date.now()}`,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      user: 'Ericson Padunan (Admin)',
-      action: 'USER_ACCOUNT_DELETED',
-      details: `Permanently deleted user account ${name} (id: ${id})`,
-      severity: 'Critical'
-    };
-    setAuditLogs(prev => [newLog, ...prev]);
-    onAddAuditLog?.('USER_ACCOUNT_DELETED', `Tinanggal ang user account ni ${name}`, 'Critical');
-    
-    alert(`Matagumpay na nabura ang account ni ${name}.`);
-  };
+  }, [loadLogs]);
 
   // Categorize patients under specific roles (BHW, Nurse, Midwife) with high-accuracy fallback rules:
   const bhwPatients = patients.filter(p => {
@@ -509,238 +371,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* Left Column: Management & Configuration */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* USER ACCOUNTS PANEL */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-            <div className="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <UserCheck className="text-purple-600" size={18} />
-                <h3 className="text-sm font-black uppercase text-slate-700 tracking-wide">Workstation User Accounts</h3>
-              </div>
-              <button
-                onClick={() => setIsAddingUser(!isAddingUser)}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-1.5 px-3 rounded-lg text-xs cursor-pointer flex items-center gap-1 transition-all"
-              >
-                <Plus size={14} />
-                {isAddingUser ? 'Kanselahin' : 'Bagong Account'}
-              </button>
-            </div>
-
-            <div className="p-5">
-              
-              {/* Add Account Inline Form */}
-              {isAddingUser && (
-                <form onSubmit={handleCreateUser} className="bg-slate-50/50 p-4 rounded-xl border border-dashed border-slate-200 space-y-4 mb-4">
-                  <span className="text-xs font-black uppercase tracking-widest text-purple-700 block">Bagong User Registration</span>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">Full Name (Pangalan) *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Dr. Arthur Sotto, MD"
-                        required
-                        className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs"
-                        value={newUserName}
-                        onChange={(e) => setNewUserName(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">System Username (Login ID) *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. arthur_mho"
-                        required
-                        className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs font-mono"
-                        value={newUserUsername}
-                        onChange={(e) => setNewUserUsername(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1 font-mono">System Active Role</label>
-                      <select
-                        className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs"
-                        value={newUserRole}
-                        onChange={(e) => setNewUserRole(e.target.value as Role)}
-                      >
-                        <option value="BHW">Barangay Health Worker (BHW)</option>
-                        <option value="MIDWIFE">Barangay Midwife (RM)</option>
-                        <option value="NURSE">Public Health Nurse (RN)</option>
-                        <option value="PHARMACIST">Barangay Pharmacist (RPh)</option>
-                        <option value="MHO">Municipal Health Officer (MHO) / Doctor</option>
-                        <option value="ADMIN">Admin / Barangay Captain</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">4-Digit Workstation PIN CODE *</label>
-                      <input
-                        type="password"
-                        placeholder="e.g. 1111"
-                        maxLength={4}
-                        required
-                        className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs font-mono text-center tracking-widest font-black"
-                        value={newUserPin}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9]/g, '');
-                          setNewUserPin(val);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2.5 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingUser(false)}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg text-xs cursor-pointer"
-                    >
-                      Kanselahin
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs cursor-pointer"
-                    >
-                      I-save ang Account
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Accounts Table */}
-              <div className="overflow-x-auto rounded-lg border border-slate-100">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-400 font-black uppercase tracking-widest text-[10px] border-b border-slate-100">
-                      <th className="p-3">User (Pangalan)</th>
-                      <th className="p-3">Gampanin (Role)</th>
-                      <th className="p-3 font-mono">Username</th>
-                      <th className="p-3 text-center">Status</th>
-                      <th className="p-3 text-right">Aksyon</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
-                    {users.map((u) => {
-                      const isEditing = editingUserId === u.id;
-                      return isEditing ? (
-                        <tr key={u.id} className="bg-purple-50/30">
-                          <td className="p-3">
-                            <input
-                              type="text"
-                              required
-                              className="w-full bg-white border border-slate-200 p-2 rounded text-xs font-bold text-slate-850"
-                              value={editUserName}
-                              onChange={(e) => setEditUserName(e.target.value)}
-                            />
-                          </td>
-                          <td className="p-3">
-                            <select
-                              className="w-full bg-white border border-slate-200 p-2 rounded text-xs"
-                              value={editUserRole}
-                              onChange={(e) => setEditUserRole(e.target.value as Role)}
-                            >
-                              <option value="BHW">BHW</option>
-                              <option value="MIDWIFE">MIDWIFE</option>
-                              <option value="NURSE">NURSE</option>
-                              <option value="PHARMACIST">PHARMACIST</option>
-                              <option value="MHO">MHO</option>
-                              <option value="ADMIN">ADMIN</option>
-                            </select>
-                          </td>
-                          <td className="p-3">
-                            <input
-                              type="text"
-                              required
-                              className="w-full bg-white border border-slate-200 p-2 rounded text-xs font-mono"
-                              value={editUserUsername}
-                              onChange={(e) => setEditUserUsername(e.target.value)}
-                            />
-                          </td>
-                          <td className="p-3 text-center">-</td>
-                          <td className="p-3 text-right flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={handleSaveEditUser}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-1 px-2.5 rounded text-[10px] cursor-pointer"
-                            >
-                              I-save
-                            </button>
-                            <button
-                              onClick={() => setEditingUserId(null)}
-                              className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold py-1 px-2.5 rounded text-[10px] cursor-pointer"
-                            >
-                              Kanselahin
-                            </button>
-                          </td>
-                        </tr>
-                      ) : (
-                        <tr key={u.id} className="hover:bg-slate-50/50">
-                          <td className="p-3 font-bold text-slate-800">
-                            {u.name}
-                            <span className="text-[10px] font-normal text-slate-400 block font-mono">ID: {u.id}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.role === 'ADMIN' ? 'bg-purple-50 text-purple-700 border border-purple-100' :
-                              u.role === 'MHO' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
-                              u.role === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border border-teal-100' :
-                              u.role === 'NURSE' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                              u.role === 'PHARMACIST' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                              'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                            }`}>
-                              {u.role}
-                            </span>
-                          </td>
-                          <td className="p-3 font-mono text-slate-500">{u.username}</td>
-                          <td className="p-3 text-center">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                              u.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
-                            }`}>
-                              {u.status === 'Active' ? 'ACTIVE' : 'INACTIVE'}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right flex items-center justify-end gap-1 px-1.5 flex-wrap">
-                            <button
-                              onClick={() => startEditingUser(u)}
-                              className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-250 py-1 px-2 rounded text-[10px] font-bold cursor-pointer transition-colors"
-                              title="I-edit ang account"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleResetPin(u.id)}
-                              className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100 py-1 px-2 rounded text-[10px] font-semibold cursor-pointer transition-colors"
-                              title="Palitan ang PIN code"
-                            >
-                              PIN
-                            </button>
-                            <button
-                              onClick={() => toggleUserStatus(u.id)}
-                              className={`py-1 px-2 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                                u.status === 'Active' 
-                                  ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-100'
-                                  : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100'
-                              }`}
-                            >
-                              {u.status === 'Active' ? 'Deactivate' : 'Activate'}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(u.id, u.name)}
-                              className="bg-rose-100 text-rose-700 hover:bg-rose-200 py-1 px-2 rounded text-[10px] font-bold cursor-pointer transition-colors"
-                              title="Burahin ang account"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
           {/* SYSTEM CONFIGURATION */}
           <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
             <div className="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center gap-2">
@@ -778,9 +408,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">Center Visual Badge Theme Style</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['heart', 'shield', 'activity', 'cross'].map((theme) => (
+                  <label className="block text-[10px] font-extrabold text-slate-500 mb-1.5">Center Visual Badge & Official Logo</label>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {['pitogo', 'heart', 'shield', 'activity', 'cross'].map((theme) => (
                       <button
                         key={theme}
                         type="button"
@@ -788,13 +418,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           setCenterLogo(theme);
                           onAddAuditLog?.('LOGO_THEME_CHANGED', `Pinalitan ang visual badge theme style ng health center sa ${theme.toUpperCase()}`, 'Info');
                         }}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                          centerLogo === theme
-                            ? 'bg-purple-50 text-purple-700 border-purple-300 shadow-3xs font-black'
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          centerLogo === theme || (theme === 'pitogo' && !['heart','shield','activity','cross'].includes(centerLogo))
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-400 shadow-3xs font-black'
                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
-                        {theme === 'heart' ? '❤️ Pula na Puso' :
+                        {theme === 'pitogo' ? (
+                          <>
+                            <img src={rhuPitogoLogo} alt="RHU Pitogo Seal" className="w-4 h-4 rounded-full object-cover" />
+                            <span>RHU Pitogo Official Seal</span>
+                          </>
+                        ) : theme === 'heart' ? '❤️ Pula na Puso' :
                          theme === 'shield' ? '🛡️ Green Shield' :
                          theme === 'activity' ? '⚡ Pulse Activity' :
                          '🏥 Green Cross'}

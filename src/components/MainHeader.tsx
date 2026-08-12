@@ -7,6 +7,7 @@ import React from 'react';
 import { Role, Language } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
 import { Wifi, WifiOff, RefreshCw, Globe, ShieldAlert, Clock, LogOut, Lock } from 'lucide-react';
+import rhuPitogoLogo from '../assets/images/rhu_pitogo_logo.jpg';
 
 interface MainHeaderProps {
   activeRole: Role;
@@ -55,13 +56,15 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="bhc-branding">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2 flex-wrap">
-              <span className="bg-emerald-600 text-white rounded px-2.5 py-0.5 text-base font-extrabold shadow-sm">
-                {centerLogo === 'heart' ? '❤️' :
-                 centerLogo === 'shield' ? '🛡️' :
-                 centerLogo === 'activity' ? '⚡' :
-                 '🏥'}
-              </span>
+            <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2.5 flex-wrap">
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-600 shadow-xs bg-white flex-shrink-0 flex items-center justify-center p-0.5">
+                <img
+                  src={rhuPitogoLogo}
+                  alt="RHU Pitogo Official Logo"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
               <span>{centerName || text.title}</span>
             </span>
           </div>

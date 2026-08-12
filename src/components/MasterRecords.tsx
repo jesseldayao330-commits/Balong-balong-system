@@ -56,6 +56,18 @@ interface MasterRecordsProps {
   onDeleteHousehold?: (id: string) => void;
   onEditPatient?: (p: Patient) => void;
   onDeletePatient?: (id: string) => void;
+  onUpdateConsultation?: (c: Consultation) => void;
+  onDeleteConsultation?: (id: string) => void;
+  onUpdateVitalSigns?: (v: VitalSigns) => void;
+  onDeleteVitalSigns?: (id: string) => void;
+  onUpdatePrenatal?: (p: PrenatalRecord) => void;
+  onDeletePrenatal?: (id: string) => void;
+  onUpdateVaccination?: (v: ImmunizationRecord) => void;
+  onDeleteVaccination?: (id: string) => void;
+  onUpdateInventory?: (i: MedicineInventory) => void;
+  onDeleteInventory?: (id: string) => void;
+  onUpdateDailyLog?: (d: DailyLogEntry) => void;
+  onDeleteDailyLog?: (id: string) => void;
   activeRole?: Role;
   initialHealthStatusFilter?: string;
   initialActiveSubTab?: 'residents' | 'households' | 'consultations' | 'immunizations' | 'prenatals' | 'vitals' | 'inventory' | 'daily_logs';
@@ -81,6 +93,18 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   onDeleteHousehold,
   onEditPatient,
   onDeletePatient,
+  onUpdateConsultation,
+  onDeleteConsultation,
+  onUpdateVitalSigns,
+  onDeleteVitalSigns,
+  onUpdatePrenatal,
+  onDeletePrenatal,
+  onUpdateVaccination,
+  onDeleteVaccination,
+  onUpdateInventory,
+  onDeleteInventory,
+  onUpdateDailyLog,
+  onDeleteDailyLog,
   activeRole,
   initialHealthStatusFilter,
   initialActiveSubTab,
@@ -101,6 +125,25 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const canDelete = ['BHW', 'MIDWIFE', 'NURSE', 'ADMIN'].includes(userActiveRole); // Everyone except CAPITAN and other view-only roles can delete resident/patient profiles
   const [selectedPatientToView, setSelectedPatientToView] = useState<Patient | null>(null);
   const [showAllResidentsOverride, setShowAllResidentsOverride] = useState(false);
+
+  // View & Edit states for sub-tab records
+  const [viewingConsultation, setViewingConsultation] = useState<Consultation | null>(null);
+  const [editingConsultation, setEditingConsultation] = useState<Consultation | null>(null);
+
+  const [viewingVital, setViewingVital] = useState<VitalSigns | null>(null);
+  const [editingVital, setEditingVital] = useState<VitalSigns | null>(null);
+
+  const [viewingPrenatal, setViewingPrenatal] = useState<PrenatalRecord | null>(null);
+  const [editingPrenatal, setEditingPrenatal] = useState<PrenatalRecord | null>(null);
+
+  const [viewingVaccination, setViewingVaccination] = useState<ImmunizationRecord | null>(null);
+  const [editingVaccination, setEditingVaccination] = useState<ImmunizationRecord | null>(null);
+
+  const [viewingInventory, setViewingInventory] = useState<MedicineInventory | null>(null);
+  const [editingInventory, setEditingInventory] = useState<MedicineInventory | null>(null);
+
+  const [viewingDailyLog, setViewingDailyLog] = useState<DailyLogEntry | null>(null);
+  const [editingDailyLog, setEditingDailyLog] = useState<DailyLogEntry | null>(null);
 
   // Sync health program filters and active sub tab from parent / dashboard links
   React.useEffect(() => {
@@ -1385,12 +1428,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3">Diagnoses Assessment</th>
                   <th className="p-3">Urgent Screenings</th>
                   <th className="p-3">Attending Midwife / Worker</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredConsultations.length === 0 ? (
                   <tr>
-                    <td colspan="6" className="p-5 text-center text-slate-400 italic">Walang nahanap na consultation records.</td>
+                    <td colSpan={7} className="p-5 text-center text-slate-400 italic">Walang nahanap na consultation records.</td>
                   </tr>
                 ) : (
                   filteredConsultations.map(c => (
@@ -1443,6 +1487,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                           <span className="text-[9px] text-amber-600 font-medium block">Awaiting Physician Review</span>
                         )}
                       </td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5 font-sans">
+                          <button
+                            type="button"
+                            onClick={() => setViewingConsultation(c)}
+                            className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                            title="Tingnan ang detalye ng consultation"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingConsultation({ ...c })}
+                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                            title="I-edit ang consultation"
+                          >
+                            <Edit size={12} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${c.id})?`)) {
+                                if (onDeleteConsultation) onDeleteConsultation(c.id);
+                              }
+                            }}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                            title="Burahin ang consultation"
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -1463,12 +1542,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3 text-center">Temperatura & Pulse</th>
                   <th className="p-3 text-center">Weight, Height & BMI</th>
                   <th className="p-3">Logged By</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredVitals.length === 0 ? (
                   <tr>
-                    <td colspan="6" className="p-5 text-center text-slate-400 italic">Walang nahanap na vital signs records.</td>
+                    <td colSpan={7} className="p-5 text-center text-slate-400 italic">Walang nahanap na vital signs records.</td>
                   </tr>
                 ) : (
                   filteredVitals.map(v => {
@@ -1511,6 +1591,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                           <span className="font-bold text-slate-700 block">{v.loggedBy}</span>
                           <span className="text-[10px] text-slate-450">BHW Field Encoded</span>
                         </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5 font-sans">
+                            <button
+                              type="button"
+                              onClick={() => setViewingVital(v)}
+                              className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                              title="Tingnan ang vitals"
+                            >
+                              <Eye size={12} />
+                              <span>View</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingVital({ ...v })}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                              title="I-edit ang vitals"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${v.id})?`)) {
+                                  if (onDeleteVitalSigns) onDeleteVitalSigns(v.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                              title="Burahin ang vitals"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })
@@ -1533,12 +1648,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3 text-center">Physical Checks</th>
                   <th className="p-3">Risk Level</th>
                   <th className="p-3">Remarks & Next Visit</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredPrenatals.length === 0 ? (
                   <tr>
-                    <td colspan="7" className="p-5 text-center text-slate-400 italic">Walang nahanap na prenatal records.</td>
+                    <td colSpan={8} className="p-5 text-center text-slate-400 italic">Walang nahanap na prenatal records.</td>
                   </tr>
                 ) : (
                   filteredPrenatals.map(p => (
@@ -1573,6 +1689,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                         <span className="text-slate-500 text-[11px] block italic">"{p.remarks}"</span>
                         <span className="text-[10px] text-purple-750 font-semibold block mt-1 font-mono">Next Check: {p.nextPrenatalVisit}</span>
                       </td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5 font-sans">
+                          <button
+                            type="button"
+                            onClick={() => setViewingPrenatal(p)}
+                            className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                            title="Tingnan ang prenatal record"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingPrenatal({ ...p })}
+                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                            title="I-edit ang prenatal record"
+                          >
+                            <Edit size={12} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${p.id})?`)) {
+                                if (onDeletePrenatal) onDeletePrenatal(p.id);
+                              }
+                            }}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                            title="Burahin ang prenatal record"
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -1594,12 +1745,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3 text-center">Petsa ng Bakuna</th>
                   <th className="p-3">In-charge Officer</th>
                   <th className="p-3">Remarks / Notes</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredImmunizations.length === 0 ? (
                   <tr>
-                    <td colspan="7" className="p-5 text-center text-slate-400 italic">Walang nahanap na immunization records.</td>
+                    <td colSpan={8} className="p-5 text-center text-slate-400 italic">Walang nahanap na immunization records.</td>
                   </tr>
                 ) : (
                   filteredImmunizations.map(v => (
@@ -1619,6 +1771,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                       <td className="p-3 text-center font-mono text-slate-700">{v.dateGiven}</td>
                       <td className="p-3 font-semibold text-slate-650">{v.givenBy}</td>
                       <td className="p-3 text-slate-500 italic">"{v.remarks || 'No remarks recorded.'}"</td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5 font-sans">
+                          <button
+                            type="button"
+                            onClick={() => setViewingVaccination(v)}
+                            className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                            title="Tingnan ang bakuna record"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingVaccination({ ...v })}
+                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                            title="I-edit ang bakuna record"
+                          >
+                            <Edit size={12} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${v.id})?`)) {
+                                if (onDeleteVaccination) onDeleteVaccination(v.id);
+                              }
+                            }}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                            title="Burahin ang bakuna record"
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -1640,12 +1827,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3 text-center">Reorder point</th>
                   <th className="p-3">Status ng Supply</th>
                   <th className="p-3">Petsa ng Expiry</th>
+                  <th className="p-3 text-center">Aksyon</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredInventory.length === 0 ? (
                   <tr>
-                    <td colspan="7" className="p-5 text-center text-slate-400 italic">Walang nahanap na medicine stock records.</td>
+                    <td colSpan={8} className="p-5 text-center text-slate-400 italic">Walang nahanap na medicine stock records.</td>
                   </tr>
                 ) : (
                   filteredInventory.map(i => {
@@ -1678,6 +1866,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                           )}
                         </td>
                         <td className="p-3 font-mono text-slate-600">{i.expiryDate}</td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5 font-sans">
+                            <button
+                              type="button"
+                              onClick={() => setViewingInventory(i)}
+                              className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                              title="Tingnan ang gamot"
+                            >
+                              <Eye size={12} />
+                              <span>View</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingInventory({ ...i })}
+                              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                              title="I-edit ang gamot"
+                            >
+                              <Edit size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Sigurado ka bang nais mong burahin ang "${i.medicineName}" (${i.id})?`)) {
+                                  if (onDeleteInventory) onDeleteInventory(i.id);
+                                }
+                              }}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                              title="Burahin ang gamot"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })
@@ -1706,13 +1929,14 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                         <th className="p-3">Resident Name</th>
                         <th className="p-3">Sektor (Purok)</th>
                         <th className="p-3">Layunin ng Konsulta (Purpose)</th>
-                        <th className="p-3 text-right">Triage State</th>
+                        <th className="p-3 text-center">Triage State</th>
+                        <th className="p-3 text-center">Aksyon</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
                       {filteredDailyLogs.length === 0 ? (
                         <tr>
-                          <td colspan="5" className="p-5 text-center text-slate-400 italic">Walang records sa ledger ng walk-ins ngayon araw.</td>
+                          <td colSpan={6} className="p-5 text-center text-slate-400 italic">Walang records sa ledger ng walk-ins ngayon araw.</td>
                         </tr>
                       ) : (
                         filteredDailyLogs.map(l => (
@@ -1731,7 +1955,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                                 {l.purpose}
                               </span>
                             </td>
-                            <td className="p-3 text-right">
+                            <td className="p-3 text-center">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                                 l.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
                                 l.status === 'In Progress' ? 'bg-indigo-100 text-indigo-800 animate-pulse' :
@@ -1739,6 +1963,41 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                               }`}>
                                 {l.status}
                               </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-1.5 font-sans">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingDailyLog(l)}
+                                  className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-indigo-200/50 flex items-center gap-1 transition-colors"
+                                  title="Tingnan ang log"
+                                >
+                                  <Eye size={12} />
+                                  <span>View</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingDailyLog({ ...l })}
+                                  className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-amber-200/50 flex items-center gap-1 transition-colors"
+                                  title="I-edit ang log"
+                                >
+                                  <Edit size={12} />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${l.id})?`)) {
+                                      if (onDeleteDailyLog) onDeleteDailyLog(l.id);
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] rounded-md cursor-pointer border border-rose-200/50 flex items-center gap-1 transition-colors"
+                                  title="Burahin ang log"
+                                >
+                                  <Trash2 size={12} />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -2212,6 +2471,1212 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                 {language === 'EN' ? 'Close folder' : language === 'TL' ? 'Isara ang folder' : 'Isira ang folder'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONSULTATION VIEW MODAL */}
+      {viewingConsultation && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Clinical Consultation View</span>
+                <h3 className="text-base font-black">Record #{viewingConsultation.id}</h3>
+              </div>
+              <button onClick={() => setViewingConsultation(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto text-xs text-slate-700">
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-150">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-mono block">Patient Name</span>
+                  <strong className="text-slate-800 text-sm block">{getPatientName(viewingConsultation.patientId)}</strong>
+                  <span className="text-[10px] text-slate-500 font-mono">ID: {viewingConsultation.patientId}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-mono block">Date & Attending</span>
+                  <strong className="text-slate-800 block">{viewingConsultation.date}</strong>
+                  <span className="text-[11px] text-indigo-700 font-bold">{viewingConsultation.attendingStaff}</span>
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Chief Complaint</span>
+                <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl font-medium text-amber-950 italic">
+                  "{viewingConsultation.chiefComplaint}"
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Subjective Notes</span>
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px]">
+                    {viewingConsultation.subjective || 'None recorded'}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Objective Findings</span>
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px]">
+                    {viewingConsultation.objective || 'None recorded'}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Diagnoses / Assessments</span>
+                <div className="flex flex-wrap gap-1">
+                  {viewingConsultation.assessmentDiagnoses.map((d, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-cyan-100 text-cyan-800 font-bold rounded font-mono text-[10px]">{d}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Plan & Treatment</span>
+                <div className="p-3 bg-emerald-50/50 border border-emerald-200/60 rounded-xl font-semibold text-emerald-900">
+                  {viewingConsultation.planTreatment}
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingConsultation({ ...viewingConsultation });
+                    setViewingConsultation(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang consultation record (${viewingConsultation.id})?`)) {
+                      if (onDeleteConsultation) onDeleteConsultation(viewingConsultation.id);
+                      setViewingConsultation(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingConsultation(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONSULTATION EDIT MODAL */}
+      {editingConsultation && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Consultation #{editingConsultation.id}</h3>
+              </div>
+              <button onClick={() => setEditingConsultation(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateConsultation) onUpdateConsultation(editingConsultation);
+                alert('Matagumpay na na-update ang consultation record!');
+                setEditingConsultation(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={editingConsultation.date}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, date: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Attending Staff</label>
+                  <input
+                    type="text"
+                    value={editingConsultation.attendingStaff}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, attendingStaff: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Chief Complaint</label>
+                <input
+                  type="text"
+                  value={editingConsultation.chiefComplaint}
+                  onChange={(e) => setEditingConsultation({ ...editingConsultation, chiefComplaint: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Subjective</label>
+                  <textarea
+                    rows={2}
+                    value={editingConsultation.subjective}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, subjective: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Objective</label>
+                  <textarea
+                    rows={2}
+                    value={editingConsultation.objective}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, objective: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Diagnoses (comma separated)</label>
+                <input
+                  type="text"
+                  value={editingConsultation.assessmentDiagnoses.join(', ')}
+                  onChange={(e) => setEditingConsultation({
+                    ...editingConsultation,
+                    assessmentDiagnoses: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                  })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Plan / Treatment</label>
+                <textarea
+                  rows={2}
+                  value={editingConsultation.planTreatment}
+                  onChange={(e) => setEditingConsultation({ ...editingConsultation, planTreatment: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  required
+                />
+              </div>
+              <div className="flex items-center gap-4 pt-2">
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={editingConsultation.isTBPossible}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, isTBPossible: e.target.checked })}
+                  />
+                  Presumptive TB
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={editingConsultation.isDenguePossible}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, isDenguePossible: e.target.checked })}
+                  />
+                  Dengue Alert
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={editingConsultation.mhoValidated}
+                    onChange={(e) => setEditingConsultation({ ...editingConsultation, mhoValidated: e.target.checked })}
+                  />
+                  MHO Validated
+                </label>
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingConsultation(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* VITAL SIGNS VIEW MODAL */}
+      {viewingVital && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Vital Signs Details</span>
+                <h3 className="text-base font-black">Record #{viewingVital.id}</h3>
+              </div>
+              <button onClick={() => setViewingVital(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto text-xs text-slate-700">
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-400 uppercase font-mono block">Patient Name</span>
+                <strong className="text-slate-800 text-base block">{getPatientName(viewingVital.patientId)}</strong>
+                <span className="text-[10px] text-slate-500 font-mono">Date: {viewingVital.date} • Logged by: {viewingVital.loggedBy}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-rose-50 border border-rose-200/60 rounded-xl text-center">
+                  <span className="text-[10px] font-bold text-rose-700 uppercase block">Blood Pressure</span>
+                  <strong className="text-lg font-mono font-black text-rose-950">{viewingVital.systolic}/{viewingVital.diastolic}</strong>
+                  <span className="text-[9px] text-rose-600 block">mmHg</span>
+                </div>
+                <div className="p-3 bg-amber-50 border border-amber-200/60 rounded-xl text-center">
+                  <span className="text-[10px] font-bold text-amber-700 uppercase block">Body Temp</span>
+                  <strong className="text-lg font-mono font-black text-amber-950">{viewingVital.temperature}°C</strong>
+                  <span className="text-[9px] text-amber-600 block">Celsius</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-indigo-50 border border-indigo-200/60 rounded-xl text-center">
+                  <span className="text-[10px] font-bold text-indigo-700 uppercase block">Pulse Rate</span>
+                  <strong className="text-base font-mono font-bold text-indigo-950">{viewingVital.heartRate} bpm</strong>
+                </div>
+                <div className="p-3 bg-cyan-50 border border-cyan-200/60 rounded-xl text-center">
+                  <span className="text-[10px] font-bold text-cyan-700 uppercase block">Respirations</span>
+                  <strong className="text-base font-mono font-bold text-cyan-950">{viewingVital.respiratoryRate} /min</strong>
+                </div>
+              </div>
+              <div className="p-3 bg-emerald-50 border border-emerald-200/60 rounded-xl flex justify-between items-center font-mono">
+                <div>
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block font-sans">Weight & Height</span>
+                  <strong className="text-slate-800">{viewingVital.weightKg} kg / {viewingVital.heightCm} cm</strong>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block font-sans">BMI Result</span>
+                  <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded font-bold text-[11px]">{viewingVital.bmiCategory} ({viewingVital.bmi})</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingVital({ ...viewingVital });
+                    setViewingVital(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang vital signs record (${viewingVital.id})?`)) {
+                      if (onDeleteVitalSigns) onDeleteVitalSigns(viewingVital.id);
+                      setViewingVital(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingVital(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VITAL SIGNS EDIT MODAL */}
+      {editingVital && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Vital Signs #{editingVital.id}</h3>
+              </div>
+              <button onClick={() => setEditingVital(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const hM = (editingVital.heightCm || 100) / 100;
+                const bmiVal = Number(((editingVital.weightKg || 0) / (hM * hM)).toFixed(1));
+                let cat: VitalSigns['bmiCategory'] = 'Normal';
+                if (bmiVal < 18.5) cat = 'Underweight';
+                else if (bmiVal >= 25 && bmiVal < 30) cat = 'Overweight';
+                else if (bmiVal >= 30) cat = 'Obese';
+
+                const updated = { ...editingVital, bmi: bmiVal, bmiCategory: cat };
+                if (onUpdateVitalSigns) onUpdateVitalSigns(updated);
+                alert('Matagumpay na na-update ang vital signs!');
+                setEditingVital(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={editingVital.date}
+                    onChange={(e) => setEditingVital({ ...editingVital, date: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Logged By</label>
+                  <input
+                    type="text"
+                    value={editingVital.loggedBy}
+                    onChange={(e) => setEditingVital({ ...editingVital, loggedBy: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Systolic (mmHg)</label>
+                  <input
+                    type="number"
+                    value={editingVital.systolic}
+                    onChange={(e) => setEditingVital({ ...editingVital, systolic: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Diastolic (mmHg)</label>
+                  <input
+                    type="number"
+                    value={editingVital.diastolic}
+                    onChange={(e) => setEditingVital({ ...editingVital, diastolic: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Temp (°C)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editingVital.temperature}
+                    onChange={(e) => setEditingVital({ ...editingVital, temperature: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Heart Rate</label>
+                  <input
+                    type="number"
+                    value={editingVital.heartRate}
+                    onChange={(e) => setEditingVital({ ...editingVital, heartRate: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Resp Rate</label>
+                  <input
+                    type="number"
+                    value={editingVital.respiratoryRate}
+                    onChange={(e) => setEditingVital({ ...editingVital, respiratoryRate: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Weight (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editingVital.weightKg}
+                    onChange={(e) => setEditingVital({ ...editingVital, weightKg: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Height (cm)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={editingVital.heightCm}
+                    onChange={(e) => setEditingVital({ ...editingVital, heightCm: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingVital(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PRENATAL VIEW MODAL */}
+      {viewingPrenatal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Prenatal Maternal Card</span>
+                <h3 className="text-base font-black">Record #{viewingPrenatal.id}</h3>
+              </div>
+              <button onClick={() => setViewingPrenatal(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700">
+              <div className="bg-purple-50 p-3 rounded-xl border border-purple-200/60">
+                <span className="text-[10px] text-purple-700 uppercase font-mono block">Mother's Name</span>
+                <strong className="text-purple-950 text-base block">{getPatientName(viewingPrenatal.patientId)}</strong>
+                <span className="text-[10px] text-purple-600 font-mono">ID: {viewingPrenatal.patientId}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block">LMP</span>
+                  <strong className="text-slate-800 block">{viewingPrenatal.lmp}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block">Expected Due (EDC)</span>
+                  <strong className="text-emerald-700 block">{viewingPrenatal.edc}</strong>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-[9px] text-slate-400 uppercase block">Gravida / Para</span>
+                  <strong className="text-slate-800 font-mono text-sm">G{viewingPrenatal.gravida} P{viewingPrenatal.para}</strong>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-[9px] text-slate-400 uppercase block">Gestational Age</span>
+                  <strong className="text-slate-800 font-mono text-sm">{viewingPrenatal.gestationalAgeWeeks} wks</strong>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-[9px] text-slate-400 uppercase block">Risk Level</span>
+                  <strong className={`text-xs block font-bold ${
+                    viewingPrenatal.riskClassification === 'High Risk' ? 'text-rose-600' :
+                    viewingPrenatal.riskClassification === 'Medium Risk' ? 'text-amber-600' : 'text-emerald-600'
+                  }`}>
+                    {viewingPrenatal.riskClassification}
+                  </strong>
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-500">Fundal Height: <strong>{viewingPrenatal.fundalHeightCm || 'N/A'} cm</strong></span>
+                  <span className="text-slate-500">Heart Tone: <strong>{viewingPrenatal.fetalHeartToneBpm || 'N/A'} bpm</strong></span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-500">TT Status: <strong>{viewingPrenatal.tetanusToxoidStatus}</strong></span>
+                  <span className="text-slate-500">Blood Pressure: <strong>{viewingPrenatal.bloodPressure}</strong></span>
+                </div>
+              </div>
+              <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                <span className="text-[10px] font-bold text-indigo-700 uppercase block">Remarks & Next Visit</span>
+                <p className="italic text-slate-700 mb-1">"{viewingPrenatal.remarks}"</p>
+                <strong className="text-xs text-indigo-900 block font-mono">Next Checkup: {viewingPrenatal.nextPrenatalVisit}</strong>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingPrenatal({ ...viewingPrenatal });
+                    setViewingPrenatal(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang prenatal record (${viewingPrenatal.id})?`)) {
+                      if (onDeletePrenatal) onDeletePrenatal(viewingPrenatal.id);
+                      setViewingPrenatal(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingPrenatal(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRENATAL EDIT MODAL */}
+      {editingPrenatal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Prenatal Card #{editingPrenatal.id}</h3>
+              </div>
+              <button onClick={() => setEditingPrenatal(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdatePrenatal) onUpdatePrenatal(editingPrenatal);
+                alert('Matagumpay na na-update ang prenatal record!');
+                setEditingPrenatal(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">LMP Date</label>
+                  <input
+                    type="date"
+                    value={editingPrenatal.lmp}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, lmp: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Expected Due (EDC)</label>
+                  <input
+                    type="date"
+                    value={editingPrenatal.edc}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, edc: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gravida</label>
+                  <input
+                    type="number"
+                    value={editingPrenatal.gravida}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, gravida: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Para</label>
+                  <input
+                    type="number"
+                    value={editingPrenatal.para}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, para: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gestational Wks</label>
+                  <input
+                    type="number"
+                    value={editingPrenatal.gestationalAgeWeeks}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, gestationalAgeWeeks: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Blood Pressure</label>
+                  <input
+                    type="text"
+                    value={editingPrenatal.bloodPressure}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, bloodPressure: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Risk Level</label>
+                  <select
+                    value={editingPrenatal.riskClassification}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, riskClassification: e.target.value as any })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-bold"
+                  >
+                    <option value="Low Risk">Low Risk</option>
+                    <option value="Medium Risk">Medium Risk</option>
+                    <option value="High Risk">High Risk</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tetanus Toxoid</label>
+                  <input
+                    type="text"
+                    value={editingPrenatal.tetanusToxoidStatus}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, tetanusToxoidStatus: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Next Visit Date</label>
+                  <input
+                    type="date"
+                    value={editingPrenatal.nextPrenatalVisit}
+                    onChange={(e) => setEditingPrenatal({ ...editingPrenatal, nextPrenatalVisit: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Remarks</label>
+                <input
+                  type="text"
+                  value={editingPrenatal.remarks}
+                  onChange={(e) => setEditingPrenatal({ ...editingPrenatal, remarks: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingPrenatal(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* IMMUNIZATION VIEW MODAL */}
+      {viewingVaccination && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Child Immunization Log</span>
+                <h3 className="text-base font-black">Record #{viewingVaccination.id}</h3>
+              </div>
+              <button onClick={() => setViewingVaccination(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700">
+              <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200/60">
+                <span className="text-[10px] text-emerald-800 uppercase font-mono block">Child Patient Name</span>
+                <strong className="text-emerald-950 text-base block">{getPatientName(viewingVaccination.patientId)}</strong>
+                <span className="text-[10px] text-emerald-700 font-mono">Mother: {viewingVaccination.motherName}</span>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px] font-mono">Vaccine Administered</span>
+                  <strong className="text-emerald-800 text-sm font-black">{viewingVaccination.vaccineName}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px] font-mono">Dose Number</span>
+                  <strong className="text-slate-800 font-mono">Dose #{viewingVaccination.doseNumber}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px] font-mono">Date Given</span>
+                  <strong className="text-slate-800 font-mono">{viewingVaccination.dateGiven}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px] font-mono">Given By</span>
+                  <strong className="text-indigo-700">{viewingVaccination.givenBy}</strong>
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block mb-1">Remarks</span>
+                <p className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg italic text-slate-600">
+                  "{viewingVaccination.remarks || 'No remarks recorded'}"
+                </p>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingVaccination({ ...viewingVaccination });
+                    setViewingVaccination(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang bakuna record (${viewingVaccination.id})?`)) {
+                      if (onDeleteVaccination) onDeleteVaccination(viewingVaccination.id);
+                      setViewingVaccination(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingVaccination(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IMMUNIZATION EDIT MODAL */}
+      {editingVaccination && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Bakuna Record #{editingVaccination.id}</h3>
+              </div>
+              <button onClick={() => setEditingVaccination(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateVaccination) onUpdateVaccination(editingVaccination);
+                alert('Matagumpay na na-update ang bakuna record!');
+                setEditingVaccination(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mother Name</label>
+                <input
+                  type="text"
+                  value={editingVaccination.motherName}
+                  onChange={(e) => setEditingVaccination({ ...editingVaccination, motherName: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Vaccine Name</label>
+                  <input
+                    type="text"
+                    value={editingVaccination.vaccineName}
+                    onChange={(e) => setEditingVaccination({ ...editingVaccination, vaccineName: e.target.value as any })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-bold"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dose Number</label>
+                  <input
+                    type="number"
+                    value={editingVaccination.doseNumber}
+                    onChange={(e) => setEditingVaccination({ ...editingVaccination, doseNumber: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Date Given</label>
+                  <input
+                    type="date"
+                    value={editingVaccination.dateGiven}
+                    onChange={(e) => setEditingVaccination({ ...editingVaccination, dateGiven: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Given By</label>
+                  <input
+                    type="text"
+                    value={editingVaccination.givenBy}
+                    onChange={(e) => setEditingVaccination({ ...editingVaccination, givenBy: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Remarks</label>
+                <input
+                  type="text"
+                  value={editingVaccination.remarks}
+                  onChange={(e) => setEditingVaccination({ ...editingVaccination, remarks: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingVaccination(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MEDICINE INVENTORY VIEW MODAL */}
+      {viewingInventory && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Medicine Details</span>
+                <h3 className="text-base font-black">Item #{viewingInventory.id}</h3>
+              </div>
+              <button onClick={() => setViewingInventory(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700">
+              <div className="bg-cyan-50 p-3 rounded-xl border border-cyan-200/60">
+                <span className="text-[10px] text-cyan-800 uppercase font-mono block">Brand / Medicine Name</span>
+                <strong className="text-cyan-950 text-base block">{viewingInventory.medicineName}</strong>
+                <span className="text-[11px] text-cyan-700 font-medium">Generic: {viewingInventory.genericName}</span>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Category</span>
+                  <strong className="text-slate-800">{viewingInventory.category}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Current Stock</span>
+                  <strong className="text-emerald-700 text-sm">{viewingInventory.currentStock} {viewingInventory.stockInUnit}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Reorder Level</span>
+                  <strong className="text-slate-800">{viewingInventory.reorderLevel} units</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Expiry Date</span>
+                  <strong className="text-rose-600">{viewingInventory.expiryDate}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingInventory({ ...viewingInventory });
+                    setViewingInventory(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang "${viewingInventory.medicineName}" (${viewingInventory.id})?`)) {
+                      if (onDeleteInventory) onDeleteInventory(viewingInventory.id);
+                      setViewingInventory(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingInventory(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MEDICINE INVENTORY EDIT MODAL */}
+      {editingInventory && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Medicine Stock #{editingInventory.id}</h3>
+              </div>
+              <button onClick={() => setEditingInventory(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateInventory) onUpdateInventory(editingInventory);
+                alert('Matagumpay na na-update ang gamot sa inventory!');
+                setEditingInventory(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Medicine Name (Brand)</label>
+                <input
+                  type="text"
+                  value={editingInventory.medicineName}
+                  onChange={(e) => setEditingInventory({ ...editingInventory, medicineName: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-bold"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Generic Name</label>
+                <input
+                  type="text"
+                  value={editingInventory.genericName}
+                  onChange={(e) => setEditingInventory({ ...editingInventory, genericName: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Category</label>
+                  <select
+                    value={editingInventory.category}
+                    onChange={(e) => setEditingInventory({ ...editingInventory, category: e.target.value as any })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  >
+                    <option value="Antibiotics">Antibiotics</option>
+                    <option value="Hypertension">Hypertension</option>
+                    <option value="Diabetes">Diabetes</option>
+                    <option value="Analgesics">Analgesics</option>
+                    <option value="Vitamins">Vitamins</option>
+                    <option value="EPI Vaccines">EPI Vaccines</option>
+                    <option value="Contraceptives">Contraceptives</option>
+                    <option value="TB Drugs">TB Drugs</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Stock Unit</label>
+                  <input
+                    type="text"
+                    value={editingInventory.stockInUnit}
+                    onChange={(e) => setEditingInventory({ ...editingInventory, stockInUnit: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Stock</label>
+                  <input
+                    type="number"
+                    value={editingInventory.currentStock}
+                    onChange={(e) => setEditingInventory({ ...editingInventory, currentStock: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Reorder Level</label>
+                  <input
+                    type="number"
+                    value={editingInventory.reorderLevel}
+                    onChange={(e) => setEditingInventory({ ...editingInventory, reorderLevel: Number(e.target.value) })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={editingInventory.expiryDate}
+                    onChange={(e) => setEditingInventory({ ...editingInventory, expiryDate: e.target.value })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingInventory(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DAILY LOG VIEW MODAL */}
+      {viewingDailyLog && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Daily Visitor Log</span>
+                <h3 className="text-base font-black">Log #{viewingDailyLog.id}</h3>
+              </div>
+              <button onClick={() => setViewingDailyLog(null)} className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700">
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-400 uppercase font-mono block">Visitor / Resident</span>
+                <strong className="text-slate-800 text-base block">{viewingDailyLog.patientName}</strong>
+                <span className="text-[10px] text-slate-500 font-mono">Purok: {viewingDailyLog.purok}</span>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Purpose</span>
+                  <strong className="text-slate-800">{viewingDailyLog.purpose}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Triage Status</span>
+                  <strong className="text-emerald-700">{viewingDailyLog.status}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 uppercase text-[10px]">Timestamp</span>
+                  <strong className="text-slate-600">{new Date(viewingDailyLog.timestamp).toLocaleString()}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 border-t border-slate-150 flex justify-between items-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingDailyLog({ ...viewingDailyLog });
+                    setViewingDailyLog(null);
+                  }}
+                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Edit size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Sigurado ka bang nais mong burahin ang log entry (${viewingDailyLog.id})?`)) {
+                      if (onDeleteDailyLog) onDeleteDailyLog(viewingDailyLog.id);
+                      setViewingDailyLog(null);
+                    }
+                  }}
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+              <button onClick={() => setViewingDailyLog(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DAILY LOG EDIT MODAL */}
+      {editingDailyLog && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <div className="bg-amber-600 text-white p-4 px-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-mono text-amber-200 font-bold uppercase tracking-wider block">Edit Record</span>
+                <h3 className="text-base font-black">Visitor Log #{editingDailyLog.id}</h3>
+              </div>
+              <button onClick={() => setEditingDailyLog(null)} className="p-1 text-amber-200 hover:text-white rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateDailyLog) onUpdateDailyLog(editingDailyLog);
+                alert('Matagumpay na na-update ang daily log!');
+                setEditingDailyLog(null);
+              }}
+              className="p-6 space-y-3 overflow-y-auto text-xs text-slate-700"
+            >
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Resident / Visitor Name</label>
+                <input
+                  type="text"
+                  value={editingDailyLog.patientName}
+                  onChange={(e) => setEditingDailyLog({ ...editingDailyLog, patientName: e.target.value })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs font-bold"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Purok</label>
+                  <select
+                    value={editingDailyLog.purok}
+                    onChange={(e) => setEditingDailyLog({ ...editingDailyLog, purok: e.target.value as any })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                  >
+                    <option value="Purok 1">Purok 1</option>
+                    <option value="Purok 2">Purok 2</option>
+                    <option value="Purok 3">Purok 3</option>
+                    <option value="Purok 4">Purok 4</option>
+                    <option value="Purok 5">Purok 5</option>
+                    <option value="Purok 6">Purok 6</option>
+                    <option value="Purok 7">Purok 7</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Triage Status</label>
+                  <select
+                    value={editingDailyLog.status}
+                    onChange={(e) => setEditingDailyLog({ ...editingDailyLog, status: e.target.value as any })}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-xs font-bold"
+                  >
+                    <option value="Waiting">Waiting</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Referred">Referred</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Purpose</label>
+                <select
+                  value={editingDailyLog.purpose}
+                  onChange={(e) => setEditingDailyLog({ ...editingDailyLog, purpose: e.target.value as any })}
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                >
+                  <option value="Checkup">Checkup</option>
+                  <option value="Vaccination">Vaccination</option>
+                  <option value="Prenatal">Prenatal</option>
+                  <option value="Family Planning">Family Planning</option>
+                  <option value="Medicine Pickup">Medicine Pickup</option>
+                  <option value="Certificate Request">Certificate Request</option>
+                  <option value="Referral">Referral</option>
+                </select>
+              </div>
+              <div className="bg-slate-50 -mx-6 -mb-6 p-4 border-t border-slate-200 flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setEditingDailyLog(null)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold">
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
