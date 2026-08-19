@@ -88,25 +88,13 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
   const [useTranslationHelp, setUseTranslationHelp] = useState(true);
   const [prescriptionToPrint, setPrescriptionToPrint] = useState<MedicineDispensed | null>(null);
 
-  // Audience view filters based on roles
+  // Audience view filters
   const [audienceTab, setAudienceTab] = useState<'All' | 'Household Resident' | 'Buntis' | 'Bata'>('All');
-
-  const getActiveAudienceFilter = (): 'All' | 'Household Resident' | 'Buntis' | 'Bata' => {
-    if (activeRole === 'BHW') return 'Household Resident';
-    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') return 'Buntis'; // Overridden below
-    return audienceTab;
-  };
-
-  const activeAudience = getActiveAudienceFilter();
 
   // Filter inventory based on audience target
   const filteredInventory = inventory.filter((item) => {
-    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') {
-      const aud = getMedicineAudience(item);
-      return aud === 'Buntis' || aud === 'Bata';
-    }
-    if (activeAudience === 'All') return true;
-    return getMedicineAudience(item) === activeAudience;
+    if (audienceTab === 'All') return true;
+    return getMedicineAudience(item) === audienceTab;
   });
 
   // Calculate current safe medicine selection
@@ -445,9 +433,8 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
         </div>
       )}
 
-      {/* FILTER BUTTON TABS FOR ADMIN, PHARMACIST, AND MHO */}
-      {(activeRole === 'PHARMACIST' || activeRole === 'MHO' || activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
-        <div className="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+      {/* FILTER BUTTON TABS */}
+      <div className="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
           <div className="text-xs">
             <span className="text-slate-400 font-mono font-black block text-[8px] uppercase tracking-widest">E-PHARMACY AUDIENCE FILTER</span>
             <span className="text-slate-700 text-[11px] font-extrabold">Suriin ang mga gamot ayon sa kategorya ng pasyente:</span>
@@ -477,7 +464,6 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
             })}
           </div>
         </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT COMPONENT: Inventory Levels with low alerts */}

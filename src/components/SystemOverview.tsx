@@ -130,8 +130,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
             </h2>
             <p className="text-xs text-indigo-800 leading-relaxed font-semibold">
               {language === 'EN' 
-                ? 'Logged in as midwife. Your dashboard is focused on regular monitoring of maternal care, prenatal check-ups, and health indicators.' 
-                : 'Naka-log in bilang midwife. Ang iyong dashboard ay naka-focus sa regular na pagsubaybay sa kalusugan ng mga Buntis, pre-natal care, at maternal health indicators ng barangay.'}
+                ? 'Your dashboard is focused on regular monitoring of maternal care, prenatal check-ups, and health indicators.' 
+                : 'Ang dashboard na ito ay nakatuon sa regular na pagsubaybay sa kalusugan ng mga Buntis, pre-natal care, at maternal health indicators ng barangay.'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 shrink-0">
@@ -371,8 +371,8 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
             </h2>
             <p className="text-xs text-emerald-800 leading-relaxed font-semibold">
               {language === 'EN' 
-                ? 'Logged in as nurse. Your dashboard is focused on monitoring children health, Expanded Program on Immunization (EPI), and pediatric nutrition.' 
-                : 'Naka-log in bilang nurse. Ang iyong dashboard ay naka-focus sa pagsubaybay sa kalusugan ng mga bata, Expanded Program on Immunization (EPI), at pediatric nutrition sa barangay.'}
+                ? 'Your dashboard is focused on monitoring children health, Expanded Program on Immunization (EPI), and pediatric nutrition.' 
+                : 'Ang dashboard na ito ay nakatuon sa pagsubaybay sa kalusugan ng mga bata, Expanded Program on Immunization (EPI), at pediatric nutrition sa barangay.'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 shrink-0">

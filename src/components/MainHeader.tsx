@@ -6,7 +6,7 @@
 import React from 'react';
 import { Role, Language } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Wifi, WifiOff, RefreshCw, Globe, ShieldAlert, Clock, LogOut, Lock } from 'lucide-react';
+import { Globe, LogOut } from 'lucide-react';
 import { RHU_PITOGO_LOGO_BASE64 } from '../assets/logoBase64';
 
 interface MainHeaderProps {
@@ -102,63 +102,16 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 
           <div className="h-6 w-px bg-slate-200"></div>
 
-          {/* Siting / Logout Button */}
+          {/* Logout Button */}
           <button
             onClick={onLogout}
             className="px-3 py-1.5 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 hover:text-rose-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs uppercase font-mono"
-            title="Lock session & log out of workstation"
+            title="Log out"
             id="header-logout-btn"
           >
             <LogOut size={13} />
             <span>{language === 'EN' ? 'Logout' : 'Labas'}</span>
           </button>
-        </div>
-      </div>
-
-      {/* Authorized Active Session Banner (Security Locked) */}
-      <div className="bg-slate-50/50 border-t border-slate-200 px-4 py-3" id="bhc-session-lock-strip">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-slate-900 text-white rounded-lg flex items-center justify-center border border-slate-850">
-              <Lock size={13} className="text-amber-450 text-amber-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest font-mono">
-                  {language === 'EN' ? 'SECURE ACTIVE WORKSTATION SESSION' : 'LIGTAS NA AKTIBONG SESSION NG WORKSTATION'}
-                </span>
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              </div>
-              <div className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                <span>
-                  {activeRole === 'BHW' ? 'Julefe Magwate' :
-                   activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' :
-                   activeRole === 'NURSE' ? 'Yvonne Galang, RN' :
-                   activeRole === 'CAPITAN' ? 'Judith Pila' :
-                   'Ericson Padunan'}
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase border ${
-                  activeRole === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                  activeRole === 'CAPITAN' ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' :
-                  activeRole === 'MIDWIFE' ? 'bg-teal-50 text-teal-700 border-teal-200' :
-                  activeRole === 'NURSE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                  'bg-emerald-50 text-emerald-700 border-emerald-200'
-                }`}>
-                  {activeRole === 'BHW' ? 'BHW' :
-                   activeRole === 'MIDWIFE' ? 'Midwife' :
-                   activeRole === 'NURSE' ? 'Nurse' :
-                   activeRole === 'CAPITAN' ? 'Kapitan' :
-                   'Administrator'}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-[10px] text-slate-500 max-w-sm font-semibold leading-normal bg-slate-100 p-2 rounded-xl border border-slate-200 md:text-right">
-            ⚠️ {language === 'EN' 
-              ? 'Authorized personnel only. Other accounts are invisible inside this session. To switch roles, click Logout first.' 
-              : 'Mga awtorisadong tauhan lamang. Hindi nakikita ang ibang account sa session na ito. Upang magpalit ng account, mag-Logout muna.'}
-          </div>
         </div>
       </div>
     </header>

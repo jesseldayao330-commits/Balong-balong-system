@@ -99,10 +99,9 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
         </div>
       </div>      {/* High-visibility active TB warning banner */}
       {patients.some((p) => p.activePrograms.includes('TB_DOTS')) && (
-        <div className="mb-3 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between shadow-xs animate-pulse">
+        <div className="mb-3 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
             <span className="flex h-3 w-3 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
             </span>
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5">
@@ -110,11 +109,11 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 AKTIBONG SURVEILLANCE
               </span>
               <p className="text-xs font-semibold text-red-800">
-                May natukoy na aktibong kaso ng TB (Tuberculosis). Awtomatikong dumederep/kumukurap (blinking) ang mga apektadong Purok sa mapa.
+                May natukoy na aktibong kaso ng TB (Tuberculosis). Naka-highlight sa pulang kulay ang apektadong Purok sa mapa.
               </p>
             </div>
           </div>
-          <AlertTriangle className="text-red-600 hidden md:block shrink-0 animate-bounce" size={18} />
+          <AlertTriangle className="text-red-600 hidden md:block shrink-0" size={18} />
         </div>
       )}
 
@@ -126,16 +125,16 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
         </div>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse border border-red-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">TB Outbreak (Red Blink)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-red-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">TB Outbreak (Red)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse border border-amber-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Senior Citizens (Yellow Blink)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">Senior Citizens (Yellow)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse border border-blue-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Family Planning (Blue Blink)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 border border-blue-200 inline-block"></span>
+            <span className="font-semibold text-slate-800">Family Planning (Blue)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping border border-blue-300 inline-block"></span>
@@ -174,17 +173,18 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 const hasTB = matchesPatients.some((p) => p.activePrograms.includes('TB_DOTS'));
                 const hasSenior = matchesPatients.some((p) => p.activePrograms.includes('SENIOR_CITIZEN'));
                 const hasFP = matchesPatients.some((p) => p.activePrograms.includes('FAMILY_PLANNING'));
+                const isDualMixed = (hasSenior && hasFP) || (hasTB && (hasSenior || hasFP));
                 
-                // Color decision logic based on warning / health status priority requests
+                // Color decision logic: ONLY Dual/Mixed blinks; single conditions are solid static colors
                 let blinkClass = '';
-                if (hasTB) {
-                  blinkClass = 'bg-red-600 text-white border-white animate-blink-hazard scale-110 z-20';
-                } else if (hasSenior && hasFP) {
-                  blinkClass = 'animate-blink-senior-fp text-white border-white scale-110 z-20';
+                if (isDualMixed) {
+                  blinkClass = 'animate-blink-senior-fp text-white border-white scale-110 z-20 shadow-md';
+                } else if (hasTB) {
+                  blinkClass = 'bg-red-600 text-white border-white scale-110 z-20 shadow-md';
                 } else if (hasSenior) {
-                  blinkClass = 'animate-blink-senior text-white border-white scale-110 z-20';
+                  blinkClass = 'bg-amber-500 text-white border-white scale-110 z-20 shadow-md';
                 } else if (hasFP) {
-                  blinkClass = 'animate-blink-fp text-white border-white scale-110 z-20';
+                  blinkClass = 'bg-blue-600 text-white border-white scale-110 z-20 shadow-md';
                 } else if (isSelected) {
                   blinkClass = 'bg-slate-950 border-white text-white scale-125 z-20';
                 } else {
@@ -202,17 +202,8 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     }`}
                     title={`Click to analyze ${pin.key}${hasTB ? ' - Active TB' : ''}${hasSenior ? ' - Senior Residents' : ''}${hasFP ? ' - Family Planning' : ''}`}
                   >
-                    {/* Ring glow active anims */}
-                    {hasTB && (
-                      <div className="absolute inset-0 bg-red-500 rounded-full blur-xs opacity-50 animate-ping" style={{ transform: 'scale(1.8)' }}></div>
-                    )}
-                    {!hasTB && hasSenior && hasFP && (
-                      <div className="absolute inset-0 bg-amber-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
-                    )}
-                    {!hasTB && !hasSenior && hasFP && (
-                      <div className="absolute inset-0 bg-blue-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
-                    )}
-                    {!hasTB && hasSenior && !hasFP && (
+                    {/* Ring glow active anims - ONLY on Dual/Mixed */}
+                    {isDualMixed && (
                       <div className="absolute inset-0 bg-amber-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
                     )}
                     
@@ -228,9 +219,9 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     </div>
                     
                     <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs whitespace-nowrap flex flex-wrap items-center gap-1 justify-center ${
-                      hasTB
+                      hasTB && !isDualMixed
                         ? 'bg-red-600 text-white border border-red-700 font-extrabold shadow-md'
-                        : hasSenior && hasFP
+                        : isDualMixed
                           ? 'bg-amber-600 text-white border border-amber-700 font-extrabold shadow-md'
                           : hasSenior
                             ? 'bg-amber-500 text-white border border-amber-600 font-bold shadow-xs'
@@ -240,7 +231,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                                 ? 'bg-slate-950 text-white border border-slate-800' 
                                 : 'bg-white/90 text-slate-800 border border-slate-200'
                     }`}>
-                      {hasTB && <AlertTriangle size={8} className="text-white animate-pulse" />}
+                      {hasTB && <AlertTriangle size={8} className="text-white" />}
                       <span>{pin.key}</span>
                       {hasTB && <span className="text-[7.5px] bg-red-900 border border-red-550 px-0.5 rounded-xs text-white">TB</span>}
                       {!hasTB && hasSenior && <span className="text-[7px] bg-amber-800 border border-amber-400 px-0.5 rounded-xs text-white">SR</span>}
@@ -251,7 +242,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               })}
             </div>
           ) : (
-            /* VECTOR SVG CLUSTER LAYOUT MAP WITH SENIOR + FP INDICATOR BLINK SHAPES */
+            /* VECTOR SVG CLUSTER LAYOUT MAP WITH DUAL/MIXED BLINK AND SOLID COLORS FOR OTHERS */
             <div className="w-full flex flex-col items-center">
               <span className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Click to Investigate Purok Clusters</span>
               <svg viewBox="0 0 460 350" className="w-full max-w-[550px] drop-shadow-md">
@@ -260,16 +251,17 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                   const hasTB = matchesPatients.some((pat) => pat.activePrograms.includes('TB_DOTS'));
                   const hasSenior = matchesPatients.some((pat) => pat.activePrograms.includes('SENIOR_CITIZEN'));
                   const hasFP = matchesPatients.some((pat) => pat.activePrograms.includes('FAMILY_PLANNING'));
+                  const isDualMixed = (hasSenior && hasFP) || (hasTB && (hasSenior || hasFP));
                   
                   let fillPathClass = p.color;
-                  if (hasTB) {
-                    fillPathClass = 'animate-svg-hazard stroke-red-700';
-                  } else if (hasSenior && hasFP) {
+                  if (isDualMixed) {
                     fillPathClass = 'animate-svg-senior-fp stroke-amber-600';
+                  } else if (hasTB) {
+                    fillPathClass = 'fill-red-200 hover:fill-red-300 stroke-red-600';
                   } else if (hasSenior) {
-                    fillPathClass = 'animate-svg-senior stroke-amber-500';
+                    fillPathClass = 'fill-amber-200 hover:fill-amber-300 stroke-amber-600';
                   } else if (hasFP) {
-                    fillPathClass = 'animate-svg-fp stroke-blue-600';
+                    fillPathClass = 'fill-blue-200 hover:fill-blue-300 stroke-blue-600';
                   }
 
                   return (

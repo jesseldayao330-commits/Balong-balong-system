@@ -592,7 +592,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
 
   // Pharmacy inventory and alerts
   const totalMeds = inventory ? inventory.length : 0;
-  const lowStockMeds = (inventory || []).filter(p => p.stockLevel <= p.reorderLevel).length;
+  const lowStockMeds = (inventory || []).filter(p => p.currentStock <= p.reorderLevel).length;
   const totalDispensedUnits = (dispensed || []).reduce((sum, item) => sum + (item.quantityDispensed || 0), 0);
 
   // Referrals and Clearance certificates

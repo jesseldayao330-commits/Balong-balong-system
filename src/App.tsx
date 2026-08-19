@@ -194,18 +194,30 @@ export default function App() {
     }
   }, [verifyPin, roleToVerify]);
 
-  // Core Data Collections States linked to localStorage fallback
+  // Core Data Collections States linked to localStorage fallback with auto-migration to latest mock dataset
   const [patients, setPatients] = useState<Patient[]>(() => {
+    const dataVersion = localStorage.getItem('bhc_data_version');
+    if (dataVersion !== 'v4_purok_dist') {
+      localStorage.setItem('bhc_data_version', 'v4_purok_dist');
+      localStorage.setItem('bhc_patients', JSON.stringify(MOCK_PATIENTS));
+      localStorage.setItem('bhc_households', JSON.stringify(MOCK_HOUSEHOLDS));
+      localStorage.setItem('bhc_prenatals', JSON.stringify(MOCK_PRENATAL));
+      localStorage.setItem('bhc_vaccinations', JSON.stringify(MOCK_IMMUNIZATION));
+      return MOCK_PATIENTS;
+    }
     const saved = localStorage.getItem('bhc_patients');
     if (!saved) return MOCK_PATIENTS;
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : MOCK_PATIENTS;
     } catch (e) {
       return MOCK_PATIENTS;
     }
   });
   
   const [households, setHouseholds] = useState<Household[]>(() => {
+    const dataVersion = localStorage.getItem('bhc_data_version');
+    if (dataVersion !== 'v4_purok_dist') return MOCK_HOUSEHOLDS;
     const saved = localStorage.getItem('bhc_households');
     if (!saved) return MOCK_HOUSEHOLDS;
     try {

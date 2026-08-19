@@ -573,32 +573,6 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   });
 
   const filteredInventory = inventory.filter(i => {
-    // Role-specific inventory filter
-    if (userActiveRole === 'MIDWIFE') {
-      const isPrenatal = 
-        i.category === 'Vitamins' || 
-        i.medicineName.toLowerCase().includes('prenatal') || 
-        i.medicineName.toLowerCase().includes('pre-natal') || 
-        i.medicineName.toLowerCase().includes('maternal') || 
-        i.medicineName.toLowerCase().includes('folic') || 
-        i.medicineName.toLowerCase().includes('iron') ||
-        i.genericName.toLowerCase().includes('ferrous') ||
-        i.genericName.toLowerCase().includes('folic');
-      const isImmunization = 
-        i.category === 'EPI Vaccines' || 
-        i.medicineName.toLowerCase().includes('vaccine') || 
-        i.medicineName.toLowerCase().includes('immuniz') ||
-        i.genericName.toLowerCase().includes('vaccine');
-      if (!isPrenatal && !isImmunization) return false;
-    } else if (userActiveRole === 'NURSE') {
-      const isImmunization = 
-        i.category === 'EPI Vaccines' || 
-        i.medicineName.toLowerCase().includes('vaccine') || 
-        i.medicineName.toLowerCase().includes('immuniz') ||
-        i.genericName.toLowerCase().includes('vaccine');
-      if (!isImmunization) return false;
-    }
-
     const query = searchQuery.toLowerCase();
     const matchesSearch = 
       i.id.toLowerCase().includes(query) ||
