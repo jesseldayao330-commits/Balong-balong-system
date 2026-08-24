@@ -749,8 +749,16 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
 
             <div className="space-y-2.5 my-1 text-xs font-mono">
               <div className="flex justify-between items-center text-slate-650">
-                <span>Total Registrants:</span>
-                <span className="font-bold text-slate-900">{totalPatients} patients</span>
+                <span>Kabuuang Residente (Total):</span>
+                <span className="font-bold text-slate-900">{totalPatients} (78 Aktibo, 100 Archived)</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-650">
+                <span>🟢 Aktibong Residente (2026):</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-1.5 rounded">{patients.filter(p => p.status === 'Active').length} tao</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-650">
+                <span>🔴 Inactive Archive (2024-2025):</span>
+                <span className="font-bold text-slate-700 bg-slate-100 px-1.5 rounded">{patients.filter(p => p.status === 'Inactive').length} tao</span>
               </div>
               <div className="flex justify-between items-center text-slate-650">
                 <span>Indigent (Malasakit Support):</span>

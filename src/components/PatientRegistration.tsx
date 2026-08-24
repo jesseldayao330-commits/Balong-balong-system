@@ -37,6 +37,7 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
 }) => {
   const text = LOCALIZED_TEXTS[language];
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Inactive'>('All');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(patients[0] || null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -118,6 +119,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         setActivePrograms(match.activePrograms);
         setHouseholdId(match.householdId);
         setPhoto(match.photo || '');
+        setStatus(match.status || 'Active');
+        setCensusYear(match.censusYear || 2026);
+        setInactiveReason(match.inactiveReason || '');
         setIsEditing(true);
         setIsRegistering(false);
       }
@@ -142,6 +146,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
   const [activePrograms, setActivePrograms] = useState<DOHProgram[]>([]);
   const [householdId, setHouseholdId] = useState(households[0]?.id || '');
   const [photo, setPhoto] = useState<string>('');
+  const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
+  const [censusYear, setCensusYear] = useState<number>(2026);
+  const [inactiveReason, setInactiveReason] = useState<string>('');
 
   // Inline Household Creation States
   const [isAddingHH, setIsAddingHH] = useState(false);
@@ -207,6 +214,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
     setActivePrograms(selectedPatient.activePrograms);
     setHouseholdId(selectedPatient.householdId);
     setPhoto(selectedPatient.photo || '');
+    setStatus(selectedPatient.status || 'Active');
+    setCensusYear(selectedPatient.censusYear || 2026);
+    setInactiveReason(selectedPatient.inactiveReason || '');
     setIsEditing(true);
     setIsRegistering(false);
   };
@@ -259,6 +269,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         allergies,
         activePrograms,
         photo,
+        status,
+        censusYear,
+        inactiveReason: status === 'Inactive' ? (inactiveReason || 'Archived record') : undefined,
       };
       onUpdatePatient(updatedPat);
       setSelectedPatient(updatedPat);
@@ -296,6 +309,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         createdAt: new Date().toISOString().split('T')[0],
         photo,
         registeredBy: activeRole as Role,
+        status,
+        censusYear,
+        inactiveReason: status === 'Inactive' ? (inactiveReason || 'Archived record') : undefined,
       };
 
       onAddPatient(newPat);
@@ -408,8 +424,15 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
 
   const filteredPatients = patients.filter((pat) => {
     const full = `${pat.lastName} ${pat.firstName} ${pat.middleName} ${pat.id} ${pat.philHealthId}`.toLowerCase();
-    return full.includes(searchQuery.toLowerCase());
+    const matchesSearch = full.includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (statusFilter === 'Active' && pat.status === 'Inactive') return false;
+    if (statusFilter === 'Inactive' && pat.status !== 'Inactive') return false;
+    return true;
   });
+
+  const activePatientsCount = patients.filter(p => p.status !== 'Inactive').length;
+  const inactivePatientsCount = patients.filter(p => p.status === 'Inactive').length;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden" id="patient-registration-panel">
@@ -443,8 +466,36 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
         {/* LEFT COLUMN: Patient Directory List */}
         {!isRegistering && (
           <div className="col-span-1 md:col-span-4 border-r border-slate-200 max-h-[500px] overflow-y-auto" id="patients-directory-drawer">
-            <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">Mga Nakarehistro ({filteredPatients.length})</span>
+            <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-1.5">
+              <div className="flex justify-between items-center px-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Mga Nakarehistro ({filteredPatients.length})</span>
+                <span className="text-[10px] text-slate-450 font-mono">178 Total</span>
+              </div>
+              
+              {/* Filter tabs */}
+              <div className="flex items-center gap-1 p-0.5 bg-slate-200/60 rounded-lg text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('All')}
+                  className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${statusFilter === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Lahat ({patients.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('Active')}
+                  className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${statusFilter === 'Active' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-emerald-700 hover:bg-emerald-100/50'}`}
+                >
+                  🟢 Aktibo ({activePatientsCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('Inactive')}
+                  className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${statusFilter === 'Inactive' ? 'bg-rose-600 text-white shadow-2xs' : 'text-rose-700 hover:bg-rose-100/50'}`}
+                >
+                  🔴 Inactive ({inactivePatientsCount})
+                </button>
+              </div>
             </div>
             
             {filteredPatients.length === 0 ? (
@@ -459,13 +510,24 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                       setIsRegistering(false);
                       setIsEditing(false);
                     }}
-                    className={`w-full text-left p-3.5 cursor-pointer flex justify-between items-center transition-all ${
+                    className={`w-full text-left p-3 cursor-pointer flex justify-between items-center transition-all ${
                       selectedPatient?.id === pat.id ? 'bg-emerald-50/50 border-l-4 border-emerald-600' : 'hover:bg-slate-50'
                     }`}
                     id={`patient-btn-${pat.id}`}
                   >
                     <div>
-                      <h4 className="font-bold text-slate-800 text-sm">{pat.lastName}, {pat.firstName}</h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-bold text-slate-800 text-sm">{pat.lastName}, {pat.firstName}</h4>
+                        {pat.status === 'Inactive' ? (
+                          <span className="px-1 py-0.2 bg-rose-100 text-rose-800 text-[8px] font-black uppercase rounded">
+                            🔴 Inactive
+                          </span>
+                        ) : (
+                          <span className="px-1 py-0.2 bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase rounded">
+                            🟢 Aktibo
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-slate-500 font-mono mt-0.5">{pat.id} • {pat.purok}</p>
                     </div>
                     
@@ -775,6 +837,47 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                     {isIndigent ? 'Oo, Karapat-dapat (Indigent Eligible)' : 'Hindi, Karaniwang Residente'}
                   </button>
                 </div>
+              </div>
+
+              {/* Diagnostic/Vital parameters blood type & Allergies */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+                <div>
+                  <label className="block text-xs font-black text-slate-600 uppercase mb-1.5">Katayuan ng Residente (Status)</label>
+                  <select
+                    className="w-full border border-slate-200 p-2.5 bg-white rounded-lg text-sm focus:outline-hidden font-bold"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
+                  >
+                    <option value="Active">🟢 Aktibo (Active)</option>
+                    <option value="Inactive">🔴 Hindi Aktibo (Inactive / Archive)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-600 uppercase mb-1.5">Taon ng Census (Census Year)</label>
+                  <select
+                    className="w-full border border-slate-200 p-2.5 bg-white rounded-lg text-sm focus:outline-hidden font-mono"
+                    value={censusYear}
+                    onChange={(e) => setCensusYear(parseInt(e.target.value, 10))}
+                  >
+                    <option value={2026}>2026 (Kasalukuyang Aktibo)</option>
+                    <option value={2025}>2025 (Historical Archive)</option>
+                    <option value={2024}>2024 (Historical Archive)</option>
+                  </select>
+                </div>
+
+                {status === 'Inactive' && (
+                  <div>
+                    <label className="block text-xs font-black text-rose-700 uppercase mb-1.5">Dahilan ng Hindi Aktibo (Inactive Reason)</label>
+                    <input
+                      type="text"
+                      className="w-full border border-rose-200 p-2.5 rounded-lg text-sm focus:outline-hidden bg-rose-50/40"
+                      placeholder="Hal. Lumipat ng tirahan / Archived 2025"
+                      value={inactiveReason}
+                      onChange={(e) => setInactiveReason(e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Diagnostic/Vital parameters blood type & Allergies */}
@@ -1248,13 +1351,29 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                     </div>
                   )}
                   <div>
-                    <h3 className="text-xl font-extrabold text-slate-800">
-                      {selectedPatient.lastName}, {selectedPatient.firstName} {selectedPatient.middleName}
-                      {selectedPatient.suffix ? ` ${selectedPatient.suffix}` : ''}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-extrabold text-slate-800">
+                        {selectedPatient.lastName}, {selectedPatient.firstName} {selectedPatient.middleName}
+                        {selectedPatient.suffix ? ` ${selectedPatient.suffix}` : ''}
+                      </h3>
+                      {selectedPatient.status === 'Inactive' ? (
+                        <span className="px-2 py-0.5 bg-rose-100 border border-rose-200 text-rose-800 text-xs font-black uppercase rounded-md">
+                          🔴 Hindi Aktibo (Census {selectedPatient.censusYear || 2025})
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-black uppercase rounded-md">
+                          🟢 Aktibong Residente ({selectedPatient.censusYear || 2026})
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500 font-mono mt-0.5">
                       Patient Census ID: <strong className="text-slate-800">{selectedPatient.id}</strong> • Nakarehistro noong: {selectedPatient.createdAt}
                     </p>
+                    {selectedPatient.status === 'Inactive' && selectedPatient.inactiveReason && (
+                      <p className="text-xs text-rose-600 font-medium mt-1 bg-rose-50 px-2 py-1 rounded border border-rose-100">
+                        ℹ️ Dahilan ng pagiging Hindi Aktibo: <span className="font-semibold">{selectedPatient.inactiveReason}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
                 

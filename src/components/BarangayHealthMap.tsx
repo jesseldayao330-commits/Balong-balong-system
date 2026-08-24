@@ -120,13 +120,13 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
       {/* Modern Filipino Health Sektor / Monitoring Legend Bar */}
       <div className="mb-5 p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-1.5 font-bold text-slate-600 uppercase tracking-wide">
-          <span className="w-1.5 h-3 bg-indigo-600 rounded"></span>
+          <span className="w-1.5 h-3 bg-red-600 rounded"></span>
           <span>Sektor / Monitoring Map Legend:</span>
         </div>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-red-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">TB Outbreak (Red)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping border border-red-300 inline-block"></span>
+            <span className="font-bold text-red-700">TB DOTS (Red Blink)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-200 inline-block"></span>
@@ -137,8 +137,8 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             <span className="font-semibold text-slate-800">Family Planning (Blue)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping border border-blue-300 inline-block"></span>
-            <span className="font-semibold text-slate-800 font-mono text-[10px]">Dual/Mixed Blink</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-blue-400 inline-block"></span>
+            <span className="font-semibold text-slate-800 font-mono text-[10px]">Dual Senior+FP</span>
           </div>
         </div>
       </div>
@@ -173,18 +173,18 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 const hasTB = matchesPatients.some((p) => p.activePrograms.includes('TB_DOTS'));
                 const hasSenior = matchesPatients.some((p) => p.activePrograms.includes('SENIOR_CITIZEN'));
                 const hasFP = matchesPatients.some((p) => p.activePrograms.includes('FAMILY_PLANNING'));
-                const isDualMixed = (hasSenior && hasFP) || (hasTB && (hasSenior || hasFP));
+                const isDualMixed = !hasTB && hasSenior && hasFP;
                 
-                // Color decision logic: ONLY Dual/Mixed blinks; single conditions are solid static colors
+                // Color decision logic: TB gets absolute priority with prominent RED BLINK
                 let blinkClass = '';
-                if (isDualMixed) {
+                if (hasTB) {
+                  blinkClass = 'animate-blink-tb bg-red-600 text-white border-white scale-110 z-30 shadow-lg ring-2 ring-red-400';
+                } else if (isDualMixed) {
                   blinkClass = 'animate-blink-senior-fp text-white border-white scale-110 z-20 shadow-md';
-                } else if (hasTB) {
-                  blinkClass = 'bg-red-600 text-white border-white scale-110 z-20 shadow-md';
                 } else if (hasSenior) {
-                  blinkClass = 'bg-amber-500 text-white border-white scale-110 z-20 shadow-md';
+                  blinkClass = 'animate-blink-senior bg-amber-500 text-white border-white scale-110 z-20 shadow-md';
                 } else if (hasFP) {
-                  blinkClass = 'bg-blue-600 text-white border-white scale-110 z-20 shadow-md';
+                  blinkClass = 'animate-blink-fp bg-blue-600 text-white border-white scale-110 z-20 shadow-md';
                 } else if (isSelected) {
                   blinkClass = 'bg-slate-950 border-white text-white scale-125 z-20';
                 } else {
@@ -200,27 +200,29 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 group flex flex-col items-center ${
                       hasTB || hasSenior || hasFP ? 'z-30' : 'z-10'
                     }`}
-                    title={`Click to analyze ${pin.key}${hasTB ? ' - Active TB' : ''}${hasSenior ? ' - Senior Residents' : ''}${hasFP ? ' - Family Planning' : ''}`}
+                    title={`Click to analyze ${pin.key}${hasTB ? ' - Active TB DOTS (Red Alert)' : ''}${hasSenior ? ' - Senior Residents' : ''}${hasFP ? ' - Family Planning' : ''}`}
                   >
-                    {/* Ring glow active anims - ONLY on Dual/Mixed */}
-                    {isDualMixed && (
+                    {/* Ring glow active anims - Red pulse for TB, Amber for Dual */}
+                    {hasTB ? (
+                      <div className="absolute inset-0 bg-red-600 rounded-full blur-xs opacity-70 animate-ping" style={{ transform: 'scale(1.8)' }}></div>
+                    ) : isDualMixed ? (
                       <div className="absolute inset-0 bg-amber-400 rounded-full blur-xs opacity-40 animate-ping" style={{ transform: 'scale(1.6)' }}></div>
-                    )}
+                    ) : null}
                     
                     <div className={`p-1.5 rounded-full shadow-md border relative transition-all ${blinkClass}`}>
                       <MapPin size={(isSelected || hasTB || hasSenior || hasFP) ? 14 : 11} className={(isSelected || hasTB || hasSenior || hasFP) ? 'text-white' : 'text-emerald-600'} />
                       
                       {/* Warning micro-badge alert dot */}
                       {hasTB && (
-                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 bg-red-800 border border-white text-[8px] font-black items-center justify-center rounded-full text-white">
+                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 bg-red-950 border border-white text-[8px] font-black items-center justify-center rounded-full text-white animate-pulse">
                           !
                         </span>
                       )}
                     </div>
                     
                     <span className={`mt-1 text-[9px] font-black px-1.5 py-0.5 rounded-xs shadow-3xs whitespace-nowrap flex flex-wrap items-center gap-1 justify-center ${
-                      hasTB && !isDualMixed
-                        ? 'bg-red-600 text-white border border-red-700 font-extrabold shadow-md'
+                      hasTB
+                        ? 'bg-red-600 text-white border border-red-700 font-black shadow-md'
                         : isDualMixed
                           ? 'bg-amber-600 text-white border border-amber-700 font-extrabold shadow-md'
                           : hasSenior
@@ -233,7 +235,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                     }`}>
                       {hasTB && <AlertTriangle size={8} className="text-white" />}
                       <span>{pin.key}</span>
-                      {hasTB && <span className="text-[7.5px] bg-red-900 border border-red-550 px-0.5 rounded-xs text-white">TB</span>}
+                      {hasTB && <span className="text-[7.5px] bg-red-950 border border-red-400 px-1 py-0.2 rounded-xs text-white font-black">TB</span>}
                       {!hasTB && hasSenior && <span className="text-[7px] bg-amber-800 border border-amber-400 px-0.5 rounded-xs text-white">SR</span>}
                       {!hasTB && hasFP && <span className="text-[7px] bg-blue-800 border border-blue-400 px-0.5 rounded-xs text-white">FP</span>}
                     </span>
@@ -251,17 +253,17 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                   const hasTB = matchesPatients.some((pat) => pat.activePrograms.includes('TB_DOTS'));
                   const hasSenior = matchesPatients.some((pat) => pat.activePrograms.includes('SENIOR_CITIZEN'));
                   const hasFP = matchesPatients.some((pat) => pat.activePrograms.includes('FAMILY_PLANNING'));
-                  const isDualMixed = (hasSenior && hasFP) || (hasTB && (hasSenior || hasFP));
+                  const isDualMixed = !hasTB && hasSenior && hasFP;
                   
                   let fillPathClass = p.color;
-                  if (isDualMixed) {
+                  if (hasTB) {
+                    fillPathClass = 'animate-svg-tb stroke-red-600';
+                  } else if (isDualMixed) {
                     fillPathClass = 'animate-svg-senior-fp stroke-amber-600';
-                  } else if (hasTB) {
-                    fillPathClass = 'fill-red-200 hover:fill-red-300 stroke-red-600';
                   } else if (hasSenior) {
-                    fillPathClass = 'fill-amber-200 hover:fill-amber-300 stroke-amber-600';
+                    fillPathClass = 'animate-svg-senior stroke-amber-600';
                   } else if (hasFP) {
-                    fillPathClass = 'fill-blue-200 hover:fill-blue-300 stroke-blue-600';
+                    fillPathClass = 'animate-svg-fp stroke-blue-600';
                   }
 
                   return (
@@ -290,7 +292,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                               : selectedPurok === p.key ? 'fill-slate-950 font-bold' : 'fill-slate-700'
                         }`}
                       >
-                        {p.key} {hasTB ? '⚠️' : ''} {!hasTB && hasSenior ? '👴' : ''} {!hasTB && hasFP ? '🍼' : ''}
+                        {p.key} {hasTB ? '🔴 TB' : ''} {!hasTB && hasSenior ? '👴' : ''} {!hasTB && hasFP ? '🍼' : ''}
                       </text>
                     </g>
                   );

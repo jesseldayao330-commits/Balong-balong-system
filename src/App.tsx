@@ -197,12 +197,18 @@ export default function App() {
   // Core Data Collections States linked to localStorage fallback with auto-migration to latest mock dataset
   const [patients, setPatients] = useState<Patient[]>(() => {
     const dataVersion = localStorage.getItem('bhc_data_version');
-    if (dataVersion !== 'v4_purok_dist') {
-      localStorage.setItem('bhc_data_version', 'v4_purok_dist');
+    if (dataVersion !== 'v10_residents_178_active_inactive_split') {
+      localStorage.setItem('bhc_data_version', 'v10_residents_178_active_inactive_split');
       localStorage.setItem('bhc_patients', JSON.stringify(MOCK_PATIENTS));
       localStorage.setItem('bhc_households', JSON.stringify(MOCK_HOUSEHOLDS));
       localStorage.setItem('bhc_prenatals', JSON.stringify(MOCK_PRENATAL));
       localStorage.setItem('bhc_vaccinations', JSON.stringify(MOCK_IMMUNIZATION));
+      localStorage.setItem('bhc_familyplannings', JSON.stringify(MOCK_FAMILYPLANNING));
+      localStorage.setItem('bhc_consultations', JSON.stringify(MOCK_CONSULTATIONS));
+      localStorage.setItem('bhc_dispensed', JSON.stringify(MOCK_DISPENSED));
+      localStorage.setItem('bhc_referrals', JSON.stringify(MOCK_REFERRALS));
+      localStorage.setItem('bhc_certificates', JSON.stringify(MOCK_CERTIFICATES));
+      localStorage.setItem('bhc_dailylogs', JSON.stringify(MOCK_DAILY_LOG));
       return MOCK_PATIENTS;
     }
     const saved = localStorage.getItem('bhc_patients');
@@ -217,7 +223,7 @@ export default function App() {
   
   const [households, setHouseholds] = useState<Household[]>(() => {
     const dataVersion = localStorage.getItem('bhc_data_version');
-    if (dataVersion !== 'v4_purok_dist') return MOCK_HOUSEHOLDS;
+    if (dataVersion !== 'v10_residents_178_active_inactive_split') return MOCK_HOUSEHOLDS;
     const saved = localStorage.getItem('bhc_households');
     if (!saved) return MOCK_HOUSEHOLDS;
     try {

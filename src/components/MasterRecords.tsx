@@ -181,6 +181,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const [purokFilter, setPurokFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<string>('All');
   const [healthStatusFilter, setHealthStatusFilter] = useState<string>('All');
+  const [residentStatusFilter, setResidentStatusFilter] = useState<string>('All');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('All');
   const [riskFilter, setRiskFilter] = useState<string>('All');
   const [stockLevelFilter, setStockLevelFilter] = useState<string>('All'); // All, Low, Normal
@@ -196,6 +197,9 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
   const [hhSanitary, setHHSanitary] = useState(true);
   const [hhSolid, setHHSolid] = useState<Household['solidWasteManagement']>('Segregated');
   const [hhIndigent, setHHIndigent] = useState(false);
+  const [hhStatus, setHHStatus] = useState<'Active' | 'Inactive'>('Inactive');
+  const [hhCensusYear, setHHCensusYear] = useState<number>(2024);
+  const [householdYearFilter, setHouseholdYearFilter] = useState<string>('All');
 
   const startEditHH = (hh: Household) => {
     setEditingHH(hh);
@@ -207,6 +211,8 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
     setHHSanitary(hh.sanitaryToilet);
     setHHSolid(hh.solidWasteManagement);
     setHHIndigent(hh.indigentStatus);
+    setHHStatus(hh.status || 'Active');
+    setHHCensusYear(hh.censusYear || 2026);
     setIsAddingHH(true);
   };
 
@@ -226,6 +232,8 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
       sanitaryToilet: hhSanitary,
       solidWasteManagement: hhSolid,
       indigentStatus: hhIndigent,
+      status: hhStatus,
+      censusYear: Number(hhCensusYear),
     };
 
     if (editingHH) {
@@ -443,6 +451,19 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
     
     if (!matchesSearch) return false;
     if (purokFilter !== 'All' && h.purok !== purokFilter) return false;
+
+    if (householdYearFilter === '2026') {
+      if (h.censusYear !== 2026 && h.status !== 'Active') return false;
+    } else if (householdYearFilter === '2025') {
+      if (h.censusYear !== 2025 && !h.id.includes('2025')) return false;
+    } else if (householdYearFilter === '2024') {
+      if (h.censusYear !== 2024 && !h.id.includes('2024')) return false;
+    } else if (householdYearFilter === 'Active') {
+      if (h.status === 'Inactive') return false;
+    } else if (householdYearFilter === 'Inactive') {
+      if (h.status !== 'Inactive') return false;
+    }
+
     return true;
   });
 
@@ -504,6 +525,19 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
       } else {
         if (!p.activePrograms.includes(healthStatusFilter as any)) return false;
       }
+    }
+
+    // Census Year & Active/Inactive Status Filter
+    if (residentStatusFilter === 'Active') {
+      if (p.status === 'Inactive') return false;
+    } else if (residentStatusFilter === 'Inactive') {
+      if (p.status !== 'Inactive') return false;
+    } else if (residentStatusFilter === '2026') {
+      if (p.censusYear !== 2026 && p.status !== 'Active') return false;
+    } else if (residentStatusFilter === '2025') {
+      if (p.censusYear !== 2025 && !p.id.includes('2025')) return false;
+    } else if (residentStatusFilter === '2024') {
+      if (p.censusYear !== 2024 && !p.id.includes('2024')) return false;
     }
     
     return true;
@@ -914,6 +948,23 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
           {/* Gender Filter for Residents */}
           {activeSubTab === 'residents' && (
             <>
+              {/* Census & Active/Inactive Filter */}
+              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+                <span className="text-[10px] text-slate-450 uppercase font-mono font-bold">Katayuan / Taon:</span>
+                <select
+                  className="border border-slate-200 bg-white px-2 py-1.5 rounded-lg text-slate-800 font-bold text-xs"
+                  value={residentStatusFilter}
+                  onChange={(e) => setResidentStatusFilter(e.target.value)}
+                >
+                  <option value="All">Lahat (All - 178)</option>
+                  <option value="Active">🟢 Aktibo Lamang (Active - 78)</option>
+                  <option value="Inactive">🔴 Hindi Aktibo / Archived (100)</option>
+                  <option value="2026">🟢 2026 Aktibo (78)</option>
+                  <option value="2025">🔴 2025 Archive (52)</option>
+                  <option value="2024">🔴 2024 Archive (48)</option>
+                </select>
+              </div>
+
               <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
                 <span className="text-[10px] text-slate-450 uppercase font-mono">Gender:</span>
                 <select
@@ -1048,6 +1099,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   <th className="p-3">Pangalan ng Residente</th>
                   <th className="p-3">Petsa ng Kapanganakan / Kasarian</th>
                   <th className="p-3">Purok & Contact</th>
+                  <th className="p-3">Katayuan & Taon</th>
                   <th className="p-3">Philhealth & Indigency</th>
                   <th className="p-3">Sustansyang Programa</th>
                   <th className="p-3 text-center">Aksyon</th>
@@ -1056,11 +1108,11 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredResidents.length === 0 ? (
                   <tr>
-                    <td colspan="7" className="p-5 text-center text-slate-400 italic">Walang nahanap na tugmang resident records.</td>
+                    <td colSpan={8} className="p-5 text-center text-slate-400 italic">Walang nahanap na tugmang resident records.</td>
                   </tr>
                 ) : (
                   filteredResidents.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={p.id} className={`hover:bg-slate-50/50 transition-colors ${p.status === 'Inactive' ? 'bg-slate-50/30' : ''}`}>
                       <td className="p-3 font-mono text-slate-500 font-bold">{p.id}</td>
                       <td className="p-3">
                         <span className="font-extrabold text-slate-800 block">{p.lastName}, {p.firstName} {p.middleName}</span>
@@ -1083,6 +1135,27 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                       <td className="p-3">
                         <span className="font-bold text-slate-700 block">{p.purok}</span>
                         <span className="text-slate-450 font-mono text-[11px] block">{p.phoneNumber}</span>
+                      </td>
+                      <td className="p-3">
+                        {p.status === 'Inactive' ? (
+                          <div>
+                            <span className="px-1.5 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-black uppercase rounded inline-flex items-center gap-1 font-mono">
+                              🔴 Inactive ({p.censusYear || 2024})
+                            </span>
+                            <span className="text-[10px] text-slate-400 block mt-0.5 italic">
+                              {p.inactiveReason || 'Archived record'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black uppercase rounded inline-flex items-center gap-1 font-mono">
+                              🟢 Aktibo ({p.censusYear || 2026})
+                            </span>
+                            <span className="text-[10px] text-emerald-600 block mt-0.5 font-medium">
+                              Kasalukuyang Residente
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="p-3">
                         <span className="text-slate-750 block font-mono text-[11px]">{p.philHealthId || 'NOT ENROLLED'}</span>
@@ -1230,7 +1303,32 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-medium">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-medium">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Taon ng Census (Census Year)</label>
+                    <select
+                      className="w-full bg-white border border-slate-200 p-2.5 rounded-lg focus:outline-hidden text-sm font-bold"
+                      value={hhCensusYear}
+                      onChange={(e) => setHHCensusYear(Number(e.target.value))}
+                    >
+                      <option value={2026}>2026 (Kasalukuyang Aktibo)</option>
+                      <option value={2025}>2025 (Historical Archive)</option>
+                      <option value={2024}>2024 (Historical Archive)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Katayuan (Household Status)</label>
+                    <select
+                      className="w-full bg-white border border-slate-200 p-2.5 rounded-lg focus:outline-hidden text-sm font-bold"
+                      value={hhStatus}
+                      onChange={(e) => setHHStatus(e.target.value as 'Active' | 'Inactive')}
+                    >
+                      <option value="Active">🟢 Aktibo (Active)</option>
+                      <option value="Inactive">🔴 Hindi Aktibo (Inactive / Archived)</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Pinagkukunan ng Tubig (Water Source)</label>
                     <select
@@ -1257,28 +1355,28 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                       <option value="Open Dumping">Open Dumping</option>
                     </select>
                   </div>
+                </div>
 
-                  <div className="flex gap-4 pt-4">
-                    <label className="flex items-center gap-1.5 text-xs text-slate-705 font-bold cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        className="rounded-sm p-1"
-                        checked={hhSanitary}
-                        onChange={(e) => setHHSanitary(e.target.checked)}
-                      />
-                      May Sanitary Toilet (DOH Sanitary Compliant)
-                    </label>
+                <div className="flex gap-4 pt-2">
+                  <label className="flex items-center gap-1.5 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      className="rounded-sm p-1"
+                      checked={hhSanitary}
+                      onChange={(e) => setHHSanitary(e.target.checked)}
+                    />
+                    May Sanitary Toilet (DOH Sanitary Compliant)
+                  </label>
 
-                    <label className="flex items-center gap-1.5 text-xs text-slate-705 font-bold cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        className="rounded-sm p-1"
-                        checked={hhIndigent}
-                        onChange={(e) => setHHIndigent(e.target.checked)}
-                      />
-                      Indigent Sambahayan (Nasa listahan ng Mahirap)
-                    </label>
-                  </div>
+                  <label className="flex items-center gap-1.5 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      className="rounded-sm p-1"
+                      checked={hhIndigent}
+                      onChange={(e) => setHHIndigent(e.target.checked)}
+                    />
+                    Indigent Sambahayan (Nasa listahan ng Mahirap)
+                  </label>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2.5 border-t border-slate-200">
@@ -1291,11 +1389,42 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                 </div>
               </form>
             ) : (
-              <div className="flex justify-between items-center bg-slate-50 border border-slate-200 p-3 rounded-lg">
-                <span className="text-xs text-slate-500 font-medium">Mayroon kang <strong>{filteredHouseholds.length}</strong> sambahayan na nahanap.</span>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 border border-slate-200 p-3 rounded-lg gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs text-slate-600 font-medium">
+                    Mayroon kang <strong>{filteredHouseholds.length}</strong> sambahayan na nahanap.
+                  </span>
+                  
+                  {/* Filter by Census Year / Status */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Census Filter:</span>
+                    <select
+                      value={householdYearFilter}
+                      onChange={(e) => setHouseholdYearFilter(e.target.value)}
+                      className="bg-white border border-slate-300 text-slate-800 text-xs font-bold py-1 px-2.5 rounded-lg focus:outline-hidden"
+                    >
+                      <option value="All">Lahat (All - 133)</option>
+                      <option value="2026">🟢 2026 Aktibo (49)</option>
+                      <option value="2025">🔴 2025 Inactive Archive (44)</option>
+                      <option value="2024">🔴 2024 Inactive Archive (40)</option>
+                      <option value="Active">Aktibo Lamang (Active Only)</option>
+                      <option value="Inactive">Hindi Aktibo (Inactive Only)</option>
+                    </select>
+                  </div>
+                </div>
+
                 {userActiveRole === 'BHW' ? (
                   <button
-                    onClick={() => setIsAddingHH(true)}
+                    onClick={() => {
+                      setEditingHH(null);
+                      setHHId('');
+                      setHHHead('');
+                      setHHPurok('Purok 1');
+                      setHHMembers(4);
+                      setHHStatus('Inactive');
+                      setHHCensusYear(2024);
+                      setIsAddingHH(true);
+                    }}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs cursor-pointer transition-colors flex items-center gap-1"
                   >
                     <Plus size={14} /> Magrehistro ng Sambahayan (Add Household)
@@ -1315,6 +1444,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                     <th className="p-3">Household No. / ID</th>
                     <th className="p-3">Ulo ng Sambahayan (Head Name)</th>
                     <th className="p-3">Purok Cluster</th>
+                    <th className="p-3">Census Taon & Katayuan</th>
                     <th className="p-3">Mga Miyembro sa Pamilya (Members)</th>
                     <th className="p-3">Sanitasyon at Tubig (DOH Metrics)</th>
                     <th className="p-3 text-center">Mga Aksyon</th>
@@ -1323,11 +1453,13 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                 <tbody className="divide-y divide-slate-100 font-medium font-mono">
                   {filteredHouseholds.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-5 text-center text-slate-400 italic font-sans">Walang nahanap na sambahayan records.</td>
+                      <td colSpan={7} className="p-5 text-center text-slate-400 italic font-sans">Walang nahanap na sambahayan records.</td>
                     </tr>
                   ) : (
                     filteredHouseholds.map(h => {
                       const linkedResidents = patients.filter(p => p.householdId === h.id);
+                      const isInactive = h.status === 'Inactive' || h.censusYear === 2024 || h.censusYear === 2025;
+                      const year = h.censusYear || (h.id.includes('2024') ? 2024 : h.id.includes('2025') ? 2025 : 2026);
                       return (
                         <tr key={h.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-3 font-mono text-slate-900 font-bold bg-slate-50/40 text-[11px]">{h.id}</td>
@@ -1337,7 +1469,23 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                               <span className="px-1 py-0.2 bg-rose-100 text-rose-800 text-[8px] font-black rounded uppercase">PAUPER / INDIGENT</span>
                             )}
                           </td>
-                          <td className="p-3 font-bold text-slate-705 font-sans">{h.purok}</td>
+                          <td className="p-3 font-bold text-slate-700 font-sans">{h.purok}</td>
+                          <td className="p-3 font-sans">
+                            <div className="flex flex-col gap-1">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black uppercase font-mono w-fit ${
+                                !isInactive 
+                                  ? 'bg-emerald-100 text-emerald-800' 
+                                  : year === 2025 
+                                    ? 'bg-amber-100 text-amber-800' 
+                                    : 'bg-slate-200 text-slate-700'
+                              }`}>
+                                {!isInactive ? '🟢 Aktibo' : '🔴 Hindi Aktibo'} ({year})
+                              </span>
+                              <span className="text-[9px] text-slate-400 font-mono">
+                                {!isInactive ? 'Current Registry' : 'Historical Archive'}
+                              </span>
+                            </div>
+                          </td>
                           <td className="p-3 font-sans">
                             <span className="text-xs font-bold text-slate-800 block">Sukat: {Math.max(h.numberOfMembers, linkedResidents.length)} miyembro</span>
                             {linkedResidents.length > 0 ? (
@@ -1345,7 +1493,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                                 👪 {linkedResidents.map(r => r.firstName).join(', ')}
                               </div>
                             ) : (
-                              <span className="text-[10px] text-rose-500 italic block mt-0.5">Walang rehistradong residente rito</span>
+                              <span className="text-[10px] text-slate-400 italic block mt-0.5">Walang nakatala na pasyente</span>
                             )}
                           </td>
                           <td className="p-3 text-[11px] space-y-1 font-sans">
@@ -1355,7 +1503,7 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                             </div>
                             <div className="flex items-center gap-1">
                               <span className={`text-[9px] font-extrabold p-0.5 px-1 rounded-sm uppercase ${h.sanitaryToilet ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
-                                {h.sanitaryToilet ? 'DOH Sanitarily Approved Kasilyas' : 'Walang Sanitaryong Toilet'}
+                                {h.sanitaryToilet ? 'DOH Kasilyas OK' : 'Walang Sanitaryong Toilet'}
                               </span>
                             </div>
                           </td>
@@ -1365,14 +1513,14 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                                 <button
                                   onClick={() => startEditHH(h)}
                                   className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors"
-                                  title="I-edit an Sambahayan"
+                                  title="I-edit ang Sambahayan"
                                 >
                                   <Edit size={14} />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteHHCmd(h.id, h.householdHead)}
                                   className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
-                                  title="Burahin an Sambahayan"
+                                  title="Burahin ang Sambahayan"
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -2113,6 +2261,23 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                     <h4 className="text-xl font-extrabold text-indigo-950 font-mono tracking-tight mt-1">{selectedPatientToView.id}</h4>
                     
                     <div className="mt-4 space-y-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-mono">Katayuan (Status):</span>
+                        {selectedPatientToView.status === 'Inactive' ? (
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px] uppercase inline-block">
+                            🔴 Inactive ({selectedPatientToView.censusYear || 2024})
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] uppercase inline-block">
+                            🟢 Aktibo ({selectedPatientToView.censusYear || 2026})
+                          </span>
+                        )}
+                        {selectedPatientToView.inactiveReason && (
+                          <span className="text-[10px] text-slate-500 block mt-0.5 italic">
+                            Dahilan: {selectedPatientToView.inactiveReason}
+                          </span>
+                        )}
+                      </div>
                       <div>
                         <span className="text-slate-400 block text-[10px] uppercase font-mono">Registered On:</span>
                         <strong className="text-slate-700">{new Date(selectedPatientToView.createdAt).toLocaleDateString()}</strong>

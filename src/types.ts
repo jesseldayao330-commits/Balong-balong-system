@@ -19,7 +19,7 @@ export type Language = 'EN' | 'TL' | 'BY'; // English, Tagalog, Bisaya
 export type Purok = 'Purok 1' | 'Purok 2' | 'Purok 3' | 'Purok 4' | 'Purok 5' | 'Purok 6' | 'Purok 7';
 
 export interface Household {
-  id: string; // e.g., HH-2026-001
+  id: string; // e.g., HH-2026-001, HH-2025-001, HH-2024-001
   householdHead: string;
   purok: Purok;
   numberOfMembers: number;
@@ -27,6 +27,8 @@ export interface Household {
   sanitaryToilet: boolean; // DOH environmental hygiene metric
   solidWasteManagement: 'Segregated' | 'Disposed/Burned' | 'Open Dumping';
   indigentStatus: boolean; // Eligible for Malasakit/Indigent aid
+  status?: 'Active' | 'Inactive' | 'Archived'; // Inactive/Archived for 2024 and 2025 historical records
+  censusYear?: number; // 2024, 2025, 2026
 }
 
 export interface Patient {
@@ -50,6 +52,9 @@ export interface Patient {
   createdAt: string;
   photo?: string; // Base64 image data-URI or reference
   registeredBy?: Role;
+  status?: 'Active' | 'Inactive' | 'Archived'; // Active vs Inactive
+  censusYear?: number; // 2024, 2025, 2026
+  inactiveReason?: string; // e.g. "Moved out", "Deceased", "Historical 2024/2025 Census"
 }
 
 export type DOHProgram = 
