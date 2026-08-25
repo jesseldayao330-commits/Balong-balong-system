@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Patient, Household, Purok, DOHProgram, Language, Role, ImmunizationRecord, PrenatalRecord } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Search, UserPlus, Users, Eye, CheckCircle, ShieldAlert, AlertTriangle, Trash2, Link } from 'lucide-react';
+import { Search, UserPlus, Users, Eye, CheckCircle, ShieldAlert, AlertTriangle, Trash2, Link, Camera, Upload, Image as ImageIcon, X, Sparkles, User } from 'lucide-react';
 
 interface PatientRegistrationProps {
   patients: Patient[];
@@ -510,25 +510,42 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                       setIsRegistering(false);
                       setIsEditing(false);
                     }}
-                    className={`w-full text-left p-3 cursor-pointer flex justify-between items-center transition-all ${
+                    className={`w-full text-left p-3 cursor-pointer flex justify-between items-center gap-2 transition-all ${
                       selectedPatient?.id === pat.id ? 'bg-emerald-50/50 border-l-4 border-emerald-600' : 'hover:bg-slate-50'
                     }`}
                     id={`patient-btn-${pat.id}`}
                   >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="font-bold text-slate-800 text-sm">{pat.lastName}, {pat.firstName}</h4>
-                        {pat.status === 'Inactive' ? (
-                          <span className="px-1 py-0.2 bg-rose-100 text-rose-800 text-[8px] font-black uppercase rounded">
-                            🔴 Inactive
-                          </span>
-                        ) : (
-                          <span className="px-1 py-0.2 bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase rounded">
-                            🟢 Aktibo
-                          </span>
-                        )}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {pat.photo ? (
+                        <div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+                          <img
+                            src={pat.photo}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-100 flex flex-col items-center justify-center text-slate-400 shrink-0 shadow-2xs">
+                          <User size={15} className="text-slate-400" />
+                          <span className="text-[6.5px] font-bold uppercase tracking-tighter leading-none text-slate-500 font-mono">No Profile</span>
+                        </div>
+                      )}
+                      <div className="truncate">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <h4 className="font-bold text-slate-800 text-sm truncate">{pat.lastName}, {pat.firstName}</h4>
+                          {pat.status === 'Inactive' ? (
+                            <span className="px-1 py-0.2 bg-rose-100 text-rose-800 text-[8px] font-black uppercase rounded shrink-0">
+                              🔴 Inactive
+                            </span>
+                          ) : (
+                            <span className="px-1 py-0.2 bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase rounded shrink-0">
+                              🟢 Aktibo
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">{pat.id} • {pat.purok}</p>
                       </div>
-                      <p className="text-[10px] text-slate-500 font-mono mt-0.5">{pat.id} • {pat.purok}</p>
                     </div>
                     
                     {/* Tiny badges indicative of programs */}
@@ -555,6 +572,130 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                 <h3 className="text-lg font-bold text-slate-800">
                   {isEditing ? `I-edit ang Impormasyon ng Pasyente / Patient: ${selectedPatient?.id}` : 'Form ng Bagong Pasyente (New Patient Entry Form)'}
                 </h3>
+              </div>
+
+              {/* Larawan ng Pasyente (Patient Profile Photo Section) */}
+              <div 
+                className="bg-slate-50/80 p-4 rounded-xl border border-slate-200"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                id="patient-photo-upload-container"
+              >
+                <label className="block text-xs font-black text-slate-700 uppercase mb-2.5 flex items-center gap-1.5">
+                  <Camera size={15} className="text-emerald-600" />
+                  Larawan ng Pasyente / Profile Photo (Add Photo / URL)
+                </label>
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  {/* Photo Preview Thumbnail */}
+                  <div className="relative group shrink-0">
+                    {photo ? (
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-md bg-white relative">
+                        <img 
+                          src={photo} 
+                          alt="Patient Preview" 
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('')}
+                          className="absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded-full p-1 shadow-md transition-colors cursor-pointer"
+                          title="Tanggalin ang larawan (Remove photo)"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100/70 flex flex-col items-center justify-center text-slate-400">
+                        <User size={26} className="mb-1 text-slate-400" />
+                        <span className="text-[9px] font-bold uppercase font-mono text-slate-500">No Profile</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload from device & Direct URL input */}
+                  <div className="flex-1 space-y-2.5 w-full">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors shadow-xs">
+                        <Upload size={13} />
+                        <span>Mag-upload mula sa Device (Upload Photo)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handlePhotoUpload(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+                      
+                      {photo && (
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('')}
+                          className="text-rose-600 hover:text-rose-700 text-xs font-bold py-1.5 px-2.5 border border-rose-200 rounded-lg bg-white hover:bg-rose-50 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 size={12} />
+                          Tanggalin ang Larawan
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase font-mono">O mag-input ng Direct Image / Photo URL:</label>
+                      <div className="relative">
+                        <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="url"
+                          placeholder="https://... halimbawa link ng larawan"
+                          className="w-full border border-slate-200 pl-8 pr-3 py-1.5 rounded-lg text-xs bg-white focus:outline-hidden font-mono text-slate-700"
+                          value={photo}
+                          onChange={(e) => setPhoto(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick sample avatars */}
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase font-mono flex items-center gap-0.5">
+                        <Sparkles size={11} className="text-amber-500" /> Quick Samples:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')}
+                          className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-500 rounded text-slate-600 hover:text-emerald-700 font-medium cursor-pointer transition-colors"
+                        >
+                          👨 Lalaki
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80')}
+                          className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-500 rounded text-slate-600 hover:text-emerald-700 font-medium cursor-pointer transition-colors"
+                        >
+                          👩 Babae
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80')}
+                          className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-500 rounded text-slate-600 hover:text-emerald-700 font-medium cursor-pointer transition-colors"
+                        >
+                          👴 Senior
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPhoto('https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80')}
+                          className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-500 rounded text-slate-600 hover:text-emerald-700 font-medium cursor-pointer transition-colors"
+                        >
+                          👶 Bata/Sanggol
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Patient Basic Profile Grid */}
@@ -1346,8 +1487,9 @@ export const PatientRegistration: React.FC<PatientRegistrationProps> = ({
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-200 border-dashed bg-slate-100 flex flex-col items-center justify-center text-slate-400 shrink-0">
-                      <span className="text-[9px] font-bold uppercase tracking-wider font-mono">No Photo</span>
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 flex flex-col items-center justify-center text-slate-400 shrink-0 shadow-2xs">
+                      <User size={24} className="text-slate-400 mb-0.5" />
+                      <span className="text-[8px] font-bold uppercase tracking-wider font-mono text-slate-500">No Profile</span>
                     </div>
                   )}
                   <div>

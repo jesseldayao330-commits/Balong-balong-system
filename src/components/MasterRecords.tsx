@@ -38,7 +38,8 @@ import {
   Edit,
   Trash2,
   Eye,
-  X
+  X,
+  User
 } from 'lucide-react';
 
 interface MasterRecordsProps {
@@ -1115,16 +1116,35 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                     <tr key={p.id} className={`hover:bg-slate-50/50 transition-colors ${p.status === 'Inactive' ? 'bg-slate-50/30' : ''}`}>
                       <td className="p-3 font-mono text-slate-500 font-bold">{p.id}</td>
                       <td className="p-3">
-                        <span className="font-extrabold text-slate-800 block">{p.lastName}, {p.firstName} {p.middleName}</span>
-                        {(() => {
-                          const linkedHousehold = households.find(h => h.id === p.householdId);
-                          return (
-                            <span className="text-[10px] text-slate-500 block mt-0.5">
-                              Sambahayan: <strong className="text-zinc-700">{p.householdId}</strong>
-                              {linkedHousehold ? ` (${linkedHousehold.householdHead})` : ''}
-                            </span>
-                          );
-                        })()}
+                        <div className="flex items-center gap-2.5">
+                          {p.photo ? (
+                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+                              <img
+                                src={p.photo}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-100 flex flex-col items-center justify-center text-slate-400 shrink-0 shadow-2xs">
+                              <User size={13} className="text-slate-400" />
+                              <span className="text-[6px] font-bold uppercase tracking-tighter leading-none text-slate-500 font-mono">No Profile</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-extrabold text-slate-800 block">{p.lastName}, {p.firstName} {p.middleName}</span>
+                            {(() => {
+                              const linkedHousehold = households.find(h => h.id === p.householdId);
+                              return (
+                                <span className="text-[10px] text-slate-500 block mt-0.5">
+                                  Sambahayan: <strong className="text-zinc-700">{p.householdId}</strong>
+                                  {linkedHousehold ? ` (${linkedHousehold.householdHead})` : ''}
+                                </span>
+                              );
+                            })()}
+                          </div>
+                        </div>
                       </td>
                       <td className="p-3 font-mono">
                         <span className="block text-slate-700">{p.birthDate}</span>
@@ -2251,8 +2271,9 @@ export const MasterRecords: React.FC<MasterRecordsProps> = ({
                         />
                       </div>
                     ) : (
-                      <div className="w-full h-32 rounded-xl overflow-hidden border border-indigo-200 border-dashed bg-slate-100/50 flex flex-col items-center justify-center text-slate-400 mb-4 shrink-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider font-mono">No Photograph</span>
+                      <div className="w-full h-32 rounded-xl overflow-hidden border border-indigo-200 border-dashed bg-slate-100/70 flex flex-col items-center justify-center text-slate-400 mb-4 shrink-0 shadow-2xs">
+                        <User size={36} className="text-slate-400 mb-1" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">No Profile</span>
                         <span className="text-[9px] text-slate-400 font-medium font-mono">(Walang Larawan)</span>
                       </div>
                     )}
