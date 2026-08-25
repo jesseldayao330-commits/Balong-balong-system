@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/* TB (Active Tuberculosis Outbreak - High Alert Pure RED Blink) */
+@keyframes blink-tb {
+  0%, 100% {
+    background-color: rgb(220, 38, 38) !important; /* Tailwind red-600 */
+    border-color: rgb(254, 202, 202) !important;   /* Tailwind red-200 */
+    filter: drop-shadow(0 0 16px rgba(239, 68, 68, 1)) !important;
+    transform: scale(1.15);
+  }
+  50% {
+    background-color: rgb(185, 28, 28) !important; /* Tailwind red-700 */
+    border-color: rgb(255, 255, 255) !important;
+    filter: drop-shadow(0 0 26px rgba(220, 38, 38, 1)) !important;
+    transform: scale(1.32);
+  }
+}
+
+.animate-blink-tb {
+  animation: blink-tb 0.9s infinite ease-in-out;
+}
+
+@keyframes fill-tb {
+  0%, 100% {
+    fill: rgba(239, 68, 68, 0.35) !important;
+    stroke: rgb(220, 38, 38) !important;
+  }
+  50% {
+    fill: rgba(220, 38, 38, 0.65) !important;
+    stroke: rgb(185, 28, 28) !important;
+  }
+}
+
+.animate-svg-tb {
+  animation: fill-tb 1.1s infinite ease-in-out;
+}
+
+@keyframes blink-hazard {
+  0%, 100% {
+    background-color: rgb(220, 38, 38) !important; /* Tailwind red-600 */
+    border-color: rgb(254, 226, 226) !important;    /* Tailwind red-100 */
+    filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.95)) !important;
+    transform: scale(1.1);
+  }
+  33% {
+    background-color: rgb(202, 138, 4) !important; /* Tailwind yellow-650 */
+    border-color: rgb(254, 240, 138) !important;    /* Tailwind yellow-200 */
+    filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.95)) !important;
+    transform: scale(1.25);
+  }
+  66% {
+    background-color: rgb(37, 99, 235) !important;  /* Tailwind blue-600 */
+    border-color: rgb(191, 219, 254) !important;    /* Tailwind blue-200 */
+    filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.95)) !important;
+    transform: scale(1.1);
+  }
+}
+
+.animate-blink-hazard {
+  animation: blink-hazard 1.2s infinite ease-in-out;
+}
+
+@keyframes fill-danger {
+  0%, 100% {
+    fill: rgba(239, 68, 68, 0.35) !important; /* red-500 tint */
+    stroke: rgb(220, 38, 38) !important;     /* red-600 */
+  }
+  33% {
+    fill: rgba(234, 179, 8, 0.35) !important; /* yellow-500 tint */
+    stroke: rgb(202, 138, 4) !important;     /* yellow-650 */
+  }
+  66% {
+    fill: rgba(59, 130, 246, 0.35) !important; /* blue-500 tint */
+    stroke: rgb(37, 99, 235) !important;      /* blue-600 */
+  }
+}
+
+.animate-svg-hazard {
+  animation: fill-danger 1.8s infinite ease-in-out;
+}
+
+/* Senior (Yellow Blink) keyframes */
+@keyframes blink-senior {
+  0%, 100% {
+    background-color: rgb(234, 179, 8) !important; /* amber-500 */
+    border-color: rgb(254, 243, 199) !important;    /* amber-100 */
+    filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.95)) !important;
+    transform: scale(1.1);
+  }
+  50% {
+    background-color: rgb(202, 138, 4) !important; /* amber-600 */
+    border-color: rgb(253, 230, 138) !important;    /* amber-200 */
+    filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.4)) !important;
+    transform: scale(1.2);
+  }
+}
+
+.animate-blink-senior {
+  animation: blink-senior 1.2s infinite ease-in-out;
+}
+
+/* Family Planning (Blue Blink) keyframes */
+@keyframes blink-fp {
+  0%, 100% {
+    background-color: rgb(37, 99, 235) !important;  /* blue-600 */
+    border-color: rgb(219, 234, 254) !important;    /* blue-100 */
+    filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.95)) !important;
+    transform: scale(1.1);
+  }
+  50% {
+    background-color: rgb(29, 78, 216) !important;   /* blue-700 */
+    border-color: rgb(191, 219, 254) !important;    /* blue-200 */
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.4)) !important;
+    transform: scale(1.2);
+  }
+}
+
+.animate-blink-fp {
+  animation: blink-fp 1.2s infinite ease-in-out;
+}
+
+/* Combined Senior + Family Planning (Yellow & Blue alternating Blink) */
+@keyframes blink-senior-fp {
+  0%, 100% {
+    background-color: rgb(234, 179, 8) !important; /* amber-500 */
+    border-color: rgb(254, 243, 199) !important;    /* amber-100 */
+    filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.95)) !important;
+    transform: scale(1.1);
+  }
+  50% {
+    background-color: rgb(37, 99, 235) !important;  /* blue-600 */
+    border-color: rgb(219, 234, 254) !important;    /* blue-100 */
+    filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.95)) !important;
+    transform: scale(1.22);
+  }
+}
+
+.animate-blink-senior-fp {
+  animation: blink-senior-fp 1.6s infinite ease-in-out;
+}
+
+/* SVG Fill Keyframes for Seniors */
+@keyframes fill-senior {
+  0%, 100% {
+    fill: rgba(234, 179, 8, 0.25) !important;
+    stroke: rgb(202, 138, 4) !important;
+  }
+  50% {
+    fill: rgba(234, 179, 8, 0.45) !important;
+    stroke: rgb(180, 120, 3) !important;
+  }
+}
+
+.animate-svg-senior {
+  animation: fill-senior 1.8s infinite ease-in-out;
+}
+
+/* SVG Fill Keyframes for Family Planning */
+@keyframes fill-fp {
+  0%, 100% {
+    fill: rgba(59, 130, 246, 0.25) !important;
+    stroke: rgb(37, 99, 235) !important;
+  }
+  50% {
+    fill: rgba(59, 130, 246, 0.45) !important;
+    stroke: rgb(29, 78, 216) !important;
+  }
+}
+
+.animate-svg-fp {
+  animation: fill-fp 1.8s infinite ease-in-out;
+}
+
+/* SVG Fill Keyframes for Combined Senior + FP */
+@keyframes fill-senior-fp {
+  0%, 100% {
+    fill: rgba(234, 179, 8, 0.3) !important;
+    stroke: rgb(202, 138, 4) !important;
+  }
+  50% {
+    fill: rgba(59, 130, 246, 0.3) !important;
+    stroke: rgb(37, 99, 235) !important;
+  }
+}
+
+.animate-svg-senior-fp {
+  animation: fill-senior-fp 2.2s infinite ease-in-out;
+}
+

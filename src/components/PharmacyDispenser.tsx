@@ -1,0 +1,1119 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState } from 'react';
+import { MedicineInventory, MedicineDispensed, Patient, Language, Role, PrenatalRecord } from '../types';
+import { LOCALIZED_TEXTS } from '../data/mockData';
+import { Pill, AlertTriangle, ArrowRight, User, Sparkles, Trash2, Edit3, Plus, X, Lock, Printer } from 'lucide-react';
+
+interface PharmacyDispenserProps {
+  inventory: MedicineInventory[];
+  dispensed: MedicineDispensed[];
+  patients: Patient[];
+  prenatals?: PrenatalRecord[];
+  onDispense: (d: MedicineDispensed) => void;
+  onUpdateInventory: (i: MedicineInventory) => void;
+  onDeleteInventory: (id: string) => void;
+  onUpdateDispensed: (d: MedicineDispensed) => void;
+  onDeleteDispensed: (id: string) => void;
+  language: Language;
+  activeRole?: Role;
+}
+
+export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
+  inventory,
+  dispensed,
+  patients,
+  prenatals = [],
+  onDispense,
+  onUpdateInventory,
+  onDeleteInventory,
+  onUpdateDispensed,
+  onDeleteDispensed,
+  language,
+  activeRole,
+}) => {
+  const text = LOCALIZED_TEXTS[language];
+  const isEPharmacyViewOnly = activeRole === 'ADMIN' || activeRole === 'CAPITAN';
+  
+  // Categorize medicine audience helper to separate Household, Pregnant (Buntis), and Child (Bata)
+  const getMedicineAudience = (item: MedicineInventory): 'Household Resident' | 'Buntis' | 'Bata' => {
+    const nameLower = item.medicineName.toLowerCase();
+    const catLower = (item.category || '').toLowerCase();
+    const genLower = item.genericName.toLowerCase();
+
+    // Bata (Pediatric & Children Vaccines/Syrups)
+    if (
+      nameLower.includes('vaccine') || 
+      nameLower.includes('drops') || 
+      nameLower.includes('pediatric') || 
+      nameLower.includes('bata') || 
+      nameLower.includes('syrup') || 
+      nameLower.includes('bcg') || 
+      nameLower.includes('child') ||
+      nameLower.includes('baby') ||
+      catLower.includes('vaccine') || 
+      genLower.includes('vaccine') ||
+      nameLower.includes('paracetamol drops')
+    ) {
+      return 'Bata';
+    }
+
+    // Buntis (Maternity, Prenatal Care, and Contraceptives/Family Planning)
+    if (
+      nameLower.includes('pre-natal') || 
+      nameLower.includes('prenatal') || 
+      nameLower.includes('folic') || 
+      nameLower.includes('contraceptive') || 
+      nameLower.includes('buntis') || 
+      nameLower.includes('maternity') || 
+      nameLower.includes('maternal') || 
+      catLower.includes('contraceptive') ||
+      nameLower.includes('dmpa') ||
+      genLower.includes('folic') ||
+      genLower.includes('levonorgestrel')
+    ) {
+      return 'Buntis';
+    }
+
+    // Household Resident
+    return 'Household Resident';
+  };
+
+  const [selectedMedId, setSelectedMedId] = useState(inventory[0]?.id || '');
+  const [selectedPatId, setSelectedPatId] = useState(patients[0]?.id || '');
+  const [qty, setQty] = useState(10);
+  const [useTranslationHelp, setUseTranslationHelp] = useState(true);
+  const [prescriptionToPrint, setPrescriptionToPrint] = useState<MedicineDispensed | null>(null);
+
+  // Audience view filters
+  const [audienceTab, setAudienceTab] = useState<'All' | 'Household Resident' | 'Buntis' | 'Bata'>('All');
+
+  // Filter inventory based on audience target
+  const filteredInventory = inventory.filter((item) => {
+    if (audienceTab === 'All') return true;
+    return getMedicineAudience(item) === audienceTab;
+  });
+
+  // Calculate current safe medicine selection
+  const safeSelectedMedId = filteredInventory.some(m => m.id === selectedMedId)
+    ? selectedMedId
+    : (filteredInventory[0]?.id || '');
+
+  const selectedMed = filteredInventory.find((m) => m.id === safeSelectedMedId);
+
+  // Filter patient selections based on active roles (pregnant and child/vaccine patients combined for midwife & nurse)
+  const getFilteredPatients = (): Patient[] => {
+    if (activeRole === 'MIDWIFE' || activeRole === 'NURSE') {
+      // Buntis at Bata only
+      return patients.filter((p) => {
+        const isBuntisProgram = p.activePrograms.includes('MCH') || p.activePrograms.includes('FAMILY_PLANNING');
+        const hasPrenatalRecord = prenatals?.some(pr => pr.patientId === p.id);
+        const isBuntis = p.gender === 'Female' && (isBuntisProgram || hasPrenatalRecord);
+
+        const age = new Date().getFullYear() - new Date(p.birthDate).getFullYear();
+        const isBataProgram = p.activePrograms.includes('EPI') || p.activePrograms.includes('OPT_PLUS');
+        const isBata = age <= 12 || isBataProgram;
+
+        return isBuntis || isBata;
+      });
+    }
+
+    return patients;
+  };
+
+  const filteredPatients = getFilteredPatients();
+
+  // Calculate current safe patient selection
+  const safeSelectedPatId = filteredPatients.some(p => p.id === selectedPatId)
+    ? selectedPatId
+    : (filteredPatients[0]?.id || '');
+
+  // Dispenser name generator based on logged-in role
+  const getDispenserForRole = (role?: Role): string => {
+    if (role === 'BHW') return 'Julefe Magwate (BHW)';
+    if (role === 'MIDWIFE') return 'Arlene Cagas Dayama, RM';
+    if (role === 'NURSE') return 'Yvonne Galang, RN';
+    return 'Lorna Cruz, RPh';
+  };
+
+  const getProfessionalDetails = (dispenserName: string) => {
+    const nameLower = dispenserName.toLowerCase();
+    if (nameLower.includes('arlene') || nameLower.includes('midwife')) {
+      return {
+        title: 'Registered Midwife (RM)',
+        license: 'PRC Reg No: 0081745',
+        ptr: 'PTR No. 9283741B',
+        clinic: 'Barangay Health Station (BHS) Pitogo',
+        signature: 'Arlene C. Dayama, RM'
+      };
+    } else if (nameLower.includes('yvonne') || nameLower.includes('nars') || nameLower.includes('nurse')) {
+      return {
+        title: 'Public Health Nurse (RN)',
+        license: 'PRC Reg No: 0045231',
+        ptr: 'PTR No. 1048572A',
+        clinic: 'Municipal Health Office (MHO) Pitogo',
+        signature: 'Yvonne Galang, RN'
+      };
+    } else if (nameLower.includes('co') || nameLower.includes('dr.') || nameLower.includes('doctor') || nameLower.includes('mho')) {
+      return {
+        title: 'Municipal Health Officer (MD)',
+        license: 'PRC Reg No: 0098453',
+        ptr: 'PTR No. 7485910C',
+        clinic: 'Pitogo Rural Health Unit (RHU)',
+        signature: 'Manuel Co, MD'
+      };
+    } else {
+      return {
+        title: 'Municipal Health Officer & Physician (MD / RPh)',
+        license: 'PRC Reg No: 0098453 / RHS-FDA',
+        ptr: 'PTR No. 7485910C',
+        clinic: 'Pitogo Rural Health Unit (RHU)',
+        signature: 'Manuel Co, MD'
+      };
+    }
+  };
+
+  // Common dosage options to auto-generate Philippine instructions
+  const [frequency, setFrequency] = useState('3_times_day'); // 3 times a da, 2 times, once, before bed
+  const [duration, setDuration] = useState('7_days');
+
+  // Edit trackers
+  const [editingInventoryId, setEditingInventoryId] = useState<string | null>(null);
+  const [editingDispensedId, setEditingDispensedId] = useState<string | null>(null);
+
+  // Form states for adding/editing inventory
+  const [showInventoryForm, setShowInventoryForm] = useState(false);
+  const [invName, setInvName] = useState('');
+  const [invGeneric, setInvGeneric] = useState('');
+  const [invCategory, setInvCategory] = useState<'Antibiotics' | 'Vitamins/Supplements' | 'Analgesics' | 'Contraceptives' | 'Chronic Care'>('Antibiotics');
+  const [invStock, setInvStock] = useState(100);
+  const [invReorder, setInvReorder] = useState(25);
+  const [invUnit, setInvUnit] = useState('tablets');
+
+  // Form states for edit dispensed record
+  const [dispRecordInstructions, setDispRecordInstructions] = useState('');
+  const [dispRecordQty, setDispRecordQty] = useState(10);
+
+  // Auto instructions translation helper
+  const translateInstruction = (freq: string, dur: string, lang: Language): string => {
+    let freqText = '';
+    let durText = '';
+
+    if (lang === 'TL') { // Tagalog translations
+      freqText = freq === '3_times_day' ? 'Inumin ang tatlong beses sa isang araw pagkatapos kumain (1 tab, 3x a day pc)' :
+                 freq === '2_times_day' ? 'Inumin ang dalawang beses sa isang araw sa umaga at gabi' :
+                 freq === 'once_day_morning' ? 'Inumin ang isang beses sa isang araw tuwing umaga bago kumain' :
+                 'Inumin ang isang beses bago matulog sa gabi';
+      durText = dur === '7_days' ? 'sa loob ng pitong (7) araw.' : 'sa loob ng tatlong (3) araw.';
+    } else if (lang === 'BY') { // Bisaya translations
+      freqText = freq === '3_times_day' ? 'Tumarug katulo sa usa ka adlaw pagkahuman og kaon (1 tab, 3x a day)' :
+                 freq === '2_times_day' ? 'Tumarug kaduha sa usa ka adlaw sa buntag og gabii' :
+                 freq === 'once_day_morning' ? 'Tumarug kausa sa usa ka adlaw kada buntag sa dili pa mokaon' :
+                 'Tumarug kausa sa dili pa matulog sa gabii';
+      durText = dur === '7_days' ? 'sulod sa pito (7) ka adlaw.' : 'sulod sa tulo (3) ka adlaw.';
+    } else { // Default English
+      freqText = freq === '3_times_day' ? 'Take 1 tablet three times a day after meals' :
+                 freq === '2_times_day' ? 'Take 1 tablet twice a day (morning and evening)' :
+                 freq === 'once_day_morning' ? 'Take 1 tablet once daily in the morning before breakfast' :
+                 'Take 1 tablet once daily at bedtime';
+      durText = dur === '7_days' ? 'for seven (7) days.' : 'for three (3) days.';
+    }
+
+    return `${freqText} ${durText}`;
+  };
+
+  const startEditingInventory = (item: MedicineInventory) => {
+    setInvName(item.medicineName);
+    setInvGeneric(item.genericName);
+    setInvCategory(item.category as any);
+    setInvStock(item.currentStock);
+    setInvReorder(item.reorderLevel);
+    setInvUnit(item.stockInUnit);
+    setEditingInventoryId(item.id);
+    setShowInventoryForm(true);
+  };
+
+  const cancelEditingInventory = () => {
+    setEditingInventoryId(null);
+    setShowInventoryForm(false);
+    setInvName('');
+    setInvGeneric('');
+    setInvStock(100);
+  };
+
+  const startEditingDispensed = (rec: MedicineDispensed) => {
+    setDispRecordQty(rec.quantityDispensed);
+    setDispRecordInstructions(rec.instructions || '');
+    setEditingDispensedId(rec.id);
+  };
+
+  const cancelEditingDispensed = () => {
+    setEditingDispensedId(null);
+    setDispRecordInstructions('');
+  };
+
+  const handleDeleteInventoryClick = (id: string) => {
+    if (confirm('Sigurado ka bang nais mong burahin ang gamot na ito sa database?')) {
+      onDeleteInventory(id);
+      alert('Nabura na ang gamot.');
+    }
+  };
+
+  const handleDeleteDispensedClick = (id: string) => {
+    if (confirm('Sigurado ka bang nais mong i-reverse/burahin ang pamamahagi ng gamot na ito? I-babalik ang stock sa inventory.')) {
+      onDeleteDispensed(id);
+      alert('Na-reverse na ang pamamahagi at naibalik ang stock.');
+    }
+  };
+
+  const handleSaveInventory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invName) return;
+
+    if (editingInventoryId) {
+      const existing = inventory.find(i => i.id === editingInventoryId);
+      const updated: MedicineInventory = {
+        id: editingInventoryId,
+        medicineName: invName,
+        genericName: invGeneric,
+        category: invCategory,
+        currentStock: invStock,
+        reorderLevel: invReorder,
+        stockInUnit: invUnit,
+        expiryDate: existing?.expiryDate || '2027-12-31',
+      };
+      onUpdateInventory(updated);
+      alert('Na-update ang medicine inventory stock!');
+      setEditingInventoryId(null);
+    } else {
+      const newItem: MedicineInventory = {
+        id: `MED-2026-00${inventory.length + 1}`,
+        medicineName: invName,
+        genericName: invGeneric,
+        category: invCategory,
+        currentStock: invStock,
+        reorderLevel: invReorder,
+        stockInUnit: invUnit,
+        expiryDate: '2028-12-31',
+      };
+      onUpdateInventory(newItem);
+      alert('Naidagdag ang bago ninyong gamot!');
+    }
+    setShowInventoryForm(false);
+    setInvName('');
+    setInvGeneric('');
+  };
+
+  const handleUpdateDispensedAction = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDispensedId) return;
+    const rec = dispensed.find(d => d.id === editingDispensedId);
+    if (!rec) return;
+
+    // Find difference in stock and check/adjust inventory
+    const medItem = inventory.find(i => i.medicineName === rec.medicineName);
+    if (medItem) {
+      const diff = dispRecordQty - rec.quantityDispensed;
+      if (medItem.currentStock < diff) {
+        alert('Babala: Kulang ang stock para sa pagbabagong ito!');
+        return;
+      }
+      medItem.currentStock -= diff;
+      onUpdateInventory({ ...medItem });
+    }
+
+    const updated: MedicineDispensed = {
+      ...rec,
+      quantityDispensed: dispRecordQty,
+      instructions: dispRecordInstructions,
+    };
+    onUpdateDispensed(updated);
+    alert('Na-update ang dispensing log!');
+    setEditingDispensedId(null);
+  };
+
+  const handleDispenseAction = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMed || !safeSelectedPatId) return;
+
+    if (selectedMed.currentStock < qty) {
+      alert('Babala: Kulang ang kasalukuyang stock para sa hininging dami! (Insufficient stock in inventory).');
+      return;
+    }
+
+    const generatedInstruction = translateInstruction(frequency, duration, language);
+
+    const newDisp: MedicineDispensed = {
+      id: `DISP-2026-00${dispensed.length + 1}`,
+      date: new Date().toISOString().split('T')[0],
+      patientId: safeSelectedPatId,
+      medicineName: selectedMed.medicineName,
+      quantityDispensed: qty,
+      instructions: generatedInstruction,
+      pharmacistDispenser: getDispenserForRole(activeRole),
+    };
+
+    onDispense(newDisp);
+    
+    // Deduct inventory stock manually
+    selectedMed.currentStock -= qty;
+
+    alert('Matagumpay na naipamahagi ang gamot! (Medicine dispensed successfully). Magbubukas ang Printable Prescription Receipt.');
+    setPrescriptionToPrint(newDisp);
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" id="pharmacy-dispensing-panel">
+      <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+        <Pill className="text-indigo-600 animate-pulse" size={20} />
+        <div>
+          <h2 className="text-md font-bold text-slate-800 font-sans tracking-tight">Parmasya at Pamamahagi ng Gamot (E-Pharmacy Depot)</h2>
+          <p className="text-xs text-slate-500">Log patient medications and manage vaccines, maternal drugs, and child care stocks</p>
+        </div>
+      </div>
+
+      {/* TARGET AUDIENCE ROLE STATUS BANNERS */}
+      {activeRole === 'BHW' && (
+        <div className="bg-amber-50/70 border border-amber-200/80 text-amber-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-amber-800">
+            <span className="text-base">🏠</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">
+              {language === 'EN' ? 'Household Residents E-Pharmacy View (BHW Desk)' : 'Pang-Household Resident E-Pharmacy view (BHW Desk)'}
+            </strong>
+          </div>
+          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
+            {language === 'EN' ? (
+              <>
+                Logged in as <strong>BHW (Julefe Magwate)</strong>. The stock listed below is automatically filtered to include general household essentials only (e.g. paracetamol, common antibiotics, and blood pressure medications).
+              </>
+            ) : (
+              <>
+                Naka-log in bilang <strong>BHW (Julefe Magwate)</strong>. Ang stock na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Household Residents (Pangkalahatang Pangangailangan)** tulad ng paracetamol, pangunahing antibiotics, at gamot sa altapresyon.
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
+      {(activeRole === 'MIDWIFE' || activeRole === 'NURSE') && (
+        <div className="bg-pink-50/70 border border-pink-200/80 text-pink-950 rounded-xl p-4 text-xs font-semibold space-y-1 mb-5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-pink-850">
+            <span className="text-base">🤰👶</span>
+            <strong className="font-extrabold uppercase tracking-wider text-[11px]">
+              {language === 'EN' ? 'Maternal & Child E-Pharmacy View (Workspace)' : 'Pang-Buntis at Bata E-Pharmacy view (Midwife & Nurse Workstation)'}
+            </strong>
+          </div>
+          <p className="text-slate-600 leading-relaxed text-[11px] font-normal">
+            {language === 'EN' ? (
+              <>
+                Logged in as <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Medicine stocks listed below are filtered specifically for **Mothers & Kids** (such as pre-natal vitamins, vaccines like BCG, pediatric paracetamol drops, and family planning contraceptives).
+              </>
+            ) : (
+              <>
+                Naka-log in bilang <strong>Barangay Midwife / Nurse ({activeRole === 'MIDWIFE' ? 'Arlene Cagas Dayama, RM' : 'Yvonne Galang, RN'})</strong>. Ang stock ng gamot na nakalista sa ibaba ay sinala nang kusa para lamang sa mga **Buntis at Bata** (Pre-natal vitamins, vaccines tulad ng BCG, pediatric paracetamol drops, at family planning contraceptives).
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
+      {(activeRole === 'ADMIN' || activeRole === 'CAPITAN') && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-3.5 text-xs font-semibold space-y-1 mb-5">
+          <strong className="text-blue-800 font-bold block font-sans">
+            {language === 'EN' ? '🛡️ Administrator/Captain View-Only Access Notice:' : '🛡️ Administrator/Kapitan View-Only Access Notice:'}
+          </strong>
+          <span>
+            {language === 'EN'
+              ? 'Logged in as Admin. This workstation has read-only permissions to audit medicine stocks. Saving, dispensing, or removing records is disabled.'
+              : 'Naka-log in bilang Cap. Judeth Pila. Ang workstation na ito ay binigyan ng "View-Only" na pahintulot upang masuri at mabalangkas ang natitirang stock ng gamot. Walang kakayahang magdagdag, mag-dispense, o magbura.'}
+          </span>
+        </div>
+      )}
+
+      {/* FILTER BUTTON TABS */}
+      <div className="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div className="text-xs">
+            <span className="text-slate-400 font-mono font-black block text-[8px] uppercase tracking-widest">E-PHARMACY AUDIENCE FILTER</span>
+            <span className="text-slate-700 text-[11px] font-extrabold">Suriin ang mga gamot ayon sa kategorya ng pasyente:</span>
+          </div>
+          <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200">
+            {(['All', 'Household Resident', 'Buntis', 'Bata'] as const).map((tab) => {
+              const labelMap = {
+                All: '🌐 Lahat (All Stocks)',
+                'Household Resident': '🏠 Household',
+                Buntis: '🤰 Pang-Buntis',
+                Bata: '👶 Pang-Bata'
+              };
+              return (
+                <button
+                  type="button"
+                  key={tab}
+                  onClick={() => setAudienceTab(tab)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all ${
+                    audienceTab === tab
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-650 hover:bg-slate-100 hover:text-slate-900 bg-transparent'
+                  }`}
+                >
+                  {labelMap[tab]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* LEFT COMPONENT: Inventory Levels with low alerts */}
+        <div className="lg:col-span-6 bg-slate-50/50 p-4 rounded-xl border border-slate-200/50" id="pharmacy-stock-list">
+          <div className="flex items-center justify-between mb-3 border-b border-slate-200/60 pb-2 gap-2">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Medicine Stock Database</span>
+            <div className="flex items-center gap-1.5">
+              {!isEPharmacyViewOnly && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (showInventoryForm) {
+                      cancelEditingInventory();
+                    } else {
+                      setShowInventoryForm(true);
+                    }
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-1 rounded transition-colors cursor-pointer text-[10px] flex items-center gap-1 uppercase px-1.5"
+                >
+                  {showInventoryForm ? <X size={10} /> : <Plus size={10} />}
+                  <span>Ibagong Gamot</span>
+                </button>
+              )}
+              <span className="px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[9px] font-mono rounded">
+                {filteredInventory.length} items
+              </span>
+            </div>
+          </div>
+
+          {/* INVENTORY FORM */}
+          {showInventoryForm && (
+            <form onSubmit={handleSaveInventory} className="bg-white p-3.5 border border-slate-150 rounded-lg text-xs space-y-3 mb-3">
+              <h4 className="font-extrabold uppercase text-[10px] text-slate-500 tracking-wider">
+                {editingInventoryId ? '✏️ I-update ang Gamot' : '➕ Idagdag/Dagdagan ang supply ng gamot'}
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase">Pangalan ng Gamot (Brand)</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full border border-slate-200 p-1.5 rounded"
+                    placeholder="e.g. Paracetamol"
+                    value={invName}
+                    onChange={(e) => setInvName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase">Generic Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full border border-slate-200 p-1.5 rounded"
+                    placeholder="e.g. 500mg tab"
+                    value={invGeneric}
+                    onChange={(e) => setInvGeneric(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase">Current Stock</label>
+                  <input
+                    type="number"
+                    required
+                    className="w-full border border-slate-200 p-1.5 rounded"
+                    value={invStock}
+                    onChange={(e) => setInvStock(parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase">Reorder Level</label>
+                  <input
+                    type="number"
+                    required
+                    className="w-full border border-slate-200 p-1.5 rounded"
+                    value={invReorder}
+                    onChange={(e) => setInvReorder(parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase">Stock Unit</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full border border-slate-200 p-1.5 rounded"
+                    value={invUnit}
+                    onChange={(e) => setInvUnit(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={cancelEditingInventory}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-650 font-bold px-3 py-1 rounded"
+                >
+                  I-cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded"
+                >
+                  I-save
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+            {filteredInventory.map((item) => {
+              const isLowStock = item.currentStock <= item.reorderLevel;
+              return (
+                <div key={item.id} className="p-3 bg-white border border-slate-150 rounded-lg flex justify-between items-center text-xs">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <span className="font-extrabold text-slate-800 block truncate">{item.medicineName}</span>
+                    <span className="text-[10px] text-slate-400 block font-mono truncate">Generic: {item.genericName} • Category: {item.category}</span>
+                  </div>
+
+                  <div className="text-right flex items-center gap-2">
+                    <div>
+                      <span className={`font-mono font-bold text-sm block ${isLowStock ? 'text-rose-600' : 'text-slate-700'}`}>
+                        {item.currentStock} {item.stockInUnit}
+                      </span>
+                      {isLowStock ? (
+                        <span className="px-1 py-0.5 bg-rose-50 border border-rose-100 text-rose-800 text-[8px] font-black uppercase rounded block mt-0.5 font-mono">
+                          REORDER
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-emerald-600 font-medium block">Optimal</span>
+                      )}
+                    </div>
+                    {!isEPharmacyViewOnly && (
+                      <div className="flex flex-col gap-0.5 border-l border-slate-100 pl-2 text-slate-400">
+                        <button
+                          type="button"
+                          onClick={() => startEditingInventory(item)}
+                          className="p-1 hover:text-indigo-600 hover:bg-slate-55 rounded cursor-pointer"
+                          title="Edit supply"
+                        >
+                          <Edit3 size={11} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteInventoryClick(item.id)}
+                          className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer"
+                          title="Delete supply"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* RIGHT COMPONENT: Fast Dispense Dispatch Form */}
+        {isEPharmacyViewOnly ? (
+          <div className="lg:col-span-6 bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col justify-between items-center text-center">
+            <div className="my-auto py-8">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock size={20} />
+              </div>
+              <h3 className="text-xs font-black text-indigo-950 uppercase tracking-widest mb-2 font-mono">
+                E-Pharmacy System (View-Only)
+              </h3>
+              <p className="text-[11px] text-slate-500 max-w-sm">
+                Naka-lock ang pamamahagi ng gamot at pamamahala ng imbentaryo para sa <strong>{activeRole}</strong>. Ang pamamahagi (dispensing) ay pinangangasiwaan ng mga BHW, midwife, o nars.
+              </p>
+            </div>
+            <div className="w-full bg-indigo-50/50 p-2.5 rounded border border-indigo-100 text-[10px] text-indigo-900 font-mono">
+              Role Protection Activated • Pitogo DHRMS LGU Compliant
+            </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-6 bg-white p-4 border border-slate-150 rounded-xl" id="dispensing-dispatch-form">
+            <form onSubmit={handleDispenseAction} className="space-y-4">
+              <h3 className="text-xs font-black text-indigo-950 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
+                Dispense Medication Intake
+              </h3>
+
+              <fieldset disabled={isEPharmacyViewOnly} className="space-y-4">
+                {/* Choose receiver */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Patient</label>
+                    <select
+                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                      value={safeSelectedPatId}
+                      onChange={(e) => setSelectedPatId(e.target.value)}
+                    >
+                      {filteredPatients.length === 0 ? (
+                        <option value="">No patients available</option>
+                      ) : (
+                        filteredPatients.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.lastName}, {p.firstName} ({p.id})
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Select Medicine</label>
+                    <select
+                      className="w-full border border-slate-200 py-2 px-3 bg-white rounded-lg focus:outline-hidden"
+                      value={safeSelectedMedId}
+                      onChange={(e) => setSelectedMedId(e.target.value)}
+                    >
+                      {filteredInventory.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.medicineName} ({m.currentStock} left)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Quantity */}
+                <div className="text-xs font-semibold">
+                  <label className="block text-[10px] text-slate-400 uppercase mb-1 font-mono">Quantity to Dispense (Bilang)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={selectedMed?.currentStock || 100}
+                    className="w-full border border-slate-200 py-2.5 px-3 rounded-lg text-sm text-center font-mono font-bold"
+                    value={qty}
+                    onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+
+                {/* Smart instruction translator details */}
+                <div className="border border-dashed border-indigo-200 rounded-lg p-3 bg-indigo-50/20 text-xs">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="font-bold text-indigo-900 flex items-center gap-1">
+                      <Sparkles size={12} />
+                      Dosage Translation Intelligence Engine
+                    </span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="accent-indigo-600"
+                        checked={useTranslationHelp}
+                        onChange={(e) => setUseTranslationHelp(e.target.checked)}
+                      />
+                      <span className="text-[10px] text-indigo-700 font-bold uppercase">Translate Form</span>
+                    </label>
+                  </div>
+
+                  {useTranslationHelp && (
+                    <div className="grid grid-cols-2 gap-2 text-[10px]">
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">Gaano Kadalas (Frequency)</span>
+                        <select
+                          className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                          value={frequency}
+                          onChange={(e) => setFrequency(e.target.value)}
+                        >
+                          <option value="3_times_day">3x a day (pc) / Umaga-Hapon-Gabi</option>
+                          <option value="2_times_day">2x a day (bid) / Umaga-Gabi</option>
+                          <option value="once_day_morning">1x a day morning (od) / Umaga</option>
+                          <option value="once_day_night">1x a day bedtime (hs) / Gabi bago matulog</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">Gaano Katagal (Duration)</span>
+                        <select
+                          className="w-full border border-indigo-200 px-2 py-1.5 bg-white rounded font-semibold"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                        >
+                          <option value="7_days">7 Days cycle (Pitong Araw)</option>
+                          <option value="3_days">3 Days check (Tatlong Araw)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Instant translation preview rendering */}
+                  <div className="mt-3 pt-2.5 border-t border-indigo-100">
+                    <span className="text-[10px] text-slate-400 block mb-0.5 uppercase font-black tracking-wider">Preview of generated prescription labeling:</span>
+                    <p className="font-mono text-xs font-bold text-indigo-950 bg-white p-2 rounded border border-indigo-150">
+                      {translateInstruction(frequency, duration, language)}
+                    </p>
+                  </div>
+                </div>
+              </fieldset>
+
+              {!isEPharmacyViewOnly && (
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                  id="dispense-entry-submit-button"
+                >
+                  Dispense now
+                  <ArrowRight size={13} />
+                </button>
+              )}
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* EDIT DISPENSED LOG CONTEXT FORM */}
+      {editingDispensedId && (
+        <form onSubmit={handleUpdateDispensedAction} className="mt-5 p-4 border border-dashed border-indigo-300 bg-indigo-50/10 rounded-xl text-xs space-y-3">
+          <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+            <span className="font-bold text-indigo-900 uppercase tracking-wider text-[10px]">
+              ✏️ I-update ang detalye ng Naipamahaging Gamot: {editingDispensedId}
+            </span>
+            <button
+              type="button"
+              onClick={cancelEditingDispensed}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[9px] font-bold text-slate-400 uppercase">Quantity (Dami)</label>
+              <input
+                type="number"
+                required
+                className="w-full border border-slate-200 p-2 rounded bg-white"
+                value={dispRecordQty}
+                onChange={(e) => setDispRecordQty(parseInt(e.target.value) || 0)}
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] font-bold text-slate-400 uppercase">Instructions (Gabay sa Paggamit ng Gamot)</label>
+              <input
+                type="text"
+                required
+                className="w-full border border-slate-200 p-2 rounded bg-white"
+                value={dispRecordInstructions}
+                onChange={(e) => setDispRecordInstructions(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={cancelEditingDispensed}
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold rounded"
+            >
+              I-cancel
+            </button>
+            <button
+              type="submit"
+              className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded"
+            >
+              I-update ang Log
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* DISPENSED HISTORY */}
+      <div className="mt-6 border-t border-slate-100 pt-5">
+        <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">
+          📋 Kasaysayan ng Pamamahagi ng Gamot (Recent Dispensed Logs)
+        </h3>
+        
+        {dispensed.length === 0 ? (
+          <div className="p-4 bg-slate-50 text-center text-slate-400 border border-slate-100 rounded-lg text-xs">
+            Walang naitalang pamamahagi ngayon araw. (No dispensing history found).
+          </div>
+        ) : (
+          <div className="overflow-x-auto border border-slate-150 rounded-xl">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-150 text-[10px] font-extrabold text-slate-400 uppercase font-mono">
+                  <th className="p-3">Petsa / ID</th>
+                  <th className="p-3">Pangalan ng Patient</th>
+                  <th className="p-3">Gamot</th>
+                  <th className="p-3">Dami</th>
+                  <th className="p-3">Instructions & Dispenser</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {dispensed.map((rec) => {
+                  const patientObj = patients.find(p => p.id === rec.patientId);
+                  return (
+                    <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-3 font-mono">
+                        <span className="font-extrabold block text-slate-700">{rec.date}</span>
+                        <span className="text-[9px] text-slate-450">{rec.id}</span>
+                      </td>
+                      <td className="p-3 font-semibold text-slate-700">
+                        {patientObj ? `${patientObj.lastName}, ${patientObj.firstName}` : rec.patientId}
+                      </td>
+                      <td className="p-3 font-bold text-indigo-900">{rec.medicineName}</td>
+                      <td className="p-3 font-mono font-bold text-slate-800">{rec.quantityDispensed} pcs</td>
+                      <td className="p-3 text-slate-500 max-w-[250px]">
+                        <p className="font-medium text-slate-700 italic">"{rec.instructions}"</p>
+                        <span className="text-[9px] block text-slate-400 mt-1">Dispenser: {rec.pharmacistDispenser}</span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-slate-450">
+                          <button
+                            type="button"
+                            onClick={() => setPrescriptionToPrint(rec)}
+                            className="p-1.5 text-indigo-600 hover:text-indigo-850 hover:bg-indigo-50 rounded cursor-pointer transition-colors"
+                            title="I-print ang Reseta (Print Prescription)"
+                          >
+                            <Printer size={13} />
+                          </button>
+                          
+                          {!isEPharmacyViewOnly && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEditingDispensed(rec)}
+                                className="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                title="Edit dispensing record"
+                              >
+                                <Edit3 size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDispensedClick(rec.id)}
+                                className="p-1.5 hover:text-rose-600 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                title="Delete dispensing record"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* PROFESSIONAL RX PRESCRIPTION MODAL (RESETANG MEDIKAL) */}
+      {prescriptionToPrint && (() => {
+        const patientObj = patients.find(p => p.id === prescriptionToPrint.patientId);
+        const medObj = inventory.find(i => i.medicineName === prescriptionToPrint.medicineName);
+        const genericName = medObj?.genericName || '';
+        const category = medObj?.category || 'General';
+        const age = patientObj ? new Date().getFullYear() - new Date(patientObj.birthDate).getFullYear() : 'N/A';
+        const professional = getProfessionalDetails(prescriptionToPrint.pharmacistDispenser);
+
+        return (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden text-slate-800 flex flex-col max-h-[90vh]">
+              
+              {/* Modal header (Non-print UI) */}
+              <div className="bg-gradient-to-r from-indigo-800 to-indigo-950 px-5 py-4 text-white flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Printer size={16} className="text-indigo-300 animate-pulse" />
+                  <span className="font-mono text-xs font-black uppercase tracking-wider text-indigo-200">System Generator</span>
+                </div>
+                <h3 className="text-sm font-black font-sans uppercase">Prescription Receipt & Rx Label</h3>
+                <button 
+                  onClick={() => setPrescriptionToPrint(null)}
+                  className="p-1 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Printable Prescription Form */}
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-white" id="printable-prescription">
+                <div className="border-[3px] border-double border-slate-400 p-5 md:p-6 bg-white relative max-w-lg mx-auto">
+                  
+                  {/* Decorative corner cutmarks */}
+                  <div className="absolute top-2 left-2 text-[10px] text-slate-300 font-mono">✂️ PRINT FORM</div>
+                  
+                  {/* Clinic Header */}
+                  <div className="text-center font-sans pb-4 border-b border-slate-300 mb-5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Republika ng Pilipinas</span>
+                    <h2 className="text-md font-black text-slate-900 tracking-tight uppercase">Barangay Pitogo Health Station</h2>
+                    <p className="text-[10px] text-slate-650 font-medium">Municipality of Pitogo • Health Program Service & Pharmacy Depot</p>
+                    <span className="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 rounded-full text-[9px] font-mono text-slate-500 border border-slate-200 uppercase font-black">
+                      Official E-Prescription Form (FDA Pitogo)
+                    </span>
+                  </div>
+
+                  {/* Patient Info Block */}
+                  <div className="grid grid-cols-12 gap-x-3 gap-y-1.5 text-xs pb-4 border-b border-dashed border-slate-200 mb-5 text-left">
+                    <div className="col-span-8">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PATIENT NAME (Pangalan)</span>
+                      <strong className="text-sm font-black text-slate-900 uppercase">
+                        {patientObj ? `${patientObj.lastName}, ${patientObj.firstName} ${patientObj.middleName || ''}` : prescriptionToPrint.patientId}
+                      </strong>
+                    </div>
+                    <div className="col-span-4 text-right">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">DATE (Petsa)</span>
+                      <strong className="text-slate-800 font-bold">{prescriptionToPrint.date}</strong>
+                    </div>
+
+                    <div className="col-span-4">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">AGE / GENDER</span>
+                      <strong className="text-slate-850 font-bold">{age} y.o. / {patientObj?.gender || 'N/A'}</strong>
+                    </div>
+                    <div className="col-span-4">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PATIENT ID</span>
+                      <strong className="text-slate-850 font-mono font-bold text-[10px] bg-slate-100 px-1 py-0.5 rounded border border-slate-150">{prescriptionToPrint.patientId}</strong>
+                    </div>
+                    <div className="col-span-4 text-right">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">PRESCRIPTION ID</span>
+                      <strong className="text-slate-850 font-mono font-bold text-[10px]">{prescriptionToPrint.id}</strong>
+                    </div>
+                  </div>
+
+                  {/* Standard RX Symbol */}
+                  <div className="my-1 select-none text-left">
+                    <span className="font-serif text-5xl font-black text-slate-900 leading-none">℞</span>
+                  </div>
+
+                  {/* Prescribed Drug Info (Centered aesthetic style) */}
+                  <div className="pl-6 space-y-4 mb-6 text-left">
+                    <div>
+                      <span className="text-[9px] uppercase font-black tracking-wider text-indigo-500 block font-mono">MEDICINE BRAND / GENERIC NAME</span>
+                      <h3 className="text-lg font-black text-slate-950 uppercase leading-none tracking-tight">
+                        {prescriptionToPrint.medicineName}
+                      </h3>
+                      {genericName && (
+                        <p className="text-xs font-mono font-bold italic text-slate-500 mt-1">
+                          ({genericName}) • {category}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pb-1">
+                      <div>
+                        <span className="text-[9px] uppercase font-black tracking-wider text-slate-400 block font-mono">DISPENSED QUANTITY (Bilang)</span>
+                        <strong className="text-md font-black text-emerald-700 font-mono">
+                          {prescriptionToPrint.quantityDispensed} {medObj?.unit || 'tablets (pcs)'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 font-medium text-xs leading-relaxed text-slate-800">
+                      <span className="text-[9px] uppercase font-black tracking-wider text-indigo-900 block mb-1 font-mono">DOSAGE & INSTRUCTIONS (Mga Tagubilin)</span>
+                      <p className="font-bold text-slate-900 font-sans italic text-[12.5px] leading-relaxed">
+                        "{prescriptionToPrint.instructions}"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Signature Section */}
+                  <div className="mt-8 pt-5 border-t border-slate-300 flex justify-between items-end gap-4 text-left">
+                    <div className="text-[9px] text-slate-500 font-mono space-y-0.5 leading-tight max-w-[200px]">
+                      <p className="font-bold text-slate-700">PITOGO HEALTH STATION</p>
+                      <p>{professional.clinic}</p>
+                      <p>{professional.license}</p>
+                      <p>{professional.ptr}</p>
+                      <p className="text-[8px] text-emerald-600 font-bold flex items-center gap-0.5 mt-1.5 uppercase font-sans">
+                        ✅ SEALED & VERIFIED BY PHARMACY
+                      </p>
+                    </div>
+
+                    <div className="text-center relative min-w-[180px]">
+                      {/* Signature simulation */}
+                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-28 h-8 opacity-45 pointer-events-none select-none overflow-hidden">
+                        <svg className="w-full h-full text-indigo-650 animate-pulse" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M10,25 C30,10 40,35 60,15 C75,5 85,30 95,20 C95,20 100,20 90,30 C75,40 55,10 40,30 C25,45 10,25 20,20 Z" />
+                        </svg>
+                      </div>
+                      
+                      <div className="border-b border-slate-400 pb-1 font-black text-xs text-slate-900 tracking-wide uppercase font-sans">
+                        {professional.signature}
+                      </div>
+                      <div className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-wider font-mono">
+                        {professional.title}
+                      </div>
+                      <div className="text-[8px] text-slate-400 font-mono font-bold">Authorized Pitogo Reseta Officer</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="bg-slate-50 border-t border-slate-200 px-5 py-4 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPrescriptionToPrint(null)}
+                  className="px-4 py-2 border border-slate-250 rounded-lg text-xs font-bold font-mono text-slate-600 hover:bg-slate-100 transition-colors uppercase cursor-pointer"
+                >
+                  Close (Isara)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const printContent = document.getElementById('printable-prescription');
+                    if (!printContent) return;
+                    
+                    const printWindow = window.open('', '', 'width=800,height=900');
+                    if (printWindow) {
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Prescription Receipt - ${prescriptionToPrint.id}</title>
+                            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet font-sans">
+                            <style>
+                              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; background: white; }
+                              @media print {
+                                .no-print { display: none; }
+                                body { padding: 0; }
+                              }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="max-w-lg mx-auto">
+                              ${printContent.innerHTML}
+                            </div>
+                            <div class="no-print mt-12 text-center">
+                              <button onclick="window.print();" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md cursor-pointer hover:bg-indigo-700 transition-colors">
+                                PRINT NOW (I-print ang Reseta)
+                              </button>
+                            </div>
+                            <script>
+                              window.onload = function() {
+                                setTimeout(function() {
+                                  window.print();
+                                }, 400);
+                              };
+                            </script>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                    }
+                  }}
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm transition-all hover:scale-[1.01] active:translate-y-px cursor-pointer animate-pulse"
+                >
+                  <Printer size={13} />
+                  Print Prescription (I-print ang Reseta)
+                </button>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+};
