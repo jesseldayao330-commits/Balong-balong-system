@@ -37,6 +37,18 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
   const unsanitaryToilets = purokHouseholds.filter((h) => !h.sanitaryToilet).length;
   const unsafeWater = purokHouseholds.filter((h) => h.waterSource === 'Unsanitary/Unprotected').length;
 
+  // Barangay-wide population breakdown percentages for color legend
+  const totalAllPatients = patients.length || 1;
+  const totalAllTB = patients.filter((p) => p.activePrograms.includes('TB_DOTS')).length;
+  const totalAllSenior = patients.filter((p) => p.activePrograms.includes('SENIOR_CITIZEN')).length;
+  const totalAllFP = patients.filter((p) => p.activePrograms.includes('FAMILY_PLANNING')).length;
+  const totalAllDual = patients.filter((p) => !p.activePrograms.includes('TB_DOTS') && p.activePrograms.includes('SENIOR_CITIZEN') && p.activePrograms.includes('FAMILY_PLANNING')).length;
+
+  const tbPercent = ((totalAllTB / totalAllPatients) * 100).toFixed(1);
+  const seniorPercent = ((totalAllSenior / totalAllPatients) * 100).toFixed(1);
+  const fpPercent = ((totalAllFP / totalAllPatients) * 100).toFixed(1);
+  const dualPercent = ((totalAllDual / totalAllPatients) * 100).toFixed(1);
+
   // Render maps layout coordinate structures
   const purokSpecs: { key: Purok; d: string; color: string; labelX: number; labelY: number }[] = [
     { key: 'Purok 1', d: 'M 30,50 L 150,30 L 170,120 L 50,140 Z', color: 'fill-emerald-100 hover:fill-emerald-200 stroke-emerald-600', labelX: 90, labelY: 80 },
@@ -118,27 +130,31 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
       )}
 
       {/* Modern Filipino Health Sektor / Monitoring Legend Bar */}
-      <div className="mb-5 p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="mb-5 p-3.5 bg-slate-50 border border-slate-200/70 rounded-xl flex flex-col md:flex-row gap-3 md:items-center justify-between text-[11px] text-slate-700 shadow-2xs">
         <div className="flex items-center gap-1.5 font-bold text-slate-600 uppercase tracking-wide">
-          <span className="w-1.5 h-3 bg-red-600 rounded"></span>
-          <span>Sektor / Monitoring Map Legend:</span>
+          <span className="w-1.5 h-3.5 bg-red-600 rounded-xs"></span>
+          <span>Sektor / Monitoring Map Legend (Porsyento / % ng Populasyon):</span>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 font-mono">
+          <div className="flex items-center gap-1.5 bg-red-50 border border-red-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping border border-red-300 inline-block"></span>
-            <span className="font-bold text-red-700">TB DOTS (Red Blink)</span>
+            <span className="font-extrabold text-red-700">TB DOTS: {tbPercent}%</span>
+            <span className="text-[10px] text-red-600/90 font-sans">({totalAllTB} kaso)</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Senior Citizens (Yellow)</span>
+            <span className="font-extrabold text-amber-800">Seniors: {seniorPercent}%</span>
+            <span className="text-[10px] text-amber-700/90 font-sans">({totalAllSenior})</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 border border-blue-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Family Planning (Blue)</span>
+            <span className="font-extrabold text-blue-800">Family Planning: {fpPercent}%</span>
+            <span className="text-[10px] text-blue-700/90 font-sans">({totalAllFP})</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-blue-400 inline-block"></span>
-            <span className="font-semibold text-slate-800 font-mono text-[10px]">Dual Senior+FP</span>
+            <span className="font-extrabold text-indigo-900">Dual Sr+FP: {dualPercent}%</span>
+            <span className="text-[10px] text-indigo-700/90 font-sans">({totalAllDual})</span>
           </div>
         </div>
       </div>

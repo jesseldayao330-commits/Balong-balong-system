@@ -638,7 +638,7 @@ export const PharmacyDispenser: React.FC<PharmacyDispenserProps> = ({
               </p>
             </div>
             <div className="w-full bg-indigo-50/50 p-2.5 rounded border border-indigo-100 text-[10px] text-indigo-900 font-mono">
-              Role Protection Activated • Pitogo DHRMS LGU Compliant
+              Role Protection Activated • Pitogo HRMS LGU Compliant
             </div>
           </div>
         ) : (

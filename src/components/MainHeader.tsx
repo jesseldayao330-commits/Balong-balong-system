@@ -6,7 +6,7 @@
 import React from 'react';
 import { Role, Language } from '../types';
 import { LOCALIZED_TEXTS } from '../data/mockData';
-import { Globe, LogOut } from 'lucide-react';
+import { Globe, LogOut, MapPin } from 'lucide-react';
 import { RHU_PITOGO_LOGO_BASE64 } from '../assets/logoBase64';
 
 interface MainHeaderProps {
@@ -55,25 +55,28 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs" id="bhc-header">
       <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="bhc-branding">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2.5 flex-wrap">
-              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-600 shadow-xs bg-white flex-shrink-0 flex items-center justify-center p-0.5">
-                <img
-                  src={RHU_PITOGO_LOGO_BASE64}
-                  alt="RHU Pitogo Official Logo"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover rounded-full"
-                />
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-600 shadow-xs bg-white flex-shrink-0 flex items-center justify-center p-0.5">
+              <img
+                src={RHU_PITOGO_LOGO_BASE64}
+                alt="RHU Pitogo Official Logo"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-850 leading-tight">
+                {centerName || 'Health Center Management System'}
+              </h1>
+              <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
+                  <MapPin size={11} className="text-emerald-600 flex-shrink-0" />
+                  <span>{centerAddress || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur'}</span>
+                </span>
+                <span className="text-slate-300 hidden sm:inline">•</span>
+                <span className="text-[11px] text-slate-500 hidden sm:inline">{text.subheading}</span>
               </div>
-              <span>{centerName || text.title}</span>
-            </span>
-          </div>
-          <div className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-            <span className="bg-emerald-50 text-emerald-700 font-extrabold text-[10px] px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
-              {centerAddress || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur'}
-            </span>
-            <span className="text-slate-300 hidden sm:inline">•</span>
-            <span>{text.subheading}</span>
+            </div>
           </div>
         </div>
 

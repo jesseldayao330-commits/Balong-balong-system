@@ -43,7 +43,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   // Localized string translations specifically for login locking system
   const dict = {
     EN: {
-      title: 'Development of a Health Records Management System',
+      title: 'Health Center Management System',
       sub: 'Barangay Balong-balong, Pitogo, Zamboanga del Sur',
       roleSelect: 'Select Workstation Active Role',
       passPrompt: 'Enter 4-Digit Security Passcode',
@@ -65,7 +65,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       capitanDesc: 'Executive dashboard view, patient registered records view-only stream, and community health surveillance.',
       adminDesc: 'System configurations, custom logo/branding adjustment, system auditing logs, and user PIN overrides.',
       securityTitle: 'Workstation Security Policy:',
-      securityPolicy1: 'Only registered DHRMS clinical roles are allowed to sign on.',
+      securityPolicy1: 'Only registered HRMS clinical roles are allowed to sign on.',
       securityPolicy2: 'Workstation auto-locks session data on manual lockouts.',
       securityPolicy3: 'Session surveillance metrics synchronize securely with Pitogo Municipal EHR.',
       headerNote: 'Barangay Balong-balong BHW & Medical Team',
@@ -101,7 +101,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       capitanDesc: 'Dashboard view ng ehekutibo, view-only na stream sa rehistro ng pasyente, at pagsubaybay sa kalusugan sa barangay.',
       adminDesc: 'Mga configuration ng system, pagsasaayos ng logo, system auditing logs, at user PIN overrides.',
       securityTitle: 'Patakaran sa Seguridad ng Workstation:',
-      securityPolicy1: 'Mga awtorisadong klinikal na tungkulin lamang ng DHRMS ang maaaring mag-log in.',
+      securityPolicy1: 'Mga awtorisadong klinikal na tungkulin lamang ng HRMS ang maaaring mag-log in.',
       securityPolicy2: 'Awtomatikong magla-lock ang workstation kapag may manu-manong paglabas.',
       securityPolicy3: 'Secure na nagsi-sync ang mga sukat sa Pitogo Municipal EHR.',
       headerNote: 'BHW at Medikal na Koponan ng Barangay Balong-balong',
@@ -137,7 +137,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       capitanDesc: 'Dashboard view sa ehekutibo, view-only nga stream sa rehistro sa pasyente, ug pagmonitor sa kalusugan sa barangay.',
       adminDesc: 'Mga configuration sa sistema, pag-adjust sa logo, system auditing logs, ug user PIN overrides.',
       securityTitle: 'Patakaran sa Seguridad ng Workstation:',
-      securityPolicy1: 'Ang mga rehistradong klinikal nga papel ra sa DHRMS ang gitugotan sa pag-sign in.',
+      securityPolicy1: 'Ang mga rehistradong klinikal nga papel ra sa HRMS ang gitugotan sa pag-sign in.',
       securityPolicy2: 'Awtomatikong mag-lock ang workstation kung adunay manu-mano nga paggawas.',
       securityPolicy3: 'Ang mga metric sa pag-surveillance luwas nga nagsabay sa Pitogo Municipal EHR.',
       headerNote: 'BHW ug Medical nga Grupo sa Barangay Balong-balong',
@@ -289,7 +289,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       {/* Top micro bar for Language options during sign-on */}
       <div className="flex items-center justify-between max-w-4xl mx-auto w-full pt-4 relative z-10">
         <div className="flex items-center gap-2">
-          <span className="bg-emerald-600 text-white rounded px-2.5 py-0.5 text-xs font-black tracking-wider uppercase shadow-md shadow-emerald-900/30">DHRMS</span>
+          <span className="bg-emerald-600 text-white rounded px-2.5 py-0.5 text-xs font-black tracking-wider uppercase shadow-md shadow-emerald-900/30">HRMS</span>
           <span className="text-[10px] text-slate-400 font-mono tracking-widest uppercase flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
             RA 10173 SECURED ENDPOINT
@@ -340,7 +340,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <span className="text-[10px] font-bold tracking-widest uppercase bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20">
                   {currentDict.securedLabel}
                 </span>
-                <h1 className="text-xl font-bold mt-2 uppercase tracking-wide leading-snug">{centerName || currentDict.title}</h1>
+                <h1 className="text-xl font-bold mt-2 uppercase tracking-wide leading-snug">
+                  {centerName || currentDict.title}
+                </h1>
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-emerald-200/90 font-medium">
+                  <span className="text-[11px] bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded text-emerald-200 font-semibold tracking-wide">
+                    📍 {centerAddress || currentDict.sub}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -455,7 +462,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </div>
 
             <div className="text-[10px] text-slate-500 select-none pb-1 mt-6 font-mono font-bold">
-              © 2026 Barangay Balong-balong DHRMS
+              © 2026 Barangay Balong-balong HRMS
             </div>
           </div>
 
