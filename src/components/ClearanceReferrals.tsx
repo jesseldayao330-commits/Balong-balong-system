@@ -178,7 +178,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
         id: editingReferralId,
         patientId: targetPatId,
         date: referrals.find(r => r.id === editingReferralId)?.date || new Date().toISOString().split('T')[0],
-        referringFacility: 'Barangay Balong-balong DHRMS, Pitogo, Zamboanga del Sur',
+        referringFacility: 'Barangay Balong-balong HRMS, Pitogo, Zamboanga del Sur',
         referredToFacility: referredTo,
         reasonForReferral: reason,
         clinicalSummary: clinicalSummary || 'Patient triaged under standard Barangay surveillance procedures.',
@@ -196,7 +196,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
         id: `REF-2026-00${referrals.length + 1}`,
         patientId: targetPatId,
         date: new Date().toISOString().split('T')[0],
-        referringFacility: 'Barangay Balong-balong DHRMS, Pitogo, Zamboanga del Sur',
+        referringFacility: 'Barangay Balong-balong HRMS, Pitogo, Zamboanga del Sur',
         referredToFacility: referredTo,
         reasonForReferral: reason,
         clinicalSummary: clinicalSummary || 'Patient triaged under standard Barangay surveillance procedures.',
@@ -363,7 +363,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
                       <textarea
                         rows={2}
                         className="w-full border border-slate-200 p-2.5 rounded-lg text-slate-700"
-                        placeholder="Ilista ang BP, temperatura, at unang gamot na binigay sa DHRMS..."
+                        placeholder="Ilista ang BP, temperatura, at unang gamot na binigay sa HRMS..."
                         value={clinicalSummary}
                         onChange={(e) => setClinicalSummary(e.target.value)}
                       />
@@ -461,7 +461,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
             {/* Official clinical print preview frame */}
             <div className={`${isViewOnly ? 'lg:col-span-6' : 'lg:col-span-4'} bg-slate-50 p-4 border border-slate-200 rounded-xl flex flex-col justify-between`} id="printable-referral-area">
               <span className="text-[9px] font-black tracking-widest text-slate-400 block uppercase mb-3 text-center">
-                OFFICIAL PRINTABLE EMERGENCY REFERRAL (DOH DHRMS COMPLIANT)
+                OFFICIAL PRINTABLE EMERGENCY REFERRAL (DOH HRMS COMPLIANT)
               </span>
 
               {printedReferral ? (
@@ -491,7 +491,7 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
 
                           <div className="space-y-1 border-b border-slate-100 pb-1.5 text-[9px]">
                             <div><strong>To Facility:</strong> <span className="font-semibold text-slate-800">{printedReferral.referredToFacility}</span></div>
-                            <div><strong>Referring:</strong> <span className="text-slate-650">Barangay Balong-balong DHRMS, Pitogo, ZDS</span></div>
+                            <div><strong>Referring Center:</strong> <span className="text-slate-800 font-bold">Health Center Management System</span> <span className="text-slate-500 block text-[8px]">Barangay Balong-balong, Pitogo, Zamboanga del Sur</span></div>
                           </div>
 
                           <div className="space-y-1.5 border-b border-slate-100 pb-1.5">
@@ -749,7 +749,8 @@ export const ClearanceReferrals: React.FC<ClearanceReferralsProps> = ({
                         <div className="text-center space-y-1 pb-3 border-b border-double border-slate-200">
                           <h4 className="font-extrabold uppercase text-[10px] tracking-wider text-slate-800">Republic of the Philippines</h4>
                           <span className="block text-[10px] text-slate-500 uppercase">Municipality of Pitogo • Zamboanga del Sur</span>
-                          <strong className="block text-[11px] text-emerald-700 font-bold uppercase tracking-widest text-center">BARANGAY BALONG-BALONG DHRMS</strong>
+                          <strong className="block text-[12px] text-emerald-800 font-extrabold uppercase tracking-wide text-center">HEALTH CENTER MANAGEMENT SYSTEM</strong>
+                          <span className="block text-[10px] text-slate-600 font-semibold">Barangay Balong-balong, Pitogo, Zamboanga del Sur</span>
                         </div>
 
                         <div className="text-center py-2">

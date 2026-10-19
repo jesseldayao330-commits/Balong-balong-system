@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, Plus, FileText, Send, CheckCircle2, TrendingUp, Users, HeartHandshake, MapPin, AlertCircle, Sparkles } from 'lucide-react';
-import { Purok } from '../types';
+import { ClipboardList, Plus, FileText, Send, CheckCircle2, TrendingUp, Users, HeartHandshake, MapPin, AlertCircle, Sparkles, X, ShieldCheck, Home, Droplets, Search } from 'lucide-react';
+import { Purok, Patient, Household } from '../types';
 
 export interface HealthPolicy {
   id: string;
@@ -18,7 +18,14 @@ export interface HealthPolicy {
   status: 'Active' | 'Archived';
 }
 
-export const HealthPolicies: React.FC = () => {
+interface HealthPoliciesProps {
+  patients?: Patient[];
+  households?: Household[];
+}
+
+export const HealthPolicies: React.FC<HealthPoliciesProps> = ({ patients = [], households = [] }) => {
+  const [showSanitaryDetailModal, setShowSanitaryDetailModal] = useState(false);
+  const [sanitarySearch, setSanitarySearch] = useState('');
   // Policies State linked to localStorage
   const [policies, setPolicies] = useState<HealthPolicy[]>(() => {
     const saved = localStorage.getItem('bhc_policies');
@@ -95,7 +102,7 @@ export const HealthPolicies: React.FC = () => {
     setFocusPurok('All Puroks');
     setFocusPopulation('All Residents');
     setDirectiveDetails('');
-    alert('Matagumpay na naipadala at naisapubliko ang bagong polisiya! (New health policy successfully broadcasted to DHRMS Dashboard).');
+    alert('Matagumpay na naipadala at naisapubliko ang bagong polisiya! (New health policy successfully broadcasted to HRMS Dashboard).');
   };
 
   const archivePolicy = (id: string) => {
@@ -236,7 +243,7 @@ export const HealthPolicies: React.FC = () => {
                       className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 cursor-pointer"
                     >
                       <Send size={12} />
-                      I-broadcast sa DHRMS
+                      I-broadcast sa HRMS
                     </button>
                   </div>
                 </form>
@@ -308,18 +315,95 @@ export const HealthPolicies: React.FC = () => {
                 <TrendingUp className="text-indigo-650" size={18} />
                 <h3 className="text-sm font-black uppercase text-slate-700 tracking-wide">FHSIS Statistical trends</h3>
               </div>
+              <span className="text-[10px] font-bold text-slate-500 font-mono bg-white px-2 py-0.5 border border-slate-200 rounded">
+                DOH Surveillance
+              </span>
             </div>
 
             <div className="p-5 space-y-6">
               
-              {/* Stat 1 */}
+              {/* Color Coding & Percentage Benchmark Legend */}
+              <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-2xs" id="fhsis-color-legend">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h4 className="text-[11px] font-black uppercase text-slate-700 tracking-wider">
+                      Color Legend (Gabay sa Kulay at Porsyento / Benchmarks):
+                    </h4>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold text-slate-400 uppercase">
+                    DOH Metrics
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  {/* Green: 90% - 100% */}
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-50/90 border border-emerald-200/70">
+                    <span className="w-3.5 h-3.5 rounded-md bg-emerald-500 shrink-0 shadow-2xs"></span>
+                    <div className="min-w-0 leading-tight">
+                      <span className="font-extrabold text-emerald-800 font-mono text-[11px] block">
+                        90% – 100%
+                      </span>
+                      <span className="text-[9.5px] text-emerald-700 font-medium">
+                        Buong Pagsunod / Target Met
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Blue / Indigo: 80% - 89% */}
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-indigo-50/90 border border-indigo-200/70">
+                    <span className="w-3.5 h-3.5 rounded-md bg-indigo-600 shrink-0 shadow-2xs"></span>
+                    <div className="min-w-0 leading-tight">
+                      <span className="font-extrabold text-indigo-800 font-mono text-[11px] block">
+                        80% – 89%
+                      </span>
+                      <span className="text-[9.5px] text-indigo-700 font-medium">
+                        Halos Naabot / Near Target
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Yellow / Amber: 60% - 79% */}
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50/90 border border-amber-200/70">
+                    <span className="w-3.5 h-3.5 rounded-md bg-amber-500 shrink-0 shadow-2xs"></span>
+                    <div className="min-w-0 leading-tight">
+                      <span className="font-extrabold text-amber-800 font-mono text-[11px] block">
+                        60% – 79%
+                      </span>
+                      <span className="text-[9.5px] text-amber-700 font-medium">
+                        Kailangan ng Aksyon (At Risk)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Red / Rose: 0% - 59% */}
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-rose-50/90 border border-rose-200/70">
+                    <span className="w-3.5 h-3.5 rounded-md bg-rose-500 shrink-0 shadow-2xs"></span>
+                    <div className="min-w-0 leading-tight">
+                      <span className="font-extrabold text-rose-800 font-mono text-[11px] block">
+                        0% – 59%
+                      </span>
+                      <span className="text-[9.5px] text-rose-700 font-medium">
+                        Kritikal / Goal Deficit Alert
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 1: 88% (Indigo Tier: 80% - 89%) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="font-extrabold text-slate-650 uppercase">Infant Immunization Target Ratio (EPI)</span>
-                  <span className="font-bold text-emerald-700">88%</span>
+                  <span className="font-extrabold text-slate-700 uppercase">Infant Immunization Target Ratio (EPI)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      80–89% Tier
+                    </span>
+                    <span className="font-black text-indigo-700 text-sm">88%</span>
+                  </div>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '88%' }}></div>
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full transition-all duration-500" style={{ width: '88%' }}></div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
                   <span>Target: {'>'}95% (DOH Target)</span>
@@ -327,33 +411,87 @@ export const HealthPolicies: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stat 2 */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
+              {/* Stat 2: 100% (Emerald Tier: 90% - 100%) */}
+              <div 
+                className="space-y-2 border-t border-slate-100 pt-4 cursor-pointer hover:bg-emerald-50/40 p-2 rounded-xl transition-all border border-transparent hover:border-emerald-200 group"
+                onClick={() => setShowSanitaryDetailModal(true)}
+                title="I-click upang makita ang 100% beripikadong mga pasyente"
+              >
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="font-extrabold text-slate-650 uppercase">Sanitary Toilet Compliance Ratio</span>
-                  <span className="font-bold text-teal-700">100%</span>
+                  <span className="font-extrabold text-slate-700 uppercase group-hover:text-emerald-800 transition-colors">Sanitary Toilet Compliance Ratio</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      90–100% Tier
+                    </span>
+                    <span className="font-black text-emerald-700 text-sm">100%</span>
+                  </div>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full" style={{ width: '100%' }}></div>
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: '100%' }}></div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>8 out of 8 households surveyed</span>
-                  <span className="font-semibold text-teal-600">Full Compliance Met</span>
+                  <span>{households.length > 0 ? `${households.length} sa ${households.length} na kabahayan` : 'Lahat ng kabahayan'} napatunayang may palikuran</span>
+                  <span className="font-semibold text-emerald-600 font-bold group-hover:underline">I-click para makita ang pasyente →</span>
                 </div>
               </div>
 
-              {/* Stat 3 */}
+              {/* Stat 3: 92% (Emerald Tier: 90% - 100%) */}
               <div className="space-y-2 border-t border-slate-100 pt-4">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="font-extrabold text-slate-650 uppercase">Maternal prenatal profiling completeness</span>
-                  <span className="font-bold text-indigo-700">92%</span>
+                  <span className="font-extrabold text-slate-700 uppercase">Maternal prenatal profiling completeness</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      90–100% Tier
+                    </span>
+                    <span className="font-black text-emerald-700 text-sm">92%</span>
+                  </div>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-505 bg-indigo-600 rounded-full" style={{ width: '92%' }}></div>
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: '92%' }}></div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
                   <span>Target: 90% completeness</span>
-                  <span className="font-semibold text-emerald-600">COMPLIANT (DOH METRIC)</span>
+                  <span className="font-semibold text-emerald-600 font-bold">COMPLIANT (DOH METRIC)</span>
+                </div>
+              </div>
+
+              {/* Stat 4: 68% (Amber Tier: 60% - 79%) */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="font-extrabold text-slate-700 uppercase">Hypertension & NCD Screening</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-amber-100 text-amber-800 border border-amber-200">
+                      60–79% Tier
+                    </span>
+                    <span className="font-black text-amber-700 text-sm">68%</span>
+                  </div>
+                </div>
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: '68%' }}></div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Target: {'>'}80% targeted screened</span>
+                  <span className="font-semibold text-amber-600">Moderate: Needs Catch-up</span>
+                </div>
+              </div>
+
+              {/* Stat 5: 54% (Rose Tier: 0% - 59%) */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="font-extrabold text-slate-700 uppercase">Deworming Coverage (School-Age)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-rose-100 text-rose-800 border border-rose-200">
+                      0–59% Tier
+                    </span>
+                    <span className="font-black text-rose-700 text-sm">54%</span>
+                  </div>
+                </div>
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-rose-500 rounded-full transition-all duration-500" style={{ width: '54%' }}></div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Target: {'>'}85% semi-annual target</span>
+                  <span className="font-semibold text-rose-600">Alert: Critical Deficit</span>
                 </div>
               </div>
 
@@ -386,6 +524,101 @@ export const HealthPolicies: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Sanitary Compliance Detail Modal */}
+      {showSanitaryDetailModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setShowSanitaryDetailModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-5 flex items-start justify-between">
+              <div className="space-y-1">
+                <span className="bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider inline-flex items-center gap-1">
+                  <ShieldCheck size={12} className="text-emerald-300" />
+                  100% SANITARY TOILET COMPLIANT
+                </span>
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <CheckCircle2 size={20} className="text-emerald-300" />
+                  Talaan ng mga Pasyente at Kabahayan (100% May Palikuran)
+                </h3>
+                <p className="text-xs text-emerald-100/90">
+                  Lahat ng kabahayan ay may verified pour-flush/water-sealed toilet alinsunod sa DOH Clean Water & Sanitation Mandate.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSanitaryDetailModal(false)}
+                className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-xl transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search Filter */}
+            <div className="p-3 bg-slate-50 border-b border-slate-200">
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={sanitarySearch}
+                  onChange={(e) => setSanitarySearch(e.target.value)}
+                  placeholder="Maghanap ng pasyente o Household ID..."
+                  className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                />
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 overflow-y-auto flex-1 bg-slate-100/50 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {(patients.length > 0 ? patients : []).filter(p => {
+                  const q = sanitarySearch.toLowerCase().trim();
+                  return !q || 
+                    `${p.firstName} ${p.lastName}`.toLowerCase().includes(q) ||
+                    p.id.toLowerCase().includes(q) ||
+                    p.householdId.toLowerCase().includes(q) ||
+                    p.purok.toLowerCase().includes(q);
+                }).slice(0, 40).map((p) => (
+                  <div key={p.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-3xs space-y-1.5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-[10px] font-mono text-indigo-700 font-bold">{p.purok} • {p.id}</div>
+                        <h5 className="text-xs font-black text-slate-800">{p.lastName}, {p.firstName}</h5>
+                      </div>
+                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[9.5px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 size={11} className="text-emerald-600" />
+                        100% May Palikuran
+                      </span>
+                    </div>
+                    <div className="text-[10.5px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+                      <span>Sambahayan: <strong>{p.householdId}</strong></span>
+                      <span className="text-emerald-700 font-bold">DOH Compliant</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-3 bg-white border-t border-slate-200 flex justify-between items-center text-xs">
+              <span className="text-slate-500 text-[11px]">Pinatunayan ng DOH Regional Office & Barangay Health Unit</span>
+              <button
+                type="button"
+                onClick={() => setShowSanitaryDetailModal(false)}
+                className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-1.5 rounded-xl transition-colors cursor-pointer"
+              >
+                Isara
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -347,7 +347,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
       compiledSectionsHtml += `
         <div class="card">
           <div class="card-title">🛡️ Surveillance Watch (Outbreak Alerts)</div>
-          <div class="big-value text-emerald-700 font-bold" style="font-size: 24px; color: #047857;">EXCELLENT</div>
+          <div class="big-value text-emerald-700 font-bold" style="font-size: 20px; color: #047857;">EXCELLENT</div>
           <div class="subtitle">Community Outbreak Alert Level</div>
           <div class="details">
             <div class="detail-row">
@@ -413,7 +413,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
       <!DOCTYPE html>
       <html>
       <head>
-        <title>DHRMS Barangay Balong-balong - Custom Statistical Report</title>
+        <title>HRMS Barangay Balong-balong - Custom Statistical Report</title>
         <style>
           body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -430,14 +430,14 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           }
           .header h1 {
             margin: 0;
-            font-size: 17px;
+            font-size: 15px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #0f172a;
           }
           .header p {
             margin: 4px 0 0 0;
-            font-size: 12px;
+            font-size: 9px;
             color: #64748b;
           }
           .grid {
@@ -454,7 +454,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
             page-break-inside: avoid;
           }
           .card-title {
-            font-size: 12px;
+            font-size: 9px;
             font-weight: 750;
             text-transform: uppercase;
             color: #334155;
@@ -464,20 +464,20 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
             letter-spacing: 0.03em;
           }
           .big-value {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             margin-bottom: 2px;
             color: #0f172a;
           }
           .subtitle {
-            font-size: 12px;
+            font-size: 8px;
             font-weight: 600;
             color: #64748b;
             text-transform: uppercase;
             margin-bottom: 8px;
           }
           .details {
-            font-size: 15px;
+            font-size: 10px;
           }
           .detail-row {
             display: flex;
@@ -501,7 +501,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
             page-break-inside: avoid;
           }
           .metric-title {
-            font-size: 12px;
+            font-size: 9px;
             font-weight: 800;
             color: #0f172a;
             margin-bottom: 12px;
@@ -515,7 +515,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           .progress-text {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 9px;
             margin-bottom: 3px;
             font-weight: 600;
           }
@@ -533,7 +533,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           .footer {
             margin-top: 30px;
             text-align: center;
-            font-size: 12px;
+            font-size: 8px;
             color: #94a3b8;
             border-top: 1px solid #f1f5f9;
             padding-top: 8px;
@@ -546,7 +546,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
       <body>
         <div class="header">
           <h1>E-Statistical Register & Analysis Report Summary</h1>
-          <p>Barangay Balong-balong DHRMS, Pitogo, ZDS • Generated on ${new Date().toLocaleDateString()} • Saklaw ng Ulat: <strong>${periodDisplay}</strong></p>
+          <p>Barangay Balong-balong HRMS, Pitogo, ZDS • Generated on ${new Date().toLocaleDateString()} • Saklaw ng Ulat: <strong>${periodDisplay}</strong></p>
         </div>
         
         <div class="grid">
@@ -599,26 +599,26 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
               margin-bottom: 20px;
             }
             .header h1 {
-              font-size: 20px;
+              font-size: 16px;
               text-transform: uppercase;
               margin: 0 0 4px 0;
               letter-spacing: 0.5px;
             }
             .header p {
-              font-size: 15px;
+              font-size: 11px;
               color: #475569;
               margin: 0;
             }
             table {
               width: 100%;
               border-collapse: collapse;
-              font-size: 15px;
+              font-size: 11px;
             }
             th {
               background-color: #0f172a !important;
               color: #ffffff !important;
               padding: 8px 10px;
-              font-size: 15px;
+              font-size: 10px;
               text-transform: uppercase;
               text-align: left;
               border: 1px solid #0f172a;
@@ -647,7 +647,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
             .footer {
               margin-top: 24px;
               text-align: center;
-              font-size: 12px;
+              font-size: 9px;
               color: #64748b;
               border-top: 1px solid #e2e8f0;
               padding-top: 10px;
@@ -823,7 +823,7 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           {/* Dashboard Header Bar */}
           <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-black tracking-widest text-emerald-700 uppercase font-mono">DHRMS BARANGAY HEALTH STATISTICS</span>
+              <span className="text-[10px] font-black tracking-widest text-emerald-700 uppercase font-mono">HRMS BARANGAY HEALTH STATISTICS</span>
               <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-tight">E-Statistical Register & Active Charts (Ulat para sa Lahat)</h3>
               <p className="text-xs text-slate-500 font-medium">Buod ng mga aktwal na datos mula sa Census, Konsulta, DOH Program, at Botika.</p>
             </div>

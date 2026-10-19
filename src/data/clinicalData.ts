@@ -314,7 +314,7 @@ export const MOCK_REFERRALS: Referral[] = [
     id: 'REF-2026-001',
     patientId: 'PAT-2026-0006', // Eustqio Antimano
     date: '2026-05-28',
-    referringFacility: 'Barangay Balong-balong DHRMS, Pitogo, ZST',
+    referringFacility: 'Barangay Balong-balong HRMS, Pitogo, ZST',
     referredToFacility: 'Mayor Ramon B. Lopez Memorial District Hospital',
     reasonForReferral: 'Uncontrolled Severely elevated Blood Pressure (155/95 mmHg) coupled with blood glucose spikes of 220 mg/dL in senior patient with occipital pain.',
     clinicalSummary: 'Patient arrived with headache & lightheadedness. Triaged by Nurse with hypertensive crisis levels. Emergency dose lossartan administered, referral drafted for specialty cardiologist and diabetic clinic.',
@@ -327,7 +327,7 @@ export const MOCK_REFERRALS: Referral[] = [
     id: 'REF-2026-002',
     patientId: 'PAT-2026-0014', // Mardi Bantilan (High Risk Prenatal)
     date: '2026-08-12',
-    referringFacility: 'Barangay Balong-balong DHRMS, Pitogo, ZST',
+    referringFacility: 'Barangay Balong-balong HRMS, Pitogo, ZST',
     referredToFacility: 'Margosatubig Regional Hospital',
     reasonForReferral: 'High Risk Pregnancy (Term G1P0 with elevated BP 135/85) for hospital delivery clearance.',
     clinicalSummary: 'Third trimester checkup confirmed cephalic presentation, full term. Referred for institutional delivery facilities.',

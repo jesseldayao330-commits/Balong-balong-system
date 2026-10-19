@@ -40,7 +40,11 @@ import { Activity, Users, ClipboardList, Layers, Pill, FileText, Map, ShieldAler
 export default function App() {
   // Dynamic Configuration Settings for Health Center
   const [centerName, setCenterName] = useState<string>(() => {
-    return localStorage.getItem('bhc_config_center_name') || 'Barangay Balong-balong Health Center';
+    const saved = localStorage.getItem('bhc_config_center_name');
+    if (!saved || saved === 'Barangay Balong-balong Health Center') {
+      return 'Health Center Management System';
+    }
+    return saved;
   });
   const [centerAddress, setCenterAddress] = useState<string>(() => {
     return localStorage.getItem('bhc_config_center_address') || 'Barangay Balong-balong, Pitogo, Zamboanga del Sur';
@@ -895,7 +899,7 @@ export default function App() {
             )}
 
             {activeTab === 'policies' && (
-              <HealthPolicies />
+              <HealthPolicies patients={patients} households={households} />
             )}
 
             {activeTab === 'reports' && (
@@ -1041,7 +1045,7 @@ export default function App() {
       <footer className="bg-slate-900 text-slate-400 py-4 font-mono text-[10px] text-center mt-12 border-t border-slate-800" id="bhc-footer">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <span>DEPARTMENT OF HEALTH (DOH) PHILIPPINES MANDATED PRIMARY HEALTH RECORDS MANAGEMENT SYSTEM</span>
-          <span>© 2026 BARANGAY BALONG-BALONG HEALTH PORTAL • PITOGO, ZAMBOANGA DEL SUR</span>
+          <span>© 2026 HEALTH CENTER MANAGEMENT SYSTEM • BARANGAY BALONG-BALONG, PITOGO, ZAMBOANGA DEL SUR</span>
         </div>
       </footer>
     </div>

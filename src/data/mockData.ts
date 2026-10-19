@@ -19,7 +19,7 @@ export {
 
 export const LOCALIZED_TEXTS: Record<Language, Record<string, string>> = {
   EN: {
-    title: 'Development of a Health Records Management System',
+    title: 'Health Center Management System',
     subheading: 'Primary Healthcare Delivery Portal • RA 10173 Compliant',
     online: 'Online (Connected to Municipal EHR)',
     offline: 'Offline Mode (Local Storage Synced)',

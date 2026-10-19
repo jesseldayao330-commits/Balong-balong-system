@@ -392,24 +392,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-500 mb-1">Health Center Name *</label>
+                    <label className="block text-[10px] font-extrabold text-slate-500 mb-1">
+                      System Name / Health Center Name *
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs font-bold text-slate-800 focus:outline-hidden"
                       value={centerName}
-                      onChange={(e) => setCenterName(e.target.value)}
+                      onChange={(e) => {
+                        setCenterName(e.target.value);
+                        localStorage.setItem('bhc_config_center_name', e.target.value);
+                      }}
+                      placeholder="Health Center Management System"
                       required
                     />
+                    <span className="text-[10px] text-slate-400 mt-0.5 block">Pangalan sa sistema (itaas)</span>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-500 mb-1">Complete Address / Barangay *</label>
+                    <label className="block text-[10px] font-extrabold text-slate-500 mb-1">
+                      Address / Lokasyon (Ilagay sa Ibaba) *
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-lg text-xs font-bold text-slate-800 focus:outline-hidden"
                       value={centerAddress}
-                      onChange={(e) => setCenterAddress(e.target.value)}
+                      onChange={(e) => {
+                        setCenterAddress(e.target.value);
+                        localStorage.setItem('bhc_config_center_address', e.target.value);
+                      }}
+                      placeholder="Barangay Balong-balong, Pitogo, Zamboanga del Sur"
                       required
                     />
+                    <span className="text-[10px] text-slate-400 mt-0.5 block">Address nga ibutang sa ubos / ilalim</span>
                   </div>
                 </div>
 

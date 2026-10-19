@@ -37,6 +37,18 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
   const unsanitaryToilets = purokHouseholds.filter((h) => !h.sanitaryToilet).length;
   const unsafeWater = purokHouseholds.filter((h) => h.waterSource === 'Unsanitary/Unprotected').length;
 
+  // Barangay-wide population breakdown percentages for color legend
+  const totalAllPatients = patients.length || 1;
+  const totalAllTB = patients.filter((p) => p.activePrograms.includes('TB_DOTS')).length;
+  const totalAllSenior = patients.filter((p) => p.activePrograms.includes('SENIOR_CITIZEN')).length;
+  const totalAllFP = patients.filter((p) => p.activePrograms.includes('FAMILY_PLANNING')).length;
+  const totalAllDual = patients.filter((p) => !p.activePrograms.includes('TB_DOTS') && p.activePrograms.includes('SENIOR_CITIZEN') && p.activePrograms.includes('FAMILY_PLANNING')).length;
+
+  const tbPercent = ((totalAllTB / totalAllPatients) * 100).toFixed(1);
+  const seniorPercent = ((totalAllSenior / totalAllPatients) * 100).toFixed(1);
+  const fpPercent = ((totalAllFP / totalAllPatients) * 100).toFixed(1);
+  const dualPercent = ((totalAllDual / totalAllPatients) * 100).toFixed(1);
+
   // Render maps layout coordinate structures
   const purokSpecs: { key: Purok; d: string; color: string; labelX: number; labelY: number }[] = [
     { key: 'Purok 1', d: 'M 30,50 L 150,30 L 170,120 L 50,140 Z', color: 'fill-emerald-100 hover:fill-emerald-200 stroke-emerald-600', labelX: 90, labelY: 80 },
@@ -81,7 +93,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <ImageIcon size={15} />
+            <ImageIcon size={13} />
             <span>Real Satellite Map</span>
           </button>
           <button
@@ -93,7 +105,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <MapIcon size={15} />
+            <MapIcon size={13} />
             <span>Interactive Puroks</span>
           </button>
         </div>
@@ -113,32 +125,36 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               </p>
             </div>
           </div>
-          <AlertTriangle className="text-red-600 hidden md:block shrink-0" size={20} />
+          <AlertTriangle className="text-red-600 hidden md:block shrink-0" size={18} />
         </div>
       )}
 
       {/* Modern Filipino Health Sektor / Monitoring Legend Bar */}
-      <div className="mb-5 p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="mb-5 p-3.5 bg-slate-50 border border-slate-200/70 rounded-xl flex flex-col md:flex-row gap-3 md:items-center justify-between text-[11px] text-slate-700 shadow-2xs">
         <div className="flex items-center gap-1.5 font-bold text-slate-600 uppercase tracking-wide">
-          <span className="w-1.5 h-3 bg-red-600 rounded"></span>
-          <span>Sektor / Monitoring Map Legend:</span>
+          <span className="w-1.5 h-3.5 bg-red-600 rounded-xs"></span>
+          <span>Sektor / Monitoring Map Legend (Porsyento / % ng Populasyon):</span>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 font-mono">
+          <div className="flex items-center gap-1.5 bg-red-50 border border-red-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping border border-red-300 inline-block"></span>
-            <span className="font-bold text-red-700">TB DOTS (Red Blink)</span>
+            <span className="font-extrabold text-red-700">TB DOTS: {tbPercent}%</span>
+            <span className="text-[10px] text-red-600/90 font-sans">({totalAllTB} kaso)</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Senior Citizens (Yellow)</span>
+            <span className="font-extrabold text-amber-800">Seniors: {seniorPercent}%</span>
+            <span className="text-[10px] text-amber-700/90 font-sans">({totalAllSenior})</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 border border-blue-200 inline-block"></span>
-            <span className="font-semibold text-slate-800">Family Planning (Blue)</span>
+            <span className="font-extrabold text-blue-800">Family Planning: {fpPercent}%</span>
+            <span className="text-[10px] text-blue-700/90 font-sans">({totalAllFP})</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200/80 px-2.5 py-1 rounded-lg">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-blue-400 inline-block"></span>
-            <span className="font-semibold text-slate-800 font-mono text-[10px]">Dual Senior+FP</span>
+            <span className="font-extrabold text-indigo-900">Dual Sr+FP: {dualPercent}%</span>
+            <span className="text-[10px] text-indigo-700/90 font-sans">({totalAllDual})</span>
           </div>
         </div>
       </div>
@@ -159,7 +175,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
 
               {/* Geographical Landmarks overlays */}
               <div className="absolute top-[34%] left-[10%] bg-slate-900/85 text-white text-[9px] font-black px-2 py-1 rounded-md border border-slate-700 pointer-events-none shadow-xs flex items-center gap-1 select-none whitespace-nowrap">
-                <ShoppingBag size={12} className="text-amber-400" />
+                <ShoppingBag size={9} className="text-amber-400" />
                 <span>Balong balong Public Market</span>
               </div>
               <div className="absolute top-[48%] left-[54%] bg-slate-900/80 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-sm tracking-widest pointer-events-none uppercase select-none whitespace-nowrap">
@@ -233,7 +249,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                                 ? 'bg-slate-950 text-white border border-slate-800' 
                                 : 'bg-white/90 text-slate-800 border border-slate-200'
                     }`}>
-                      {hasTB && <AlertTriangle size={10} className="text-white" />}
+                      {hasTB && <AlertTriangle size={8} className="text-white" />}
                       <span>{pin.key}</span>
                       {hasTB && <span className="text-[7.5px] bg-red-950 border border-red-400 px-1 py-0.2 rounded-xs text-white font-black">TB</span>}
                       {!hasTB && hasSenior && <span className="text-[7px] bg-amber-800 border border-amber-400 px-0.5 rounded-xs text-white">SR</span>}
@@ -308,7 +324,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <span className="text-xl font-black text-slate-800">{selectedPurok}</span>
               <span className="px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-700 rounded-sm flex items-center gap-1">
-                <Users size={15} />
+                <Users size={12} />
                 {totalResidents} Residents
               </span>
             </div>
@@ -356,7 +372,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               <div className="space-y-1.5 font-mono text-[11px]">
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
                   <span className="text-slate-600 flex items-center gap-1">
-                    <Droplet size={15} className="text-sky-500" /> Unsafe Water Sources
+                    <Droplet size={12} className="text-sky-500" /> Unsafe Water Sources
                   </span>
                   <span className={`font-bold py-0.5 px-2 rounded ${unsafeWater > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                     {unsafeWater} HHs
@@ -365,7 +381,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
                   <span className="text-slate-600 flex items-center gap-1">
-                    <Flame size={15} className="text-orange-500" /> Unsanitary Toilets
+                    <Flame size={12} className="text-orange-500" /> Unsanitary Toilets
                   </span>
                   <span className={`font-bold py-0.5 px-2 rounded ${unsanitaryToilets > 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>
                     {unsanitaryToilets} HHs
@@ -376,7 +392,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1.5 bg-slate-50 text-slate-705 p-2 rounded-md border border-slate-200">
-            <CheckCircle size={15} className="text-emerald-600" />
+            <CheckCircle size={12} className="text-emerald-600" />
             <span>
               {selectedPurok === 'Purok 5' && 'Assigned wellness monitoring active. Regular health and sanitation outreach conducted by assigned BHWs.'}
               {selectedPurok === 'Purok 7' && 'Routine immunization scheduler active. Outreach program vaccine updates are supported by BHWs.'}
