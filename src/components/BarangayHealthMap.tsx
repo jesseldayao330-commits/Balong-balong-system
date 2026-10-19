@@ -81,7 +81,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <ImageIcon size={13} />
+            <ImageIcon size={15} />
             <span>Real Satellite Map</span>
           </button>
           <button
@@ -93,7 +93,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <MapIcon size={13} />
+            <MapIcon size={15} />
             <span>Interactive Puroks</span>
           </button>
         </div>
@@ -113,7 +113,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               </p>
             </div>
           </div>
-          <AlertTriangle className="text-red-600 hidden md:block shrink-0" size={18} />
+          <AlertTriangle className="text-red-600 hidden md:block shrink-0" size={20} />
         </div>
       )}
 
@@ -159,7 +159,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
 
               {/* Geographical Landmarks overlays */}
               <div className="absolute top-[34%] left-[10%] bg-slate-900/85 text-white text-[9px] font-black px-2 py-1 rounded-md border border-slate-700 pointer-events-none shadow-xs flex items-center gap-1 select-none whitespace-nowrap">
-                <ShoppingBag size={9} className="text-amber-400" />
+                <ShoppingBag size={12} className="text-amber-400" />
                 <span>Balong balong Public Market</span>
               </div>
               <div className="absolute top-[48%] left-[54%] bg-slate-900/80 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-sm tracking-widest pointer-events-none uppercase select-none whitespace-nowrap">
@@ -233,7 +233,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                                 ? 'bg-slate-950 text-white border border-slate-800' 
                                 : 'bg-white/90 text-slate-800 border border-slate-200'
                     }`}>
-                      {hasTB && <AlertTriangle size={8} className="text-white" />}
+                      {hasTB && <AlertTriangle size={10} className="text-white" />}
                       <span>{pin.key}</span>
                       {hasTB && <span className="text-[7.5px] bg-red-950 border border-red-400 px-1 py-0.2 rounded-xs text-white font-black">TB</span>}
                       {!hasTB && hasSenior && <span className="text-[7px] bg-amber-800 border border-amber-400 px-0.5 rounded-xs text-white">SR</span>}
@@ -308,7 +308,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <span className="text-xl font-black text-slate-800">{selectedPurok}</span>
               <span className="px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-700 rounded-sm flex items-center gap-1">
-                <Users size={12} />
+                <Users size={15} />
                 {totalResidents} Residents
               </span>
             </div>
@@ -356,7 +356,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
               <div className="space-y-1.5 font-mono text-[11px]">
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
                   <span className="text-slate-600 flex items-center gap-1">
-                    <Droplet size={12} className="text-sky-500" /> Unsafe Water Sources
+                    <Droplet size={15} className="text-sky-500" /> Unsafe Water Sources
                   </span>
                   <span className={`font-bold py-0.5 px-2 rounded ${unsafeWater > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                     {unsafeWater} HHs
@@ -365,7 +365,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
                 
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
                   <span className="text-slate-600 flex items-center gap-1">
-                    <Flame size={12} className="text-orange-500" /> Unsanitary Toilets
+                    <Flame size={15} className="text-orange-500" /> Unsanitary Toilets
                   </span>
                   <span className={`font-bold py-0.5 px-2 rounded ${unsanitaryToilets > 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>
                     {unsanitaryToilets} HHs
@@ -376,7 +376,7 @@ export const BarangayHealthMap: React.FC<BarangayHealthMapProps> = ({ patients, 
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1.5 bg-slate-50 text-slate-705 p-2 rounded-md border border-slate-200">
-            <CheckCircle size={12} className="text-emerald-600" />
+            <CheckCircle size={15} className="text-emerald-600" />
             <span>
               {selectedPurok === 'Purok 5' && 'Assigned wellness monitoring active. Regular health and sanitation outreach conducted by assigned BHWs.'}
               {selectedPurok === 'Purok 7' && 'Routine immunization scheduler active. Outreach program vaccine updates are supported by BHWs.'}
