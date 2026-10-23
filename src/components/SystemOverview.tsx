@@ -1251,6 +1251,11 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
   const indigentCount = patients.filter((p) => p.isIndigent).length;
   const hypertensionRiskCount = patients.filter((p) => p.activePrograms.includes('SENIOR_CITIZEN')).length;
   const totalPatients = patients.length;
+  const purokNames = ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Purok 6', 'Purok 7'];
+  const maxPurokResidents = Math.max(
+    1,
+    ...purokNames.map((purok) => patients.filter((patient) => patient.purok === purok).length)
+  );
 
   return (
     <div className="space-y-6" id="system-dashboard-overview">
@@ -1357,28 +1362,39 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
               {text.purokDistribution}
             </h3>
             <p className="text-xs text-slate-400 mt-1">Total census metrics across Purok 1 to Purok 7 in the barangay</p>
+            <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-500" aria-label="Purok resident count color legend">
+              <span>Mas kaunti</span>
+              <span className="h-2 w-5 rounded-full bg-emerald-600"></span>
+              <span className="h-2 w-10 rounded-full bg-emerald-600"></span>
+              <span className="h-2 w-20 rounded-full bg-emerald-600"></span>
+              <span>Mas marami</span>
+            </div>
           </div>
           
           <div className="space-y-3.5">
-            {['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Purok 6', 'Purok 7'].map((purok) => {
+            {purokNames.map((purok) => {
               const residentCount = patients.filter((p) => p.purok === purok).length;
               const householdCount = households.filter((h) => h.purok === purok).length;
-              const widthPercentage = Math.min((residentCount / 8) * 105, 100);
+              const widthPercentage = (residentCount / maxPurokResidents) * 100;
               return (
                 <div key={purok} className="flex items-center gap-3" id={`purok-bar-${purok.replace(' ', '')}`}>
                   <span className="text-xs font-mono font-bold text-slate-650 w-16">{purok}</span>
-                  <div className="flex-1 bg-slate-50 h-7 rounded-lg overflow-hidden relative border border-slate-200/50">
+                  <div className="flex-1 bg-slate-50 h-7 rounded-lg relative border border-slate-200/50">
                     {residentCount > 0 ? (
                       <div 
-                        className="bg-emerald-600 h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3 font-mono text-[10px] text-white font-extrabold" 
-                        style={{ width: `${Math.max(widthPercentage, 8)}%` }}
+                        className="bg-emerald-600 h-full rounded-lg transition-all duration-500" 
+                        style={{ width: `${widthPercentage}%` }}
                       >
-                        {`${residentCount} Tao (${householdCount} HH)`}
                       </div>
                     ) : (
-                      <span className="absolute inset-0 flex items-center pl-3 text-[10px] text-slate-400 font-mono">0 Resident</span>
+                      <span className="absolute inset-0 flex items-center pl-2 text-[10px] text-slate-400 font-mono">0 Resident</span>
                     )}
                   </div>
+                  {residentCount > 0 && (
+                    <span className="w-28 shrink-0 text-right text-[10px] font-mono font-bold text-slate-600">
+                      {`${residentCount} Tao (${householdCount} HH)`}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -1418,6 +1434,28 @@ export const SystemOverview: React.FC<SystemOverviewProps> = ({
                 <span className="font-semibold text-indigo-700 bg-indigo-50 px-1.5 rounded">
                   {patients.filter((p) => p.philHealthId && p.philHealthId !== 'Not Enrolled').length} verified
                 </span>
+              </div>
+            </div>
+
+            <div className="mt-3 border-t border-slate-100 pt-2.5" aria-label="Eligibility status legend">
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-wider text-slate-500">Legend / Gabay sa Kulay</p>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px] text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-600"></span>
+                  <span>Aktibong residente</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                  <span>Naka-archive / inactive</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-rose-600"></span>
+                  <span>Indigent / Malasakit support</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-indigo-600"></span>
+                  <span>PhilHealth verified</span>
+                </div>
               </div>
             </div>
           </div>

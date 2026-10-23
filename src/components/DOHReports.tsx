@@ -398,6 +398,13 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
               <div class="progress-fill" style="width: 100%; background-color: #10b981;"></div>
             </div>
           </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #475569;">
+            <strong style="width: 100%; text-transform: uppercase; letter-spacing: 0.06em;">Legend / Color Guide</strong>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 5px;"></span>BCG Vaccination</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #6366f1; margin-right: 5px;"></span>Maternal Prenatal Care</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #34d399; margin-right: 5px;"></span>Water &amp; Sanitary Compliance</span>
+          </div>
         </div>
       `;
     }
@@ -1190,6 +1197,12 @@ export const DOHReports: React.FC<DOHReportsProps> = ({
           {/* DOH-Standard Progress Metrics summary bar */}
           <div className="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 space-y-4">
             <h4 className="text-xs font-black uppercase tracking-widest font-mono text-emerald-400">📊 MUNICIPAL PERFORMANCE VS HEALTH TARGET COVERAGE</h4>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-700 pb-3 text-[10px] text-slate-300" aria-label="Health target coverage legend">
+              <span className="w-full font-bold uppercase tracking-wider text-slate-400">Legend / Color Guide</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500"></span>BCG Vaccination</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-indigo-500"></span>Maternal Prenatal Care</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-400"></span>Water &amp; Sanitary Compliance</span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs font-mono">
               <div>
                 <div className="flex justify-between text-[11px] mb-1">

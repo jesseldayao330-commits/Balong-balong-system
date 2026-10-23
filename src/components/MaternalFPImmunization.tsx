@@ -325,6 +325,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
         </div>
 
         {/* Rapid selectors */}
+        {activeRole !== 'ADMIN' && (
         <div className="flex items-center gap-2">
           <Layers size={14} className="text-slate-400" />
           <select
@@ -344,6 +345,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
             )}
           </select>
         </div>
+        )}
       </div>
 
       {/* Program Selector Toggles */}
@@ -410,12 +412,13 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               </strong>
               <span>
                 {language === 'EN'
-                  ? 'Logged in as Administrator. This segment is layout in read-only format for reviewing the maternal health program and no new submissions can be made.'
-                  : 'Naka-log in bilang Ericson Padunan. Ang segment na ito ay may pahintulot na "View-Only" para sa pagrepaso ng maternal health program at hindi maaaring magkaroon ng bagong submission.'}
+                  ? 'Administrator access is view-only. Review the prenatal records below; creating or editing records is unavailable.'
+                  : 'View-only ang access ng Administrator. Tingnan ang mga prenatal record sa ibaba; hindi maaaring gumawa o mag-edit ng record.'}
               </span>
             </div>
           )}
 
+          {activeRole !== 'ADMIN' && (
           <form onSubmit={handleSavePrenatal} className="space-y-4">
             <fieldset disabled={activeRole === 'NURSE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-4">
               <h3 className="text-xs font-black text-teal-800 uppercase tracking-wider">New Prenatal Encounter (MCH)</h3>
@@ -548,50 +551,119 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               )}
             </fieldset>
           </form>
+          )}
 
           {/* Previous prenatals lists */}
-          {patientPrenatals.length > 0 && (
+          {activeRole === 'ADMIN' ? (
             <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs">
-              <span className="font-bold text-slate-500 block mb-2 font-mono">Past Prenatal Visits for Patient</span>
+              <span className="font-bold text-slate-500 block mb-2 font-mono">MCH Prenatal Patient List</span>
+              <div className="mb-3 rounded-lg border border-slate-200 bg-white p-3" aria-label="Prenatal risk classification legend">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">Risk Classification Legend / Gabay sa Risk Level</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="flex items-start gap-2 rounded-md bg-emerald-50 p-2 text-[10px] text-emerald-900">
+                    <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600"></span>
+                    <span><strong>Low Risk:</strong> Walang natukoy na risk factor sa kasalukuyang assessment; ipagpatuloy ang regular prenatal checkup.</span>
+                  </div>
+                  <div className="flex items-start gap-2 rounded-md bg-yellow-50 p-2 text-[10px] text-yellow-900">
+                    <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-yellow-500"></span>
+                    <span><strong>Medium Risk:</strong> May concern na nangangailangan ng masusing follow-up o monitoring ayon sa assessment ng health worker.</span>
+                  </div>
+                  <div className="flex items-start gap-2 rounded-md bg-rose-50 p-2 text-[10px] text-rose-900">
+                    <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-rose-600"></span>
+                    <span><strong>High Risk:</strong> May natukoy na seryosong risk factor o sintomas; kailangan ng agarang clinical review at maaaring referral.</span>
+                  </div>
+                </div>
+                <p className="mt-2 text-[9px] text-slate-500">
+                  {language === 'EN'
+                    ? 'Risk levels are recorded by the attending health worker based on clinical assessment; they are not automatically calculated by this system.'
+                    : 'Itinatala ng attending health worker ang risk level batay sa clinical assessment; hindi ito awtomatikong kinakalkula ng system.'}
+                </p>
+              </div>
               <div className="space-y-2">
-                {patientPrenatals.map((pr) => (
-                  <div key={pr.id} className="p-2.5 border rounded bg-white flex justify-between items-center gap-2">
-                    <div className="flex-1">
-                      <strong className="text-slate-800">LMP: {pr.lmp} • Gravida: {pr.gravida} • Para: {pr.para}</strong>
-                      <p className="text-slate-500 mt-0.5">{pr.remarks}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
-                        pr.riskClassification === 'Low Risk' ? 'bg-emerald-100 text-emerald-800' :
-                        pr.riskClassification === 'Medium Risk' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-rose-100 text-rose-800 animate-pulse'
-                      }`}>
-                        {pr.riskClassification}
-                      </span>
-                      {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => startEditingPrenatal(pr)}
-                            className="p-1 hover:text-emerald-700 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
-                            title="Edit entry"
-                          >
-                            <Edit3 size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePrenatalClick(pr.id)}
-                            className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
-                            title="Delete entry"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </>
+                {filteredSelectorPatients.map((patient) => {
+                  const records = prenatals.filter((record) => record.patientId === patient.id);
+                  return (
+                    <div key={patient.id} className="p-2.5 border rounded bg-white">
+                      <strong className="text-slate-800">{patient.lastName}, {patient.firstName} • {patient.id}</strong>
+                      {records.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {records.map((pr) => (
+                            <div key={pr.id} className="flex justify-between items-center gap-2 border-t border-slate-100 pt-2">
+                              <div className="flex-1">
+                                <strong className="text-slate-700">LMP: {pr.lmp} • Gravida: {pr.gravida} • Para: {pr.para}</strong>
+                                <p className="text-slate-500 mt-0.5">{pr.remarks}</p>
+                              </div>
+                              <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
+                                pr.riskClassification === 'Low Risk' ? 'bg-emerald-100 text-emerald-800' :
+                                pr.riskClassification === 'Medium Risk' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-rose-100 text-rose-800'
+                              }`}>
+                                {pr.riskClassification}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-slate-500">Walang prenatal record.</p>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+                {filteredSelectorPatients.length === 0 && (
+                  <p className="rounded border border-dashed border-slate-200 bg-white p-3 text-slate-500">
+                    {language === 'EN' ? 'No eligible prenatal patients found.' : 'Walang nakitang pasyente para sa prenatal care.'}
+                  </p>
+                )}
               </div>
+            </div>
+          ) : patientPrenatals.length > 0 && (
+            <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs">
+              <span className="font-bold text-slate-500 block mb-2 font-mono">Past Prenatal Visits for Patient</span>
+              {patientPrenatals.length > 0 ? (
+                <div className="space-y-2">
+                  {patientPrenatals.map((pr) => (
+                    <div key={pr.id} className="p-2.5 border rounded bg-white flex justify-between items-center gap-2">
+                      <div className="flex-1">
+                        <strong className="text-slate-800">LMP: {pr.lmp} • Gravida: {pr.gravida} • Para: {pr.para}</strong>
+                        <p className="text-slate-500 mt-0.5">{pr.remarks}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded ${
+                          pr.riskClassification === 'Low Risk' ? 'bg-emerald-100 text-emerald-800' :
+                          pr.riskClassification === 'Medium Risk' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-rose-100 text-rose-800 animate-pulse'
+                        }`}>
+                          {pr.riskClassification}
+                        </span>
+                        {activeRole !== 'NURSE' && activeRole !== 'ADMIN' && activeRole !== 'CAPITAN' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEditingPrenatal(pr)}
+                              className="p-1 hover:text-emerald-700 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
+                              title="Edit entry"
+                            >
+                              <Edit3 size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePrenatalClick(pr.id)}
+                              className="p-1 hover:text-rose-600 hover:bg-slate-55 rounded cursor-pointer text-slate-400"
+                              title="Delete entry"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded border border-dashed border-slate-200 bg-white p-3 text-slate-500">
+                  {language === 'EN' ? 'No prenatal records found for this patient.' : 'Walang prenatal record para sa pasyenteng ito.'}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -612,6 +684,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
             </div>
           )}
 
+          {activeRole !== 'ADMIN' && (
           <form onSubmit={handleSaveEpi} className="space-y-4">
             <fieldset disabled={activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-4">
               <h3 className="text-xs font-black text-emerald-800 uppercase tracking-wider">Expand Infant Vaccination Records (EPI Program)</h3>
@@ -687,8 +760,10 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               )}
             </fieldset>
           </form>
+          )}
 
           {/* Vaccine schedule checklists */}
+          {activeRole !== 'ADMIN' && (
           <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
             <span className="font-bold text-slate-700 block mb-3 font-mono">DOH Standard Infant Immunization Lifeline Indicator</span>
             
@@ -718,9 +793,41 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               })}
             </div>
           </div>
+          )}
 
           {/* Past Vaccines Records */}
-          {patientVaccines.length > 0 && (
+          {activeRole === 'ADMIN' ? (
+            <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs">
+              <span className="font-bold text-slate-500 block mb-2 font-mono">Baby Immunization Patient List</span>
+              <div className="space-y-2">
+                {filteredSelectorPatients.map((patient) => {
+                  const records = vaccinations.filter((record) => record.patientId === patient.id);
+                  return (
+                    <div key={patient.id} className="p-2.5 border rounded bg-white">
+                      <strong className="text-slate-800">{patient.lastName}, {patient.firstName} • {patient.id}</strong>
+                      {records.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {records.map((v) => (
+                            <div key={v.id} className="border-t border-slate-100 pt-2">
+                              <strong className="text-slate-700">Vaccine: {v.vaccineName} (Dose #{v.doseNumber}) • Date: {v.dateGiven}</strong>
+                              <p className="text-slate-500 mt-0.5 font-mono text-[11px]">{v.remarks || 'No remarks recorded.'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-slate-500">Walang vaccination record.</p>
+                      )}
+                    </div>
+                  );
+                })}
+                {filteredSelectorPatients.length === 0 && (
+                  <p className="rounded border border-dashed border-slate-200 bg-white p-3 text-slate-500">
+                    {language === 'EN' ? 'No eligible immunization patients found.' : 'Walang nakitang pasyente para sa baby immunization.'}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : patientVaccines.length > 0 && (
             <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs">
               <span className="font-bold text-slate-505 block mb-2 font-mono text-zinc-650">Recorded Vaccine Doses for Patient</span>
               <div className="space-y-2">
@@ -785,6 +892,7 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
             </div>
           )}
 
+          {activeRole !== 'ADMIN' && (
           <form onSubmit={handleSaveFP} className="space-y-4">
             <fieldset disabled={activeRole === 'NURSE' || activeRole === 'ADMIN' || activeRole === 'CAPITAN'} className="space-y-4">
               <h3 className="text-xs font-black text-purple-800 uppercase tracking-wider">Family Planning Registry Intake</h3>
@@ -875,9 +983,43 @@ export const MaternalFPImmunization: React.FC<MaternalFPImmunizationProps> = ({
               )}
             </fieldset>
           </form>
+          )}
 
           {/* Past Family Planning records lists */}
-          {patientFPs.length > 0 && (
+          {activeRole === 'ADMIN' ? (
+            <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs mt-4">
+              <span className="font-bold text-slate-500 block mb-2 font-mono">Family Planning Patient List</span>
+              <div className="space-y-2">
+                {filteredSelectorPatients.map((patient) => {
+                  const records = familyPlannings.filter((record) => record.patientId === patient.id);
+                  return (
+                    <div key={patient.id} className="p-2.5 border rounded bg-white">
+                      <strong className="text-slate-800">{patient.lastName}, {patient.firstName} • {patient.id}</strong>
+                      {records.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {records.map((fp) => (
+                            <div key={fp.id} className="border-t border-slate-100 pt-2">
+                              <strong className="text-slate-700">Method: {fp.methodAccepted} ({fp.methodType}) • Spouse: {fp.spouseName || 'None'}</strong>
+                              <div className="text-slate-500 mt-0.5 font-mono text-[11px]">
+                                Living Children: {fp.numberOfLivingChildren} • Desired Family Size: {fp.desiredFamilySize} • Next Service: {fp.nextServiceDate || 'N/A'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-slate-500">Walang family planning record.</p>
+                      )}
+                    </div>
+                  );
+                })}
+                {filteredSelectorPatients.length === 0 && (
+                  <p className="rounded border border-dashed border-slate-200 bg-white p-3 text-slate-500">
+                    {language === 'EN' ? 'No eligible Family Planning patients found.' : 'Walang nakitang pasyente para sa Family Planning.'}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : patientFPs.length > 0 && (
             <div className="border border-slate-100 rounded-lg p-3.5 bg-slate-50/50 text-xs mt-4">
               <span className="font-bold text-slate-500 block mb-2 font-mono">Past Family Planning client profiles for Patient</span>
               <div className="space-y-2">
